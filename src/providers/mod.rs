@@ -843,6 +843,15 @@ fn resolve_provider_credential(name: &str, credential_override: Option<&str>) ->
         name if is_qwen_alias(name) => vec!["DASHSCOPE_API_KEY"],
         name if is_zai_alias(name) => vec!["ZAI_API_KEY"],
         "nvidia" | "nvidia-nim" | "build.nvidia.com" => vec!["NVIDIA_API_KEY"],
+        "cerebras" => vec!["CEREBRAS_API_KEY"],
+        "sambanova" => vec!["SAMBANOVA_API_KEY"],
+        "hyperbolic" => vec!["HYPERBOLIC_API_KEY"],
+        "deepinfra" => vec!["DEEPINFRA_API_KEY"],
+        "siliconflow" => vec!["SILICONFLOW_API_KEY"],
+        "novita" => vec!["NOVITA_API_KEY"],
+        "chutes" => vec!["CHUTES_API_KEY"],
+        "featherless" => vec!["FEATHERLESS_API_KEY"],
+        "inference-net" | "inference.net" => vec!["INFERENCE_NET_API_KEY"],
         "synthetic" => vec!["SYNTHETIC_API_KEY"],
         "opencode" | "opencode-zen" => vec!["OPENCODE_API_KEY"],
         "vercel" | "vercel-ai" => vec!["VERCEL_API_KEY"],
@@ -1122,6 +1131,35 @@ fn create_provider_with_url_and_options(
                 AuthStyle::Bearer,
             ),
         )),
+
+        // ── Free-tier and high-throughput inference providers ─
+        "cerebras" => Ok(Box::new(OpenAiCompatibleProvider::new(
+            "Cerebras", "https://api.cerebras.ai/v1", key, AuthStyle::Bearer,
+        ))),
+        "sambanova" => Ok(Box::new(OpenAiCompatibleProvider::new(
+            "SambaNova", "https://api.sambanova.ai/v1", key, AuthStyle::Bearer,
+        ))),
+        "hyperbolic" => Ok(Box::new(OpenAiCompatibleProvider::new(
+            "Hyperbolic", "https://api.hyperbolic.xyz/v1", key, AuthStyle::Bearer,
+        ))),
+        "deepinfra" => Ok(Box::new(OpenAiCompatibleProvider::new(
+            "DeepInfra", "https://api.deepinfra.com/v1/openai", key, AuthStyle::Bearer,
+        ))),
+        "siliconflow" => Ok(Box::new(OpenAiCompatibleProvider::new(
+            "SiliconFlow", "https://api.siliconflow.cn/v1", key, AuthStyle::Bearer,
+        ))),
+        "novita" => Ok(Box::new(OpenAiCompatibleProvider::new(
+            "Novita AI", "https://api.novita.ai/v3/openai", key, AuthStyle::Bearer,
+        ))),
+        "chutes" => Ok(Box::new(OpenAiCompatibleProvider::new(
+            "Chutes", "https://llm.chutes.ai/v1", key, AuthStyle::Bearer,
+        ))),
+        "featherless" => Ok(Box::new(OpenAiCompatibleProvider::new(
+            "Featherless", "https://api.featherless.ai/v1", key, AuthStyle::Bearer,
+        ))),
+        "inference-net" | "inference.net" => Ok(Box::new(OpenAiCompatibleProvider::new(
+            "inference.net", "https://api.inference.net/v1", key, AuthStyle::Bearer,
+        ))),
 
         // ── AI inference routers ─────────────────────────────
         "astrai" => Ok(Box::new(OpenAiCompatibleProvider::new(
@@ -1577,6 +1615,61 @@ pub fn list_providers() -> Vec<ProviderInfo> {
             name: "ovhcloud",
             display_name: "OVHcloud AI Endpoints",
             aliases: &["ovh"],
+            local: false,
+        },
+        // ── Free-tier and high-throughput inference providers ─
+        ProviderInfo {
+            name: "cerebras",
+            display_name: "Cerebras",
+            aliases: &[],
+            local: false,
+        },
+        ProviderInfo {
+            name: "sambanova",
+            display_name: "SambaNova",
+            aliases: &[],
+            local: false,
+        },
+        ProviderInfo {
+            name: "hyperbolic",
+            display_name: "Hyperbolic",
+            aliases: &[],
+            local: false,
+        },
+        ProviderInfo {
+            name: "deepinfra",
+            display_name: "DeepInfra",
+            aliases: &[],
+            local: false,
+        },
+        ProviderInfo {
+            name: "siliconflow",
+            display_name: "SiliconFlow",
+            aliases: &[],
+            local: false,
+        },
+        ProviderInfo {
+            name: "novita",
+            display_name: "Novita AI",
+            aliases: &[],
+            local: false,
+        },
+        ProviderInfo {
+            name: "chutes",
+            display_name: "Chutes",
+            aliases: &[],
+            local: false,
+        },
+        ProviderInfo {
+            name: "featherless",
+            display_name: "Featherless",
+            aliases: &[],
+            local: false,
+        },
+        ProviderInfo {
+            name: "inference-net",
+            display_name: "inference.net",
+            aliases: &["inference.net"],
             local: false,
         },
     ]
@@ -2080,6 +2173,54 @@ mod tests {
         assert!(create_provider("build.nvidia.com", Some("nvapi-test")).is_ok());
     }
 
+    // ── Free-tier and high-throughput inference providers ─────
+
+    #[test]
+    fn factory_cerebras() {
+        assert!(create_provider("cerebras", Some("key")).is_ok());
+    }
+
+    #[test]
+    fn factory_sambanova() {
+        assert!(create_provider("sambanova", Some("key")).is_ok());
+    }
+
+    #[test]
+    fn factory_hyperbolic() {
+        assert!(create_provider("hyperbolic", Some("key")).is_ok());
+    }
+
+    #[test]
+    fn factory_deepinfra() {
+        assert!(create_provider("deepinfra", Some("key")).is_ok());
+    }
+
+    #[test]
+    fn factory_siliconflow() {
+        assert!(create_provider("siliconflow", Some("key")).is_ok());
+    }
+
+    #[test]
+    fn factory_novita() {
+        assert!(create_provider("novita", Some("key")).is_ok());
+    }
+
+    #[test]
+    fn factory_chutes() {
+        assert!(create_provider("chutes", Some("key")).is_ok());
+    }
+
+    #[test]
+    fn factory_featherless() {
+        assert!(create_provider("featherless", Some("key")).is_ok());
+    }
+
+    #[test]
+    fn factory_inference_net() {
+        assert!(create_provider("inference-net", Some("key")).is_ok());
+        assert!(create_provider("inference.net", Some("key")).is_ok());
+    }
+
     // ── AI inference routers ─────────────────────────────────
 
     #[test]
@@ -2384,6 +2525,15 @@ mod tests {
             "nvidia",
             "astrai",
             "ovhcloud",
+            "cerebras",
+            "sambanova",
+            "hyperbolic",
+            "deepinfra",
+            "siliconflow",
+            "novita",
+            "chutes",
+            "featherless",
+            "inference-net",
         ];
         for name in providers {
             assert!(
