@@ -515,6 +515,14 @@ enum AuthCommands {
     List,
     /// Show auth status with active profile and token expiry info
     Status,
+    /// Show location of, or regenerate, the master secret key used to encrypt stored credentials.
+    /// Without `--yes` prints key and config paths; with `--yes` deletes the key so a fresh one
+    /// is generated on next use (existing encrypted values in config.toml must be re-entered).
+    ResetKey {
+        /// Actually delete and regenerate the secret key (required to perform the reset)
+        #[arg(long)]
+        yes: bool,
+    },
 }
 
 #[derive(Subcommand, Debug)]
@@ -1496,6 +1504,51 @@ async fn handle_auth_command(auth_command: AuthCommands, config: &Config) -> Res
             for (provider, profile_id) in &data.active_profiles {
                 println!("  {provider}: {profile_id}");
             }
+
+            Ok(())
+        }
+
+        AuthCommands::ResetKey { yes } => {
+            let state_dir = auth::state_dir_from_config(config);
+            let key_path = state_dir.join(".secret_key");
+            let profiles_path = state_dir.join("auth-profiles.json");
+
+            if !yes {
+                println!("Credential storage locations:");
+                println!("  Config:        {}", config.config_path.display());
+                println!("  Secret key:    {}", key_path.display());
+                println!("  Auth profiles: {}", profiles_path.display());
+                println!();
+                println!(
+                    "To regenerate the secret key and invalidate all stored encrypted values, \
+                     run: zeroclaw auth reset-key --yes"
+                );
+                println!(
+                    "Warning: after a reset you must re-enter any API keys or tokens stored in \
+                     config.toml and auth-profiles.json."
+                );
+                return Ok(());
+            }
+
+            if key_path.exists() {
+                std::fs::remove_file(&key_path).context("Failed to remove secret key file")?;
+                println!("Secret key removed: {}", key_path.display());
+            } else {
+                println!(
+                    "No secret key file found at {}; nothing to remove.",
+                    key_path.display()
+                );
+            }
+
+            println!();
+            println!(
+                "A new key will be generated automatically the next time a secret is encrypted."
+            );
+            println!(
+                "Action required: re-enter any API keys or tokens that were stored encrypted in:"
+            );
+            println!("  {}", config.config_path.display());
+            println!("  {}", profiles_path.display());
 
             Ok(())
         }

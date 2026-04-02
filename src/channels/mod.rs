@@ -2605,10 +2605,12 @@ pub async fn start_channels(config: Config) -> Result<()> {
     );
 
     // Merge peripheral tools (UNO Q Bridge, RPi GPIO, etc.)
-    let peripheral_tools =
-        crate::peripherals::create_peripheral_tools(&config.peripherals).await?;
+    let peripheral_tools = crate::peripherals::create_peripheral_tools(&config.peripherals).await?;
     if !peripheral_tools.is_empty() {
-        tracing::info!(count = peripheral_tools.len(), "Peripheral tools added to channel server");
+        tracing::info!(
+            count = peripheral_tools.len(),
+            "Peripheral tools added to channel server"
+        );
         all_tools.extend(peripheral_tools);
     }
 

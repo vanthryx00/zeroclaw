@@ -2,7 +2,7 @@
 
 This reference is derived from the current CLI surface (`zeroclaw --help`).
 
-Last verified: **February 20, 2026**.
+Last verified: **April 2, 2026**.
 
 ## Top-Level Commands
 
@@ -24,6 +24,7 @@ Last verified: **February 20, 2026**.
 | `migrate` | Import from external runtimes (currently OpenClaw) |
 | `config` | Export machine-readable config schema |
 | `completions` | Generate shell completion scripts to stdout |
+| `auth` | Manage provider auth profiles and the local secret key |
 | `hardware` | Discover and introspect USB hardware |
 | `peripheral` | Configure and flash peripherals |
 
@@ -162,6 +163,24 @@ Skill manifests (`SKILL.toml`) support `prompts` and `[[tools]]`; both are injec
 - `zeroclaw peripheral flash [--port <serial_port>]`
 - `zeroclaw peripheral setup-uno-q [--host <ip_or_host>]`
 - `zeroclaw peripheral flash-nucleo`
+
+### `auth`
+
+- `zeroclaw auth login --provider openai-codex [--device-code]`
+- `zeroclaw auth paste-redirect --provider openai-codex [--input <URL_OR_CODE>]`
+- `zeroclaw auth paste-token --provider <ID> [--token <TOKEN>] [--auth-kind <KIND>]`
+- `zeroclaw auth setup-token --provider <ID>` *(alias for `paste-token`, interactive)*
+- `zeroclaw auth refresh --provider openai-codex [--profile <NAME>]`
+- `zeroclaw auth logout --provider <ID> [--profile <NAME>]`
+- `zeroclaw auth use --provider <ID> --profile <NAME>`
+- `zeroclaw auth list`
+- `zeroclaw auth status`
+- `zeroclaw auth reset-key [--yes]`
+
+`auth reset-key` manages the master secret key used to encrypt stored API keys and tokens:
+
+- Without `--yes`: prints the paths of the secret key file, config, and auth-profiles store so you can locate your credentials.
+- With `--yes`: deletes `~/.zeroclaw/.secret_key`. A fresh key is generated automatically on the next encryption operation. Any values already encrypted in `config.toml` or `auth-profiles.json` cannot be decrypted with the new key and must be re-entered (via `auth paste-token`, `onboard`, or by editing `config.toml` directly).
 
 ## Validation Tip
 
