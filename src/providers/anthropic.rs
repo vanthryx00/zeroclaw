@@ -19,7 +19,8 @@ struct ChatRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     system: Option<String>,
     messages: Vec<Message>,
-    temperature: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    temperature: Option<f64>,
 }
 
 #[derive(Debug, Serialize)]
@@ -48,9 +49,14 @@ struct NativeChatRequest<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     system: Option<SystemPrompt>,
     messages: Vec<NativeMessage>,
-    temperature: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    temperature: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     tools: Option<Vec<NativeToolSpec<'a>>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    thinking: Option<ThinkingConfig>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    output_config: Option<OutputConfig>,
 }
 
 #[derive(Debug, Serialize)]
@@ -106,6 +112,17 @@ impl CacheControl {
             cache_type: "ephemeral".to_string(),
         }
     }
+}
+
+#[derive(Debug, Serialize)]
+struct ThinkingConfig {
+    #[serde(rename = "type")]
+    kind: &'static str,
+}
+
+#[derive(Debug, Serialize)]
+struct OutputConfig {
+    effort: &'static str,
 }
 
 #[derive(Debug, Serialize)]
@@ -179,6 +196,14 @@ impl AnthropicProvider {
         } else {
             request.header("x-api-key", credential)
         }
+    }
+
+    fn is_opus_47(model: &str) -> bool {
+        model.contains("opus-4-7")
+    }
+
+    fn max_tokens_for_model(model: &str) -> u32 {
+        if Self::is_opus_47(model) { 16_000 } else { 8_192 }
     }
 
     /// Cache system prompts larger than ~1024 tokens (3KB of text)
@@ -421,13 +446,13 @@ impl Provider for AnthropicProvider {
 
         let request = ChatRequest {
             model: model.to_string(),
-            max_tokens: 4096,
+            max_tokens: Self::max_tokens_for_model(model),
             system: system_prompt.map(ToString::to_string),
             messages: vec![Message {
                 role: "user".to_string(),
                 content: message.to_string(),
             }],
-            temperature,
+            temperature: if Self::is_opus_47(model) { None } else { Some(temperature) },
         };
 
         let mut request = self
@@ -468,13 +493,16 @@ impl Provider for AnthropicProvider {
             Self::apply_cache_to_last_message(&mut messages);
         }
 
+        let opus_47 = Self::is_opus_47(model);
         let native_request = NativeChatRequest {
             model: model.to_string(),
-            max_tokens: 4096,
+            max_tokens: Self::max_tokens_for_model(model),
             system: system_prompt,
             messages,
-            temperature,
+            temperature: if opus_47 { None } else { Some(temperature) },
             tools: Self::convert_tools(request.tools),
+            thinking: if opus_47 { Some(ThinkingConfig { kind: "adaptive" }) } else { None },
+            output_config: if opus_47 { Some(OutputConfig { effort: "xhigh" }) } else { None },
         };
 
         let req = self
@@ -707,7 +735,7 @@ mod tests {
                 role: "user".to_string(),
                 content: "hello".to_string(),
             }],
-            temperature: 0.7,
+            temperature: Some(0.7),
         };
         let json = serde_json::to_string(&req).unwrap();
         assert!(
@@ -728,7 +756,7 @@ mod tests {
                 role: "user".to_string(),
                 content: "hello".to_string(),
             }],
-            temperature: 0.7,
+            temperature: Some(0.7),
         };
         let json = serde_json::to_string(&req).unwrap();
         assert!(json.contains("\"system\":\"You are ZeroClaw\""));
@@ -768,7 +796,7 @@ mod tests {
                 max_tokens: 4096,
                 system: None,
                 messages: vec![],
-                temperature: temp,
+                temperature: Some(temp),
             };
             let json = serde_json::to_string(&req).unwrap();
             assert!(json.contains(&format!("{temp}")));
@@ -1137,8 +1165,10 @@ mod tests {
                     cache_control: None,
                 }],
             }],
-            temperature: 0.7,
+            temperature: Some(0.7),
             tools: None,
+            thinking: None,
+            output_config: None,
         };
 
         let json = serde_json::to_string(&req).unwrap();
@@ -1151,6 +1181,63 @@ mod tests {
         let provider = AnthropicProvider::new(None);
         let result = provider.warmup().await;
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn is_opus_47_detects_model() {
+        assert!(AnthropicProvider::is_opus_47("claude-opus-4-7"));
+        assert!(AnthropicProvider::is_opus_47("claude-opus-4-7-20260101"));
+        assert!(!AnthropicProvider::is_opus_47("claude-opus-4-6"));
+        assert!(!AnthropicProvider::is_opus_47("claude-sonnet-4-6"));
+        assert!(!AnthropicProvider::is_opus_47("claude-3-opus"));
+    }
+
+    #[test]
+    fn max_tokens_for_opus_47() {
+        assert_eq!(AnthropicProvider::max_tokens_for_model("claude-opus-4-7"), 16_000);
+    }
+
+    #[test]
+    fn max_tokens_for_other_models() {
+        assert_eq!(AnthropicProvider::max_tokens_for_model("claude-opus-4-6"), 8_192);
+        assert_eq!(AnthropicProvider::max_tokens_for_model("claude-sonnet-4-6"), 8_192);
+        assert_eq!(AnthropicProvider::max_tokens_for_model("claude-3-opus"), 8_192);
+    }
+
+    #[test]
+    fn opus_47_native_request_omits_temperature_adds_thinking() {
+        let req = NativeChatRequest {
+            model: "claude-opus-4-7".to_string(),
+            max_tokens: 16_000,
+            system: None,
+            messages: vec![],
+            temperature: None,
+            tools: None,
+            thinking: Some(ThinkingConfig { kind: "adaptive" }),
+            output_config: Some(OutputConfig { effort: "xhigh" }),
+        };
+        let json = serde_json::to_string(&req).unwrap();
+        assert!(!json.contains("temperature"), "temperature must be omitted for Opus 4.7");
+        assert!(json.contains(r#""thinking":{"type":"adaptive"}"#));
+        assert!(json.contains(r#""output_config":{"effort":"xhigh"}"#));
+    }
+
+    #[test]
+    fn non_opus47_request_includes_temperature_no_thinking() {
+        let req = NativeChatRequest {
+            model: "claude-opus-4-6".to_string(),
+            max_tokens: 8_192,
+            system: None,
+            messages: vec![],
+            temperature: Some(0.7),
+            tools: None,
+            thinking: None,
+            output_config: None,
+        };
+        let json = serde_json::to_string(&req).unwrap();
+        assert!(json.contains("temperature"));
+        assert!(!json.contains("thinking"));
+        assert!(!json.contains("output_config"));
     }
 
     #[test]
