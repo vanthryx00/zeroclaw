@@ -49,28 +49,71 @@ elseif ($env:ANTHROPIC_API_KEY) { $Provider="anthropic"; $ApiKey=$env:ANTHROPIC_
 elseif ($env:CEREBRAS_API_KEY)  { $Provider="cerebras";  $ApiKey=$env:CEREBRAS_API_KEY;  $AiModel="llama-3.3-70b" }
 elseif ($env:SAMBANOVA_API_KEY) { $Provider="sambanova"; $ApiKey=$env:SAMBANOVA_API_KEY; $AiModel="Meta-Llama-3.3-70B-Instruct" }
 else {
-    warn "No API key found — setting up Ollama for offline use..."
-    if (-not (Get-Command ollama -EA SilentlyContinue)) {
-        warn "Downloading Ollama installer..."
-        $ins = "$env:TEMP\OllamaSetup.exe"
-        Invoke-WebRequest "https://ollama.com/download/OllamaSetup.exe" -OutFile $ins -UseBasicParsing
-        Start-Process $ins "/S" -Wait
-        Remove-Item $ins -Force -EA SilentlyContinue
-        $env:PATH += ";$env:LOCALAPPDATA\Programs\Ollama"
-    }
-    if (-not (Get-Process ollama -EA SilentlyContinue)) {
-        Start-Process ollama "serve" -WindowStyle Hidden
-        for ($i=0; $i -lt 15; $i++) {
-            Start-Sleep 2
-            try { if ((Invoke-WebRequest "http://localhost:11434/api/version" -UseBasicParsing -EA Stop).StatusCode -eq 200) { break } } catch {}
+    # ── Key setup wizard ──────────────────────────────────────────────────────
+    Clear-Host
+    Write-Host ""
+    Write-Host "  ┌─────────────────────────────────────────────────────────────┐" -ForegroundColor Cyan
+    Write-Host "  │   ZEROCLAW CODER — No API key found                         │" -ForegroundColor Cyan
+    Write-Host "  │                                                             │" -ForegroundColor Cyan
+    Write-Host "  │   FREE providers (get a key in 60 seconds):                 │" -ForegroundColor Cyan
+    Write-Host "  │                                                             │" -ForegroundColor Cyan
+    Write-Host "  │   1. GROQ       console.groq.com          (fastest, free)  │" -ForegroundColor White
+    Write-Host "  │   2. Cerebras   cloud.cerebras.ai         (fast, free)     │" -ForegroundColor White
+    Write-Host "  │   3. Anthropic  console.anthropic.com     ($5 credit)      │" -ForegroundColor White
+    Write-Host "  │   4. SambaNova  cloud.sambanova.ai        (free tier)      │" -ForegroundColor White
+    Write-Host "  │   5. Ollama     offline / no key needed   (slower, local)  │" -ForegroundColor DarkGray
+    Write-Host "  │                                                             │" -ForegroundColor Cyan
+    Write-Host "  └─────────────────────────────────────────────────────────────┘" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "  Paste your API key here (or press Enter to use Ollama offline):" -ForegroundColor Yellow -NoNewline
+    $enteredKey = Read-Host " "
+    $enteredKey = $enteredKey.Trim()
+
+    if ($enteredKey) {
+        Write-Host ""
+        Write-Host "  Which provider is this key for?" -ForegroundColor Cyan
+        Write-Host "    1. Groq  2. Cerebras  3. Anthropic  4. SambaNova" -ForegroundColor White
+        $pChoice = (Read-Host "  Pick 1-4").Trim()
+        switch ($pChoice) {
+            "2" { $Provider="cerebras";  $envName="CEREBRAS_API_KEY";  $AiModel="llama-3.3-70b" }
+            "3" { $Provider="anthropic"; $envName="ANTHROPIC_API_KEY"; $AiModel="claude-opus-4-7" }
+            "4" { $Provider="sambanova"; $envName="SAMBANOVA_API_KEY"; $AiModel="Meta-Llama-3.3-70B-Instruct" }
+            default { $Provider="groq";  $envName="GROQ_API_KEY";      $AiModel="llama-3.3-70b-versatile" }
         }
+        $ApiKey = $enteredKey
+        # Save permanently so future terminals pick it up automatically
+        [System.Environment]::SetEnvironmentVariable($envName, $enteredKey, "User")
+        # Apply to current session immediately (no restart needed)
+        Set-Item "env:$envName" $enteredKey
+        Write-Host ""
+        Write-Host "  Key saved permanently as $envName" -ForegroundColor Green
+        Write-Host "  Using $Provider / $AiModel" -ForegroundColor Green
+        Start-Sleep 1
+    } else {
+        # No key — fall back to Ollama
+        warn "No key entered — setting up Ollama for offline use..."
+        if (-not (Get-Command ollama -EA SilentlyContinue)) {
+            warn "Downloading Ollama installer..."
+            $ins = "$env:TEMP\OllamaSetup.exe"
+            Invoke-WebRequest "https://ollama.com/download/OllamaSetup.exe" -OutFile $ins -UseBasicParsing
+            Start-Process $ins "/S" -Wait
+            Remove-Item $ins -Force -EA SilentlyContinue
+            $env:PATH += ";$env:LOCALAPPDATA\Programs\Ollama"
+        }
+        if (-not (Get-Process ollama -EA SilentlyContinue)) {
+            Start-Process ollama "serve" -WindowStyle Hidden
+            for ($i=0; $i -lt 15; $i++) {
+                Start-Sleep 2
+                try { if ((Invoke-WebRequest "http://localhost:11434/api/version" -UseBasicParsing -EA Stop).StatusCode -eq 200) { break } } catch {}
+            }
+        }
+        $m = "qwen2.5-coder:7b"
+        if ((& ollama list 2>$null) -notlike "*qwen2.5-coder*") {
+            warn "Pulling $m (~4 GB, one-time)..."
+            & ollama pull $m
+        }
+        $Provider="ollama"; $AiModel=$m
     }
-    $m = "qwen2.5-coder:7b"
-    if ((& ollama list 2>$null) -notlike "*qwen2.5-coder*") {
-        warn "Pulling $m (~4 GB, one-time)..."
-        & ollama pull $m
-    }
-    $Provider="ollama"; $AiModel=$m
 }
 
 # ── AI call ───────────────────────────────────────────────────────────────────
