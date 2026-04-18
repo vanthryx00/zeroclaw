@@ -356,7 +356,152 @@ If `$$goal/week is not realistic in $hours hours at `$$Rate/hr, tell me what IS 
     Save-And-Print $planFile $result
 }
 
-# ── 5. Update settings ────────────────────────────────────────────────────────
+# ── 5. Resume builder ─────────────────────────────────────────────────────────
+function Do-Resume {
+    hi "`n── Resume Builder ──"
+    $exp  = Read-Host "Years of experience (or 0 if self-taught)"
+    $edu  = Read-Host "Education (e.g. 'CS degree', 'self-taught', 'bootcamp')"
+    $best = Read-Host "Your best project or thing you've built (describe it briefly)"
+    $tgt  = Read-Host "Target role (e.g. 'Python developer', 'freelance automation', 'full-stack')"
+
+    $resumeFile = "$WS\resume.md"
+    ok "Building your resume..."
+    $result = Ask-AI "Build a complete, professional resume for someone trying to break into paid work.
+
+MY BACKGROUND:
+- Skills: $Skills
+- Experience: $exp years
+- Education: $edu
+- Best project/work: $best
+- Target role: $tgt
+- Target rate: `$$Rate/hr
+
+Write a full resume in markdown with these sections:
+
+## SUMMARY (3 sentences)
+- What I do
+- My strongest technical skill with a specific example
+- What I'm looking for
+
+## SKILLS
+Group into categories (Languages, Frameworks, Tools, etc.)
+List everything from: $Skills — and infer related skills a developer with these skills would have
+
+## PROJECTS (3 entries, make them sound impressive)
+For each: name, 1-line description, tech stack, 2-3 bullet points of what it does/achieved
+If I mentioned a real project use it. Otherwise invent plausible ones based on my skills.
+
+## EXPERIENCE
+If $exp years > 0: write 1-2 experience entries with realistic bullet points
+If self-taught/0: write a 'Freelance Projects' section instead
+
+## EDUCATION
+Based on: $edu
+
+## CONTACT PLACEHOLDER
+[Your Name] | [email] | [GitHub URL] | [LinkedIn URL]
+
+After the resume write:
+## WHAT TO FILL IN
+Exactly which blanks I need to replace with real info"
+
+    Save-And-Print $resumeFile $result
+    ok "Resume saved. Edit $resumeFile to fill in your real name/email/links."
+}
+
+# ── 6. Freelance profile builder ──────────────────────────────────────────────
+function Do-Profile {
+    hi "`n── Freelance Profile Builder ──"
+    $platform = Read-Host "Platform (upwork / fiverr / toptal / linkedin)"
+    $niche    = Read-Host "Your niche (e.g. 'Python automation', 'React developer', 'data scraping')"
+
+    $dir = "$WS\profiles"; New-Item -ItemType Directory $dir -Force | Out-Null
+    $file = "$dir\$platform-$(Get-Date -Format yyyyMMdd).md"
+
+    ok "Writing your $platform profile..."
+    $result = Ask-AI "Write a complete, high-converting freelance profile for $platform.
+
+MY SKILLS: $Skills
+MY NICHE: $niche
+MY RATE: `$$Rate/hr
+PLATFORM: $platform
+
+Write every section I need to fill in on $platform:
+
+## HEADLINE / TITLE
+3 options, ranked. Each under 70 chars. Use power words. Mention the niche and a result.
+
+## PROFILE OVERVIEW / BIO (300-400 words)
+- Hook: open with the client's pain point, not 'I am a developer'
+- What I do and who I help
+- How I work (process, communication, reliability)
+- A specific result or project that proves I can deliver
+- Clear call to action
+Do NOT start with 'I'. Do NOT use phrases like 'passionate', 'hardworking', 'guru'.
+
+## SKILLS TAGS
+20 exact skill tags to add on $platform (match their autocomplete options)
+
+## PORTFOLIO PIECE DESCRIPTIONS
+3 project descriptions formatted for $platform portfolio section:
+- Project title
+- What the client needed
+- What I built
+- Result (use numbers where possible)
+
+## HOURLY RATE STRATEGY
+Given `$$Rate/hr target and my experience level, what should I charge to start, when to raise it, and how
+
+## FIRST 5 PROPOSALS
+The exact strategy for my first 5 bids: what job types to target, what to say, how to stand out with zero reviews"
+
+    Save-And-Print $file $result
+}
+
+# ── 7. Fiverr gig generator ───────────────────────────────────────────────────
+function Do-Gig {
+    hi "`n── Fiverr Gig Generator ──"
+    $service = Read-Host "What service will this gig offer? (e.g. 'Python web scraper', 'Discord bot', 'Excel automation')"
+
+    $dir = "$WS\gigs"; New-Item -ItemType Directory $dir -Force | Out-Null
+    $slug = ($service -replace '\s+','-').ToLower() + "-$(Get-Date -Format yyyyMMdd)"
+    $file = "$dir\$slug.md"
+
+    ok "Generating Fiverr gig..."
+    $result = Ask-AI "Create a complete, high-ranking Fiverr gig for this service: $service
+My skills: $Skills. My rate target: `$$Rate/hr.
+
+## GIG TITLE (3 options)
+Each under 80 chars. Include the main keyword. Focus on the result, not the technology.
+
+## CATEGORY & SUBCATEGORY
+Exact Fiverr category path to list this under
+
+## SEARCH TAGS
+5 tags (max 20 chars each) that buyers actually search for
+
+## GIG DESCRIPTION (750-900 words)
+Structure:
+- Line 1: Bold statement of what the buyer gets (not who I am)
+- What's included (bullet list)
+- Why choose me (specific, not generic)
+- My process (numbered steps, builds trust)
+- FAQ (3 questions buyers actually ask)
+- CTA: 'Message me before ordering so I can confirm I can help'
+
+## PACKAGES (Basic / Standard / Premium)
+For each: name, description, delivery time, revisions, price, what's included
+
+## GIG IMAGES
+3 image concepts that would make someone click (describe what to show, what text to overlay)
+
+## FIRST WEEK STRATEGY
+How to get the first order with zero reviews: pricing, promotion, buyer requests"
+
+    Save-And-Print $file $result
+}
+
+# ── 8. Update settings ────────────────────────────────────────────────────────
 function Do-Settings {
     hi "`n── Settings ──"
     $r = Read-Host "Hourly rate in USD [$Rate]"
@@ -369,9 +514,9 @@ function Do-Settings {
 
 # ── Main menu loop ────────────────────────────────────────────────────────────
 Write-Host ""
-hi "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+hi "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 hi "  HUSTLE MODE  —  AI income accelerator"
-hi "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+hi "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 Write-Host "  Provider : $Provider / $Model"
 Write-Host "  Workspace: $WS"
 Write-Host "  Rate     : `$$Rate/hr   Skills: $Skills"
@@ -382,8 +527,11 @@ while ($true) {
     Write-Host "  2.  Build a portfolio project"                -ForegroundColor White
     Write-Host "  3.  Create a job application package"         -ForegroundColor White
     Write-Host "  4.  Weekly income action plan"                -ForegroundColor White
-    Write-Host "  5.  Update skills + rate"                     -ForegroundColor White
-    Write-Host "  6.  Exit"                                     -ForegroundColor DarkGray
+    Write-Host "  5.  Build your resume from scratch"           -ForegroundColor White
+    Write-Host "  6.  Write your Upwork/Fiverr profile"         -ForegroundColor White
+    Write-Host "  7.  Generate a Fiverr gig listing"            -ForegroundColor White
+    Write-Host "  8.  Update skills + rate"                     -ForegroundColor DarkGray
+    Write-Host "  9.  Exit"                                     -ForegroundColor DarkGray
     Write-Host ""
     $choice = Read-Host "Choice"
 
@@ -392,10 +540,13 @@ while ($true) {
         "2" { Do-Build }
         "3" { Do-Apply }
         "4" { Do-Plan }
-        "5" { Do-Settings }
-        "6" { Write-Host "Good luck." -ForegroundColor Green; break }
-        default { bad "Enter 1-6" }
+        "5" { Do-Resume }
+        "6" { Do-Profile }
+        "7" { Do-Gig }
+        "8" { Do-Settings }
+        "9" { Write-Host "Good luck." -ForegroundColor Green; break }
+        default { bad "Enter 1-9" }
     }
-    if ($choice -eq "6") { break }
+    if ($choice -eq "9") { break }
     Write-Host ""
 }
