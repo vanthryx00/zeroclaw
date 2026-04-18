@@ -1,49 +1,57 @@
 # ============================================================
-#  ZEROCLAW CODER — AI coding partner, online + offline
-#  Paste into PowerShell and press Enter.
+#  ZEROCLAW CODER
+#  Online / offline / private AI coding partner
 #
-#  Works like Claude Code: you talk, it builds with you.
-#  Writes real files. Searches the web. Remembers your project.
+#  - Conversation list: every session saved, pick up anytime
+#  - Online:  Groq, Anthropic, Cerebras, SambaNova (free)
+#  - Offline: Ollama (auto-installs, no internet after setup)
+#  - Private: all history stays on YOUR machine only
 #
-#  Commands during chat:
-#    /search <query>     search the web for anything
-#    /read   <file>      load a file into the conversation
-#    /files              list files created this session
-#    /new    <name>      start a new project folder
-#    /clear              clear conversation (keep project)
-#    /quit               exit
+#  HOW TO RUN (PowerShell as Administrator):
+#    Set-ExecutionPolicy Bypass -Scope Process -Force
+#    iex (irm "https://raw.githubusercontent.com/vanthryx00/zeroclaw/claude/zeroclaw-api-optimization-TQH0u/scripts/coder-windows.ps1")
 #
-#  Free API keys (setx, then open a new terminal):
-#    setx GROQ_API_KEY      your-key   # console.groq.com  (fastest)
-#    setx CEREBRAS_API_KEY  your-key   # cloud.cerebras.ai
+#  FREE API KEYS — setx then open new terminal:
+#    setx GROQ_API_KEY      your-key   # console.groq.com
 #    setx ANTHROPIC_API_KEY your-key   # console.anthropic.com
+#    setx CEREBRAS_API_KEY  your-key   # cloud.cerebras.ai
+#
+#  COMMANDS DURING CHAT:
+#    /search <query>   search the web
+#    /read   <file>    load a file into context
+#    /files            list files built this session
+#    /save             save session now
+#    /sessions         go back to session list
+#    /quit             exit
 # ============================================================
 
 Set-StrictMode -Off
 $ErrorActionPreference = "Continue"
 $ProgressPreference    = "SilentlyContinue"
 
-# ── Workspace ─────────────────────────────────────────────────────────────────
-$WS = "$env:USERPROFILE\zeroclaw-projects"
-New-Item -ItemType Directory -Path $WS -Force | Out-Null
+# ── Paths ─────────────────────────────────────────────────────────────────────
+$WS       = "$env:USERPROFILE\zeroclaw-projects"
+$Sessions = "$WS\.sessions"
+foreach ($d in @($WS, $Sessions)) { New-Item -ItemType Directory $d -Force | Out-Null }
 
 # ── Colors ────────────────────────────────────────────────────────────────────
 function hi   { param([string]$t) Write-Host $t -ForegroundColor Cyan }
 function ok   { param([string]$t) Write-Host $t -ForegroundColor Green }
 function dim  { param([string]$t) Write-Host $t -ForegroundColor DarkGray }
 function warn { param([string]$t) Write-Host $t -ForegroundColor Yellow }
+function bold { param([string]$t) Write-Host $t -ForegroundColor White }
 
 # ── Provider setup ────────────────────────────────────────────────────────────
 $Provider = "none"; $ApiKey = ""; $AiModel = ""
 
-if     ($env:GROQ_API_KEY)      { $Provider="groq";      $ApiKey=$env:GROQ_API_KEY;      $AiModel="llama-3.3-70b-versatile"       }
-elseif ($env:ANTHROPIC_API_KEY) { $Provider="anthropic"; $ApiKey=$env:ANTHROPIC_API_KEY; $AiModel="claude-opus-4-7"              }
-elseif ($env:CEREBRAS_API_KEY)  { $Provider="cerebras";  $ApiKey=$env:CEREBRAS_API_KEY;  $AiModel="llama-3.3-70b"               }
+if     ($env:GROQ_API_KEY)      { $Provider="groq";      $ApiKey=$env:GROQ_API_KEY;      $AiModel="llama-3.3-70b-versatile" }
+elseif ($env:ANTHROPIC_API_KEY) { $Provider="anthropic"; $ApiKey=$env:ANTHROPIC_API_KEY; $AiModel="claude-opus-4-7" }
+elseif ($env:CEREBRAS_API_KEY)  { $Provider="cerebras";  $ApiKey=$env:CEREBRAS_API_KEY;  $AiModel="llama-3.3-70b" }
 elseif ($env:SAMBANOVA_API_KEY) { $Provider="sambanova"; $ApiKey=$env:SAMBANOVA_API_KEY; $AiModel="Meta-Llama-3.3-70B-Instruct" }
 else {
-    warn "No API key — installing Ollama (offline mode)..."
+    warn "No API key found — setting up Ollama for offline use..."
     if (-not (Get-Command ollama -EA SilentlyContinue)) {
-        warn "Downloading Ollama..."
+        warn "Downloading Ollama installer..."
         $ins = "$env:TEMP\OllamaSetup.exe"
         Invoke-WebRequest "https://ollama.com/download/OllamaSetup.exe" -OutFile $ins -UseBasicParsing
         Start-Process $ins "/S" -Wait
@@ -59,254 +67,322 @@ else {
     }
     $m = "qwen2.5-coder:7b"
     if ((& ollama list 2>$null) -notlike "*qwen2.5-coder*") {
-        warn "Pulling $m (~4 GB, one-time download)..."
+        warn "Pulling $m (~4 GB, one-time)..."
         & ollama pull $m
     }
     $Provider="ollama"; $AiModel=$m
 }
 
-# ── Core AI call (full conversation history) ──────────────────────────────────
+# ── AI call ───────────────────────────────────────────────────────────────────
 function Ask-AI {
-    param([array]$history)   # array of @{role=...; content=...}
-
+    param([array]$history)
     switch ($Provider) {
         "anthropic" {
-            # Pull system message out, rest are messages
             $sys  = ($history | Where-Object { $_.role -eq "system" } | Select-Object -Last 1).content
             $msgs = $history | Where-Object { $_.role -ne "system" }
-            $body = @{
-                model      = $AiModel
-                max_tokens = 8192
-                thinking   = @{type="adaptive"}
-                system     = $sys
-                messages   = $msgs
-            } | ConvertTo-Json -Depth 20
+            $body = @{ model=$AiModel; max_tokens=8192; thinking=@{type="adaptive"}; system=$sys; messages=$msgs } | ConvertTo-Json -Depth 20
             $r = Invoke-RestMethod "https://api.anthropic.com/v1/messages" -Method POST `
-                -Headers @{"x-api-key"=$ApiKey;"anthropic-version"="2023-06-01";"content-type"="application/json"} `
-                -Body $body
+                -Headers @{"x-api-key"=$ApiKey;"anthropic-version"="2023-06-01";"content-type"="application/json"} -Body $body
             return ($r.content | Where-Object { $_.type -eq "text" } | Select-Object -First 1).text
         }
         { $_ -in "groq","cerebras","sambanova" } {
-            $urls = @{groq="https://api.groq.com/openai/v1/chat/completions";cerebras="https://api.cerebras.ai/v1/chat/completions";sambanova="https://api.sambanova.ai/v1/chat/completions"}
-            $body = @{model=$AiModel; messages=$history; max_tokens=8192} | ConvertTo-Json -Depth 20
+            $urls = @{ groq="https://api.groq.com/openai/v1/chat/completions"; cerebras="https://api.cerebras.ai/v1/chat/completions"; sambanova="https://api.sambanova.ai/v1/chat/completions" }
+            $body = @{ model=$AiModel; messages=$history; max_tokens=8192 } | ConvertTo-Json -Depth 20
             $r = Invoke-RestMethod $urls[$Provider] -Method POST `
-                -Headers @{Authorization="Bearer $ApiKey";"Content-Type"="application/json"} -Body $body
+                -Headers @{ Authorization="Bearer $ApiKey"; "Content-Type"="application/json" } -Body $body
             return $r.choices[0].message.content
         }
         "ollama" {
-            $body = @{model=$AiModel; messages=$history; stream=$false} | ConvertTo-Json -Depth 20
+            $body = @{ model=$AiModel; messages=$history; stream=$false } | ConvertTo-Json -Depth 20
             $r = Invoke-RestMethod "http://localhost:11434/api/chat" -Method POST -ContentType "application/json" -Body $body
             return $r.message.content
         }
     }
 }
 
-# ── Web search via DuckDuckGo (no key needed) ─────────────────────────────────
+# ── Web search ────────────────────────────────────────────────────────────────
 function Search-Web {
     param([string]$query)
     try {
-        $enc = [System.Uri]::EscapeDataString($query)
-        # DuckDuckGo instant answers
-        $r = Invoke-RestMethod "https://api.duckduckgo.com/?q=$enc&format=json&no_redirect=1&no_html=1" -UseBasicParsing -EA Stop
+        $enc  = [System.Uri]::EscapeDataString($query)
+        $r    = Invoke-RestMethod "https://api.duckduckgo.com/?q=$enc&format=json&no_redirect=1&no_html=1" -UseBasicParsing -EA Stop
         $parts = @()
-        if ($r.AbstractText)  { $parts += $r.AbstractText }
-        if ($r.Answer)        { $parts += $r.Answer }
-        foreach ($t in ($r.RelatedTopics | Select-Object -First 5)) {
-            if ($t.Text) { $parts += "- " + $t.Text }
-        }
+        if ($r.AbstractText) { $parts += $r.AbstractText }
+        if ($r.Answer)       { $parts += $r.Answer }
+        $r.RelatedTopics | Select-Object -First 5 | ForEach-Object { if ($_.Text) { $parts += "- " + $_.Text } }
         if ($parts.Count -eq 0) {
-            # Fallback: scrape first result snippet from HTML
-            $html = (Invoke-WebRequest "https://html.duckduckgo.com/html/?q=$enc" -UseBasicParsing -EA Stop).Content
-            $matches2 = [regex]::Matches($html, '<a class="result__snippet"[^>]*>([^<]+)')
-            $parts = $matches2 | Select-Object -First 5 | ForEach-Object { "- " + $_.Groups[1].Value.Trim() }
+            $html   = (Invoke-WebRequest "https://html.duckduckgo.com/html/?q=$enc" -UseBasicParsing -EA Stop).Content
+            $parts  = [regex]::Matches($html, '<a class="result__snippet"[^>]*>([^<]+)') | Select-Object -First 5 | ForEach-Object { "- " + $_.Groups[1].Value.Trim() }
         }
-        return "Web search results for '$query':`n" + ($parts -join "`n")
-    } catch {
-        return "Web search failed: $_"
-    }
+        return "Search: '$query'`n" + ($parts -join "`n")
+    } catch { return "Search failed: $_" }
 }
 
-# ── Read a file ───────────────────────────────────────────────────────────────
-function Read-FileIntoContext {
-    param([string]$path)
-    if (-not $path) { $path = Read-Host "File path" }
-    if (-not (Test-Path $path)) {
-        # Try relative to project dir
-        $path = Join-Path $ProjectDir $path
-    }
-    if (Test-Path $path) {
-        $content = Get-Content $path -Raw -Encoding UTF8
-        return "Contents of $path`:`n``````n$content`n``````"
-    }
-    return "File not found: $path"
-}
-
-# ── Extract and save code blocks from AI response ─────────────────────────────
-function Extract-And-Save {
+# ── Code block saver ──────────────────────────────────────────────────────────
+function Save-CodeBlocks {
     param([string]$response, [string]$projectDir)
-
-    # Find all fenced code blocks: ```lang\ncode\n```
-    $pattern = '```(?:(\w+)\n)?([\s\S]*?)```'
-    $matches2 = [regex]::Matches($response, $pattern)
-
-    foreach ($m in $matches2) {
-        $lang = $m.Groups[1].Value
-        $code = $m.Groups[2].Value.Trim()
-        if ($code.Length -lt 10) { continue }   # skip tiny snippets
-
+    [regex]::Matches($response, '```(?:(\w+)\n)?([\s\S]*?)```') | ForEach-Object {
+        $lang = $_.Groups[1].Value
+        $code = $_.Groups[2].Value.Trim()
+        if ($code.Length -lt 10) { return }
         Write-Host ""
-        Write-Host "─── Code block ($lang) ───────────────────────" -ForegroundColor DarkCyan
-        Write-Host ($code | Select-Object -First 20 | Out-String).TrimEnd()
-        if ($code.Split("`n").Count -gt 20) { dim "  ... ($(($code.Split("`n").Count - 20)) more lines)" }
+        Write-Host "─── Code ($lang) ─────────────────────────────" -ForegroundColor DarkCyan
+        $lines = $code.Split("`n")
+        $lines | Select-Object -First 25 | ForEach-Object { Write-Host $_ }
+        if ($lines.Count -gt 25) { dim "  ... ($($lines.Count - 25) more lines)" }
         Write-Host "──────────────────────────────────────────────" -ForegroundColor DarkCyan
-
-        $filename = Read-Host "  💾 Save as (e.g. app.py) or Enter to skip"
-        if ($filename) {
-            $dest = Join-Path $projectDir $filename
-            New-Item -ItemType Directory -Path (Split-Path $dest) -Force | Out-Null
-            Set-Content -Path $dest -Value $code -Encoding UTF8
-            ok "  ✓ Saved: $dest"
+        $f = Read-Host "  Save as (e.g. app.py) or Enter to skip"
+        if ($f) {
+            $dest = Join-Path $projectDir $f
+            New-Item -ItemType Directory (Split-Path $dest) -Force | Out-Null
+            Set-Content $dest $code -Encoding UTF8
+            ok "  Saved: $dest"
             $script:SessionFiles += $dest
         }
     }
 }
 
-# ── Session state ─────────────────────────────────────────────────────────────
-$ProjectName  = "project"
-$ProjectDir   = "$WS\$ProjectName"
-New-Item -ItemType Directory -Path $ProjectDir -Force | Out-Null
-$SessionFiles = @()
+# ── Session persistence ───────────────────────────────────────────────────────
+function Save-Session {
+    param([string]$sessionFile, [string]$name, [string]$project, [array]$history, [array]$files)
+    $data = @{
+        name    = $name
+        project = $project
+        saved   = (Get-Date -Format "o")
+        files   = $files
+        history = $history
+    }
+    $data | ConvertTo-Json -Depth 20 | Set-Content $sessionFile -Encoding UTF8
+}
 
-$SystemPrompt = "You are an expert software engineer and coding partner. The user is building software and needs your help writing real, working code.
+function Load-Session {
+    param([string]$sessionFile)
+    $data = Get-Content $sessionFile -Raw | ConvertFrom-Json
+    return $data
+}
 
-Rules:
-- Write COMPLETE, working code. No placeholder comments, no TODOs in the main path.
-- When writing code always use fenced code blocks with the language tag (e.g. \`\`\`python).
-- After writing code, briefly explain what it does and what to do next.
-- If the user asks you to search the web, you will receive search results — use them.
-- If the user shares file contents, incorporate them into your understanding.
-- Be direct. Don't over-explain. Keep momentum going.
-- Always suggest the next logical step after completing something.
+function Get-Sessions {
+    Get-ChildItem "$Sessions\*.json" -EA SilentlyContinue | Sort-Object LastWriteTime -Descending
+}
 
-Project folder: $ProjectDir
-Files created so far will be listed in the conversation."
+function Format-TimeAgo {
+    param([datetime]$dt)
+    $diff = (Get-Date) - $dt
+    if     ($diff.TotalMinutes -lt 1)  { return "just now" }
+    elseif ($diff.TotalHours   -lt 1)  { return "$([int]$diff.TotalMinutes)m ago" }
+    elseif ($diff.TotalDays    -lt 1)  { return "$([int]$diff.TotalHours)h ago" }
+    elseif ($diff.TotalDays    -lt 7)  { return "$([int]$diff.TotalDays)d ago" }
+    else                               { return $dt.ToString("MMM dd") }
+}
 
-$History = @(@{role="system"; content=$SystemPrompt})
+# ── Session list screen ───────────────────────────────────────────────────────
+function Show-SessionList {
+    Clear-Host
+    hi "╔══════════════════════════════════════════════════╗"
+    hi "║   ZEROCLAW CODER  —  private AI coding partner  ║"
+    hi "╚══════════════════════════════════════════════════╝"
+    Write-Host "  Provider : $Provider / $AiModel" -ForegroundColor White
+    Write-Host "  Storage  : $Sessions" -ForegroundColor DarkGray
+    Write-Host ""
 
-# ── Header ────────────────────────────────────────────────────────────────────
-Clear-Host
-hi "╔══════════════════════════════════════════╗"
-hi "║   ZEROCLAW CODER  —  AI coding partner  ║"
-hi "╚══════════════════════════════════════════╝"
-Write-Host "  Provider : $Provider / $AiModel" -ForegroundColor White
-Write-Host "  Project  : $ProjectDir"           -ForegroundColor White
-Write-Host ""
-dim "  Commands: /search <query>  /read <file>  /files  /new <name>  /clear  /quit"
-dim "  Just talk to start coding. Tell it what you want to build."
-Write-Host ""
-
-# ── Main chat loop ────────────────────────────────────────────────────────────
-while ($true) {
-    # Prompt
-    Write-Host "You: " -ForegroundColor Green -NoNewline
-    $input = Read-Host
-
-    if (-not $input.Trim()) { continue }
-
-    # ── Slash commands ────────────────────────────────────────────────────────
-    if ($input.StartsWith("/")) {
-        $parts = $input -split "\s+", 2
-        $cmd   = $parts[0].ToLower()
-        $arg   = if ($parts.Count -gt 1) { $parts[1] } else { "" }
-
-        switch ($cmd) {
-            "/quit" {
-                Write-Host ""
-                ok "Session ended. Your files are in: $ProjectDir"
-                if ($SessionFiles.Count -gt 0) {
-                    dim "Files created this session:"
-                    $SessionFiles | ForEach-Object { dim "  $_" }
-                }
-                exit
+    $files = Get-Sessions
+    if ($files.Count -eq 0) {
+        dim "  No past sessions yet."
+    } else {
+        bold "  Past conversations:"
+        Write-Host ""
+        $i = 1
+        foreach ($f in $files) {
+            try {
+                $d     = Get-Content $f.FullName -Raw | ConvertFrom-Json
+                $msgs  = ($d.history | Where-Object { $_.role -eq "user" }).Count
+                $ago   = Format-TimeAgo $f.LastWriteTime
+                Write-Host ("  {0,2}.  {1,-32} {2,4} msgs   {3}" -f $i, $d.name, $msgs, $ago) -ForegroundColor White
+            } catch {
+                Write-Host ("  {0,2}.  {1}" -f $i, $f.Name) -ForegroundColor White
             }
-            "/files" {
-                if ($SessionFiles.Count -eq 0) { dim "No files saved yet this session." }
-                else { $SessionFiles | ForEach-Object { ok "  $_" } }
-                continue
-            }
-            "/clear" {
-                $History = @(@{role="system"; content=$SystemPrompt})
-                warn "Conversation cleared (project and files kept)."
-                continue
-            }
-            "/new" {
-                $ProjectName = if ($arg) { $arg } else { Read-Host "Project name" }
-                $ProjectDir  = "$WS\$ProjectName"
-                New-Item -ItemType Directory -Path $ProjectDir -Force | Out-Null
-                $SystemPrompt = $SystemPrompt -replace "Project folder:.*", "Project folder: $ProjectDir"
-                $History = @(@{role="system"; content=$SystemPrompt})
-                $SessionFiles = @()
-                ok "Started project: $ProjectDir"
-                continue
-            }
-            "/search" {
-                if (-not $arg) { $arg = Read-Host "Search query" }
-                warn "Searching: $arg ..."
-                $searchResult = Search-Web $arg
-                dim $searchResult
-                # Feed into conversation
-                $History += @{role="user"; content="[Web search for: $arg]`n$searchResult`n`nNow use these results to help me."}
-                $reply = Ask-AI $History
-                $History += @{role="assistant"; content=$reply}
-                Write-Host ""
-                Write-Host $reply
-                Extract-And-Save $reply $ProjectDir
-                continue
-            }
-            "/read" {
-                $fileContent = Read-FileIntoContext $arg
-                dim $fileContent
-                $History += @{role="user"; content=$fileContent}
-                ok "File loaded into conversation."
-                continue
-            }
-            default {
-                warn "Unknown command: $cmd"
-                continue
-            }
+            $i++
         }
     }
 
-    # ── Regular message — send to AI ──────────────────────────────────────────
-    $History += @{role="user"; content=$input}
-
     Write-Host ""
-    Write-Host "AI: " -ForegroundColor Cyan -NoNewline
-    warn "(thinking...)"
+    bold "   N.  New conversation"
+    Write-Host ""
+    $choice = Read-Host "  Pick a number or N"
+    return @{ files=$files; choice=$choice }
+}
 
-    try {
-        $reply = Ask-AI $History
-    } catch {
-        warn "Error: $_"
-        $History = $History[0..($History.Count-2)]   # remove failed user message
-        continue
+# ── Main program loop ─────────────────────────────────────────────────────────
+function Start-Chat {
+    param([string]$sessionFile = "", [string]$sessionName = "", [string]$projectDir = "")
+
+    $SessionFiles = @()
+    $History      = @()
+    $isNew        = $true
+
+    if ($sessionFile -and (Test-Path $sessionFile)) {
+        # Resume existing session
+        $data         = Load-Session $sessionFile
+        $sessionName  = $data.name
+        $projectDir   = $data.project
+        $SessionFiles = @($data.files)
+        # Rebuild history array from saved data
+        $History = $data.history | ForEach-Object { @{ role=$_.role; content=$_.content } }
+        $isNew   = $false
+        ok "Resumed: $sessionName"
+    } else {
+        # New session
+        if (-not $sessionName) {
+            Write-Host ""
+            Write-Host "  Session name (e.g. 'discord bot', 'my portfolio'): " -ForegroundColor Cyan -NoNewline
+            $sessionName = Read-Host
+            if (-not $sessionName) { $sessionName = "session-$(Get-Date -Format yyyyMMdd-HHmm)" }
+        }
+        $slug       = ($sessionName -replace '[^\w]','-').ToLower()
+        $projectDir = "$WS\$slug"
+        New-Item -ItemType Directory $projectDir -Force | Out-Null
+        $sessionFile = "$Sessions\$(Get-Date -Format yyyyMMdd-HHmmss)-$slug.json"
+
+        $sysPrompt = "You are an expert software engineer and coding partner. The user is building real software.
+
+Rules:
+- Write COMPLETE working code. No TODOs, no placeholder stubs in the main path.
+- Always wrap code in fenced blocks with the language tag (```python, ```js, etc).
+- After writing code explain briefly what it does and what the next step is.
+- If web search results are provided, use them.
+- If a file is shared, read it and incorporate it.
+- Be direct and keep momentum going.
+- Remember everything from this conversation.
+
+Project: $sessionName
+Files go in: $projectDir"
+
+        $History = @(@{ role="system"; content=$sysPrompt })
     }
 
-    # Clear the "thinking" line and print reply
-    Write-Host "`r    `r" -NoNewline
+    Clear-Host
+    hi "╔══════════════════════════════════════════════════╗"
+    hi "║   ZEROCLAW CODER                                 ║"
+    hi "╚══════════════════════════════════════════════════╝"
+    Write-Host "  Session  : $sessionName" -ForegroundColor White
+    Write-Host "  Project  : $projectDir"  -ForegroundColor White
+    Write-Host "  Provider : $Provider / $AiModel" -ForegroundColor DarkGray
     Write-Host ""
-    Write-Host "AI: " -ForegroundColor Cyan
-    Write-Host $reply
+    dim "  /search <q>  /read <file>  /files  /save  /sessions  /quit"
+    if (-not $isNew) {
+        $userMsgs = ($History | Where-Object { $_.role -eq "user" }).Count
+        dim "  Loaded $userMsgs past messages. Keep going where you left off."
+    }
     Write-Host ""
 
-    # Add to history
-    $History += @{role="assistant"; content=$reply}
+    while ($true) {
+        Write-Host "You: " -ForegroundColor Green -NoNewline
+        $userInput = Read-Host
+        if (-not $userInput.Trim()) { continue }
 
-    # Trim history to last 20 exchanges (keep system prompt)
-    if ($History.Count -gt 42) {
-        $History = @($History[0]) + $History[($History.Count-40)..$History.Count]
+        # ── Slash commands ────────────────────────────────────────────────────
+        if ($userInput.StartsWith("/")) {
+            $parts = $userInput -split "\s+", 2
+            $cmd   = $parts[0].ToLower()
+            $arg   = if ($parts.Count -gt 1) { $parts[1] } else { "" }
+
+            switch ($cmd) {
+                "/quit" {
+                    Save-Session $sessionFile $sessionName $projectDir $History $SessionFiles
+                    Write-Host ""
+                    ok "Saved. Goodbye."
+                    return "quit"
+                }
+                "/sessions" {
+                    Save-Session $sessionFile $sessionName $projectDir $History $SessionFiles
+                    ok "Saved. Going to session list..."
+                    return "sessions"
+                }
+                "/save" {
+                    Save-Session $sessionFile $sessionName $projectDir $History $SessionFiles
+                    ok "Session saved."
+                    continue
+                }
+                "/files" {
+                    if ($SessionFiles.Count -eq 0) { dim "No files saved yet." }
+                    else { $SessionFiles | ForEach-Object { ok "  $_" } }
+                    continue
+                }
+                "/search" {
+                    if (-not $arg) { $arg = Read-Host "Search for" }
+                    warn "Searching: $arg ..."
+                    $sr = Search-Web $arg
+                    dim $sr
+                    $History += @{ role="user"; content="[Web search: $arg]`n$sr`nUse these results to help." }
+                    Write-Host ""; warn "Thinking..."
+                    $reply = Ask-AI $History
+                    $History += @{ role="assistant"; content=$reply }
+                    Write-Host "`r             `r" -NoNewline
+                    Write-Host ""; hi "AI:"; Write-Host $reply; Write-Host ""
+                    Save-CodeBlocks $reply $projectDir
+                    Save-Session $sessionFile $sessionName $projectDir $History $SessionFiles
+                    continue
+                }
+                "/read" {
+                    $p = if ($arg) { $arg } else { Read-Host "File path" }
+                    if (-not (Test-Path $p)) { $p = Join-Path $projectDir $p }
+                    if (Test-Path $p) {
+                        $fc = "File: $p`n``````n" + (Get-Content $p -Raw -Encoding UTF8) + "`n``````"
+                        $History += @{ role="user"; content=$fc }
+                        ok "Loaded: $p"
+                    } else { warn "Not found: $p" }
+                    continue
+                }
+                default { warn "Unknown command. Try /search /read /files /save /sessions /quit"; continue }
+            }
+        }
+
+        # ── Send to AI ────────────────────────────────────────────────────────
+        $History += @{ role="user"; content=$userInput }
+        Write-Host ""; warn "Thinking..."
+
+        try {
+            $reply = Ask-AI $History
+        } catch {
+            warn "Error calling AI: $_"
+            $History = $History[0..($History.Count - 2)]
+            continue
+        }
+
+        Write-Host "`r             `r" -NoNewline
+        Write-Host ""; hi "AI:"
+        Write-Host $reply
+        Write-Host ""
+
+        $History += @{ role="assistant"; content=$reply }
+
+        # Keep last 40 messages + system prompt to avoid token overflow
+        if ($History.Count -gt 42) {
+            $History = @($History[0]) + $History[($History.Count - 40)..($History.Count - 1)]
+        }
+
+        Save-CodeBlocks $reply $projectDir
+        Save-Session $sessionFile $sessionName $projectDir $History $SessionFiles
+    }
+}
+
+# ── Entry point: session list loop ────────────────────────────────────────────
+while ($true) {
+    $result = Show-SessionList
+    $files  = $result.files
+    $choice = $result.choice
+
+    if ($choice -match '^\d+$') {
+        $idx = [int]$choice - 1
+        if ($idx -ge 0 -and $idx -lt $files.Count) {
+            $action = Start-Chat -sessionFile $files[$idx].FullName
+            if ($action -eq "quit") { break }
+            # else "sessions" — loop back to list
+            continue
+        }
     }
 
-    # Offer to save any code blocks
-    Extract-And-Save $reply $ProjectDir
+    # N or anything else = new session
+    $action = Start-Chat
+    if ($action -eq "quit") { break }
 }
