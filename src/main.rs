@@ -69,6 +69,7 @@ mod memory;
 mod migration;
 mod multimodal;
 mod observability;
+mod offline;
 mod onboard;
 mod peripherals;
 mod providers;
@@ -193,6 +194,50 @@ Examples:
         /// Attach a peripheral (board:path, e.g. nucleo-f401re:/dev/ttyACM0)
         #[arg(long)]
         peripheral: Vec<String>,
+    },
+
+    /// Run the offline Empire agent — persistent mindset, goals, multi-provider fallback
+    #[command(long_about = "\
+Run the offline Empire agent.
+
+An autonomous agent that holds persistent goals (Empire), remembers conversations \
+across sessions via SQLite memory, and works with a cascading provider chain:
+  Anthropic (Claude) → Gemini → Ollama (fully offline).
+
+The agent loads a mindset from <workspace>/mindset.toml and goal state from \
+<workspace>/empire.toml. Both files are created with defaults on first run.
+
+Slash commands inside the session:
+  /status           — show Empire goal summary
+  /goal <t> | <d>   — add a new goal (title | description)
+  /done <ID>         — mark goal done
+  /active <ID>       — mark goal active
+  /blocked <ID>      — mark goal blocked
+  /note <ID> <text>  — append note to goal
+  /mindset           — show current mindset
+  /quit              — save and exit
+
+Examples:
+  zeroclaw empire
+  zeroclaw empire --provider gemini
+  zeroclaw empire --provider ollama --model llama3.2
+  zeroclaw empire --mission \"Ship v1.0 of ZeroClaw Empire\" -m \"What are our top priorities?\"")]
+    Empire {
+        /// Single message mode (skip interactive loop)
+        #[arg(short, long)]
+        message: Option<String>,
+
+        /// Primary provider (anthropic, gemini, ollama, auto). Default: anthropic
+        #[arg(short, long)]
+        provider: Option<String>,
+
+        /// Model override
+        #[arg(long)]
+        model: Option<String>,
+
+        /// Set or update the Empire mission statement
+        #[arg(long)]
+        mission: Option<String>,
     },
 
     /// Start the gateway server (webhooks, websockets)
@@ -817,6 +862,13 @@ async fn main() -> Result<()> {
         } => agent::run(config, message, provider, model, temperature, peripheral)
             .await
             .map(|_| ()),
+
+        Commands::Empire {
+            message,
+            provider,
+            model,
+            mission,
+        } => offline::runner::run(config, provider, model, mission, message).await,
 
         Commands::Gateway { port, host } => {
             let port = port.unwrap_or(config.gateway.port);

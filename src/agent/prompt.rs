@@ -49,6 +49,13 @@ impl SystemPromptBuilder {
         self
     }
 
+    /// Insert a section at position 0, before all default sections.
+    pub fn with_defaults_preceded_by(section: Box<dyn PromptSection>) -> Self {
+        let mut builder = Self::with_defaults();
+        builder.sections.insert(0, section);
+        builder
+    }
+
     pub fn build(&self, ctx: &PromptContext<'_>) -> Result<String> {
         let mut output = String::new();
         for section in &self.sections {
