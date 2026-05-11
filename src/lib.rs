@@ -58,6 +58,7 @@ pub(crate) mod migration;
 pub(crate) mod multimodal;
 pub mod observability;
 pub mod offline;
+pub mod companion;
 pub(crate) mod onboard;
 pub mod peripherals;
 pub mod providers;

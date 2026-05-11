@@ -217,7 +217,7 @@ pub async fn run(
 /// - Sets provider fallback chain: primary → remaining in PROVIDER_CHAIN
 /// - Enables SQLite memory with auto-save
 /// - Disables features not needed for offline operation
-fn build_empire_config(
+pub fn build_empire_config(
     mut config: Config,
     provider_override: Option<String>,
     model_override: Option<String>,
@@ -262,7 +262,7 @@ fn build_empire_config(
 }
 
 /// Construct an Agent with the MindsetSection prepended to the system prompt.
-fn build_empire_agent(config: &Config, mindset: &Mindset) -> Result<Agent> {
+pub fn build_empire_agent(config: &Config, mindset: &Mindset) -> Result<Agent> {
     let observer: std::sync::Arc<dyn observability::Observer> =
         std::sync::Arc::from(observability::create_observer(&config.observability));
     let runtime: std::sync::Arc<dyn crate::runtime::RuntimeAdapter> =

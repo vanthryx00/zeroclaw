@@ -67,6 +67,7 @@ mod identity;
 mod integrations;
 mod memory;
 mod migration;
+mod companion;
 mod multimodal;
 mod observability;
 mod offline;
@@ -238,6 +239,48 @@ Examples:
         /// Set or update the Empire mission statement
         #[arg(long)]
         mission: Option<String>,
+    },
+
+    /// Run the autonomous desktop companion (executes daily tasks in the background)
+    #[command(long_about = "\
+Run the autonomous desktop companion.
+
+Continuously executes tasks from <workspace>/companion_tasks.toml on configurable
+intervals. Each task sends a prompt to the AI agent, which can read/write files,
+run shell commands, and track Empire goals — all autonomously (ao).
+
+Provider fallback chain: Anthropic → Gemini → Ollama (offline).
+Results are logged to <workspace>/companion.log and surfaced as OS desktop
+notifications (notify-send / osascript) or terminal output.
+
+A default task list is written on first run covering:
+  - Morning Briefing (daily)
+  - Code Health Check (hourly)
+  - Progress Note (every 6 hours)
+
+Edit companion_tasks.toml to add, remove, or tune tasks.
+
+Examples:
+  zeroclaw companion                           # run forever, auto-sleep between tasks
+  zeroclaw companion --once                    # run all due tasks once and exit (for cron)
+  zeroclaw companion --provider ollama         # fully offline
+  zeroclaw companion --interval 300            # force 5-minute check interval")]
+    Companion {
+        /// Provider to use (anthropic, gemini, ollama). Default: anthropic
+        #[arg(short, long)]
+        provider: Option<String>,
+
+        /// Model override
+        #[arg(long)]
+        model: Option<String>,
+
+        /// Override the sleep interval between task checks (seconds)
+        #[arg(long)]
+        interval: Option<u64>,
+
+        /// Run all due tasks once and exit (useful with cron/launchd)
+        #[arg(long)]
+        once: bool,
     },
 
     /// Start the gateway server (webhooks, websockets)
@@ -869,6 +912,13 @@ async fn main() -> Result<()> {
             model,
             mission,
         } => offline::runner::run(config, provider, model, mission, message).await,
+
+        Commands::Companion {
+            provider,
+            model,
+            interval,
+            once,
+        } => companion::runner::run(config, provider, model, interval, once).await,
 
         Commands::Gateway { port, host } => {
             let port = port.unwrap_or(config.gateway.port);
