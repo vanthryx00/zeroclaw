@@ -39,6 +39,7 @@ fn create_cli_memory(config: &Config) -> Result<Box<dyn Memory>> {
         MemoryBackendKind::None => {
             bail!("Memory backend is 'none' (disabled). No entries to manage.");
         }
+        #[cfg(feature = "memory-postgres")]
         MemoryBackendKind::Postgres => {
             #[cfg(feature = "memory-postgres")]
             {
@@ -63,6 +64,12 @@ fn create_cli_memory(config: &Config) -> Result<Box<dyn Memory>> {
             bail!(
                 "memory backend 'postgres' requested but this build was compiled without \
                  `memory-postgres`; rebuild with `--features memory-postgres`"
+            );
+        }
+        #[cfg(not(feature = "memory-postgres"))]
+        MemoryBackendKind::Postgres => {
+            anyhow::bail!(
+                "memory backend 'postgres' requires the 'memory-postgres' feature to be enabled at compile time"
             );
         }
         _ => create_memory_for_migration(&backend, &config.workspace_dir),
