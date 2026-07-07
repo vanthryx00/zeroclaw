@@ -25,6 +25,9 @@ Key extension points:
 - `src/observability/traits.rs` (`Observer`)
 - `src/runtime/traits.rs` (`RuntimeAdapter`)
 - `src/peripherals/traits.rs` (`Peripheral`) — hardware boards (STM32, RPi GPIO)
+- `src/security/traits.rs` (`Sandbox`) — process/tool execution isolation backends
+
+The repository is a Cargo workspace: the root `zeroclaw` binary/library plus `crates/robot-kit` (Raspberry Pi 5 robot-kit peripheral bundle). A companion Python package lives at `python/zeroclaw_tools` (packaged via `python/pyproject.toml`) for tool integrations outside the Rust runtime.
 
 ## 2) Deep Architecture Observations (Why This Protocol Exists)
 
@@ -132,20 +135,42 @@ Required:
 
 ## 4) Repository Map (High-Level)
 
-- `src/main.rs` — CLI entrypoint and command routing
+- `src/main.rs` — CLI entrypoint and command routing (clap `Subcommand` trees)
 - `src/lib.rs` — module exports and shared command enums
 - `src/config/` — schema + config loading/merging
 - `src/agent/` — orchestration loop
 - `src/gateway/` — webhook/gateway server
-- `src/security/` — policy, pairing, secret store
+- `src/security/` — policy, pairing, secret store, `Sandbox` trait (Landlock/bubblewrap backends)
 - `src/memory/` — markdown/sqlite memory backends + embeddings/vector merge
 - `src/providers/` — model providers and resilient wrapper
 - `src/channels/` — Telegram/Discord/Slack/etc channels
 - `src/tools/` — tool execution surface (shell, file, memory, browser)
 - `src/peripherals/` — hardware peripherals (STM32, RPi GPIO); see `docs/hardware-peripherals-design.md`
+- `src/hardware/` — USB device discovery/introspection + board registry (feature `hardware`)
 - `src/runtime/` — runtime adapters (currently native)
+- `src/approval/` — interactive pre-execution approval workflow for supervised mode (session allowlists + audit log)
+- `src/auth/` — provider OAuth/token flows (Anthropic, OpenAI) and auth profiles
+- `src/cost/` — token/cost tracking and accounting
+- `src/cron/` — scheduled task engine (schedule parsing, scheduler, persistent store)
+- `src/daemon/` — background daemon process lifecycle
+- `src/service/` — OS service management (systemd/init integration) backing the `service` CLI subcommands
+- `src/doctor/` — `doctor` diagnostic command (environment/config/dependency checks)
+- `src/health/` — health-check endpoints/logic
+- `src/heartbeat/` — periodic heartbeat engine
+- `src/integrations/` — external integration registry and status tracking
+- `src/onboard/` — first-run onboarding wizard
+- `src/rag/` — RAG pipeline for hardware datasheet retrieval (markdown/text always; PDF via `rag-pdf` feature; pin/alias lookup tables)
+- `src/skills/` — user/community skill definitions (`~/.zeroclaw/workspace/skills/<name>/SKILL.md`)
+- `src/skillforge/` — skill auto-discovery/evaluation/integration pipeline (Scout → Evaluate → Integrate); binary-only (wired from `main.rs`, not `lib.rs`)
+- `src/tunnel/` — outbound tunnel providers (cloudflare, ngrok, tailscale, custom, none) for exposing the gateway
+- `crates/robot-kit/` — workspace member for the Raspberry Pi 5 robot-kit peripheral bundle
+- `python/zeroclaw_tools/` — companion Python package for tool integrations outside the Rust runtime
 - `docs/` — task-oriented documentation system (hubs, unified TOC, references, operations, security proposals, multilingual guides)
 - `.github/` — CI, templates, automation workflows
+- `dev/` — local Docker-based CI (`dev/ci.sh`), sandbox configs
+- `scripts/ci/` — CI gate scripts (binary size, docs links/quality, rust quality/strict-delta gates)
+- `fuzz/` — cargo-fuzz targets (provider response, webhook payload, config parse, tool params, command validation)
+- `benches/` — Criterion-style agent benchmarks
 
 ## 4.1 Documentation System Contract (Required)
 
@@ -153,8 +178,8 @@ Treat documentation as a first-class product surface, not a post-merge artifact.
 
 Canonical entry points:
 
-- root READMEs: `README.md`, `README.zh-CN.md`, `README.ja.md`, `README.ru.md`
-- docs hubs: `docs/README.md`, `docs/README.zh-CN.md`, `docs/README.ja.md`, `docs/README.ru.md`
+- root READMEs: `README.md`, `README.zh-CN.md`, `README.ja.md`, `README.ru.md`, `README.fr.md`, `README.vi.md`
+- docs hubs: `docs/README.md`, `docs/README.zh-CN.md`, `docs/README.ja.md`, `docs/README.ru.md`, `docs/README.fr.md`, `docs/README.vi.md`
 - unified TOC: `docs/SUMMARY.md`
 
 Collection indexes (category navigation):
@@ -180,7 +205,7 @@ Runtime-contract references (must track behavior changes):
 Required docs governance rules:
 
 - Keep README/hub top navigation and quick routes intuitive and non-duplicative.
-- Keep EN/ZH/JA/RU entry-point parity when changing navigation architecture.
+- Keep EN/ZH/JA/RU/FR/VI entry-point parity when changing navigation architecture.
 - Keep proposal/roadmap docs explicitly labeled; avoid mixing proposal text into runtime-contract docs.
 - Keep project snapshots date-stamped and immutable once superseded by a newer date.
 
@@ -208,7 +233,7 @@ When uncertain, classify as higher risk.
 5. **Document impact**
     - Update docs/PR notes for behavior, risk, side effects, and rollback.
     - If CLI/config/provider/channel behavior changed, update corresponding runtime-contract references.
-    - If docs entry points changed, keep EN/ZH/JA/RU README + docs-hub navigation aligned.
+    - If docs entry points changed, keep EN/ZH/JA/RU/FR/VI README + docs-hub navigation aligned.
 6. **Respect queue hygiene**
     - If stacked PR: declare `Depends on #...`.
     - If replacing old PR: declare `Supersedes #...`.
@@ -296,9 +321,8 @@ Use these rules to keep the trait/factory architecture stable under growth.
 - Treat docs navigation as product UX: preserve clear pathing from README -> docs hub -> SUMMARY -> category index.
 - Keep top-level nav concise; avoid duplicative links across adjacent nav blocks.
 - When runtime surfaces change, update related references (`commands/providers/channels/config/runbook/troubleshooting`).
-- Keep multilingual entry-point parity for EN/ZH/JA/RU when nav or key wording changes.
+- Keep multilingual entry-point parity for EN/ZH/JA/RU/FR/VI when nav or key wording changes.
 - For docs snapshots, add new date-stamped files for new sprints rather than rewriting historical context.
-
 
 ## 8) Validation Matrix
 
@@ -320,12 +344,13 @@ Notes:
 
 - Local Docker-based CI is strongly recommended when Docker is available.
 - Contributors are not blocked from opening a PR if local Docker CI is unavailable; in that case run the most relevant native checks and document what was run.
+- CI gate scripts live in `scripts/ci/` (`rust_quality_gate.sh`, `rust_strict_delta_gate.sh`, `docs_quality_gate.sh`, `docs_links_gate.sh`, `check_binary_size.sh`, `detect_change_scope.sh`) — run the relevant one locally when touching its domain to catch failures before pushing.
 
 Additional expectations by change type:
 
 - **Docs/template-only**:
     - run markdown lint and link-integrity checks
-    - if touching README/docs-hub/SUMMARY/collection indexes, verify EN/ZH/JA/RU navigation parity
+    - if touching README/docs-hub/SUMMARY/collection indexes, verify EN/ZH/JA/RU/FR/VI navigation parity
     - if touching bootstrap docs/scripts, run `bash -n bootstrap.sh scripts/bootstrap.sh scripts/install.sh`
 - **Workflow changes**: validate YAML syntax; run workflow lint/sanity checks when available.
 - **Security/runtime/gateway/tools**: include at least one boundary/failure-mode validation.
