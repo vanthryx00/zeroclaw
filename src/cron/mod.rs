@@ -97,6 +97,80 @@ pub fn handle_command(command: crate::CronCommands, config: &Config) -> Result<(
             println!("  Cmd : {}", job.command);
             Ok(())
         }
+        crate::CronCommands::AddAgent {
+            prompt,
+            cron,
+            tz,
+            at,
+            every_ms,
+            name,
+            model,
+            session_target,
+            deliver_channel,
+            deliver_to,
+            delete_after_run,
+        } => {
+            let schedule = match (cron, at, every_ms) {
+                (Some(expr), None, None) => Schedule::Cron { expr, tz },
+                (None, Some(at), None) => {
+                    if tz.is_some() {
+                        bail!("--tz is only valid with --cron");
+                    }
+                    let at = chrono::DateTime::parse_from_rfc3339(&at)
+                        .map_err(|e| anyhow::anyhow!("Invalid RFC3339 timestamp for --at: {e}"))?
+                        .with_timezone(&chrono::Utc);
+                    Schedule::At { at }
+                }
+                (None, None, Some(every_ms)) => {
+                    if tz.is_some() {
+                        bail!("--tz is only valid with --cron");
+                    }
+                    Schedule::Every { every_ms }
+                }
+                _ => bail!("Specify exactly one of --cron, --at, or --every-ms"),
+            };
+
+            let session_target = match session_target.as_deref() {
+                None | Some("isolated") => SessionTarget::Isolated,
+                Some("main") => SessionTarget::Main,
+                Some(other) => {
+                    bail!("Invalid --session-target '{other}': expected 'isolated' or 'main'")
+                }
+            };
+
+            let delivery = match (deliver_channel, deliver_to) {
+                (Some(channel), Some(to)) => Some(DeliveryConfig {
+                    mode: "announce".to_string(),
+                    channel: Some(channel),
+                    to: Some(to),
+                    best_effort: true,
+                }),
+                (None, None) => None,
+                _ => bail!("--deliver-channel and --deliver-to must be provided together"),
+            };
+
+            let job = add_agent_job(
+                config,
+                name,
+                schedule,
+                &prompt,
+                session_target,
+                model,
+                delivery,
+                delete_after_run,
+            )?;
+            println!("✅ Added agent cron job {}", job.id);
+            println!("  Next  : {}", job.next_run.to_rfc3339());
+            println!("  Prompt: {}", job.prompt.clone().unwrap_or_default());
+            if job.delivery.mode.eq_ignore_ascii_case("announce") {
+                println!(
+                    "  Deliver: {} -> {}",
+                    job.delivery.channel.clone().unwrap_or_default(),
+                    job.delivery.to.clone().unwrap_or_default()
+                );
+            }
+            Ok(())
+        }
         crate::CronCommands::Update {
             id,
             expression,
@@ -412,5 +486,122 @@ mod tests {
 
         let security = SecurityPolicy::from_config(&config.autonomy, &config.workspace_dir);
         assert!(security.is_command_allowed("echo safe"));
+    }
+
+    fn run_add_agent(
+        config: &Config,
+        prompt: &str,
+        cron: Option<&str>,
+        at: Option<&str>,
+        every_ms: Option<u64>,
+        deliver_channel: Option<&str>,
+        deliver_to: Option<&str>,
+    ) -> Result<()> {
+        handle_command(
+            crate::CronCommands::AddAgent {
+                prompt: prompt.into(),
+                cron: cron.map(Into::into),
+                tz: None,
+                at: at.map(Into::into),
+                every_ms,
+                name: None,
+                model: None,
+                session_target: None,
+                deliver_channel: deliver_channel.map(Into::into),
+                deliver_to: deliver_to.map(Into::into),
+                delete_after_run: false,
+            },
+            config,
+        )
+    }
+
+    #[test]
+    fn add_agent_creates_scheduled_prompt_job() {
+        let tmp = TempDir::new().unwrap();
+        let config = test_config(&tmp);
+
+        run_add_agent(
+            &config,
+            "generate a short update",
+            Some("0 9 * * *"),
+            None,
+            None,
+            None,
+            None,
+        )
+        .unwrap();
+
+        let jobs = list_jobs(&config).unwrap();
+        assert_eq!(jobs.len(), 1);
+        assert_eq!(jobs[0].job_type, JobType::Agent);
+        assert_eq!(jobs[0].prompt.as_deref(), Some("generate a short update"));
+        assert_eq!(jobs[0].delivery.mode, "none");
+    }
+
+    #[test]
+    fn add_agent_wires_up_delivery() {
+        let tmp = TempDir::new().unwrap();
+        let config = test_config(&tmp);
+
+        run_add_agent(
+            &config,
+            "generate a short update",
+            None,
+            None,
+            Some(3_600_000),
+            Some("discord"),
+            Some("channel-id"),
+        )
+        .unwrap();
+
+        let jobs = list_jobs(&config).unwrap();
+        assert_eq!(jobs[0].delivery.mode, "announce");
+        assert_eq!(jobs[0].delivery.channel.as_deref(), Some("discord"));
+        assert_eq!(jobs[0].delivery.to.as_deref(), Some("channel-id"));
+    }
+
+    #[test]
+    fn add_agent_requires_exactly_one_schedule_kind() {
+        let tmp = TempDir::new().unwrap();
+        let config = test_config(&tmp);
+
+        let none = run_add_agent(&config, "prompt", None, None, None, None, None);
+        assert!(none.is_err());
+        assert!(none
+            .unwrap_err()
+            .to_string()
+            .contains("Specify exactly one"));
+
+        let both = run_add_agent(
+            &config,
+            "prompt",
+            Some("0 9 * * *"),
+            None,
+            Some(1000),
+            None,
+            None,
+        );
+        assert!(both.is_err());
+    }
+
+    #[test]
+    fn add_agent_requires_deliver_channel_and_to_together() {
+        let tmp = TempDir::new().unwrap();
+        let config = test_config(&tmp);
+
+        let result = run_add_agent(
+            &config,
+            "prompt",
+            Some("0 9 * * *"),
+            None,
+            None,
+            Some("discord"),
+            None,
+        );
+        assert!(result.is_err());
+        assert!(result
+            .unwrap_err()
+            .to_string()
+            .contains("must be provided together"));
     }
 }
