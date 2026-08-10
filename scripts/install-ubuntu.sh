@@ -339,6 +339,92 @@ touch    "$INSTALL_DIR/api/__init__.py" \
          "$INSTALL_DIR/api/routers/billing.py" \
          "$INSTALL_DIR/api/routers/ws.py"
 
+cat > "$INSTALL_DIR/api/routers/billing.py" << 'PYEOF'
+"""BugReaper X — Stripe billing endpoints."""
+import os
+from fastapi import APIRouter, HTTPException, Request, Header
+from pydantic import BaseModel
+
+try:
+    import stripe as _stripe
+    _stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
+    STRIPE_OK = bool(_stripe.api_key)
+except ImportError:
+    _stripe = None
+    STRIPE_OK = False
+
+router = APIRouter()
+
+PLANS = {
+    "free":       {"scans_per_month": 3,   "price_id": None,                                "amount": 0},
+    "pro":        {"scans_per_month": 50,  "price_id": os.environ.get("STRIPE_PRICE_PRO"),  "amount": 4900},
+    "enterprise": {"scans_per_month": -1,  "price_id": os.environ.get("STRIPE_PRICE_ENT"),  "amount": 14900},
+}
+
+class CheckoutIn(BaseModel):
+    plan: str
+    success_url: str = "https://yourdomain.com/billing/success"
+    cancel_url: str  = "https://yourdomain.com/billing/cancel"
+
+@router.get("/plans")
+async def list_plans():
+    return [{"plan": k, "amount_cents": v["amount"], "scans_per_month": v["scans_per_month"]} for k, v in PLANS.items()]
+
+@router.post("/subscribe")
+async def create_checkout(body: CheckoutIn):
+    if not STRIPE_OK:
+        raise HTTPException(503, "Stripe not configured — set STRIPE_SECRET_KEY")
+    plan = PLANS.get(body.plan)
+    if not plan:
+        raise HTTPException(400, f"Unknown plan: {body.plan}")
+    if not plan["price_id"] and plan["amount"] == 0:
+        raise HTTPException(400, "Free plan requires no checkout")
+
+    price_id = plan["price_id"]
+    if not price_id:
+        price = _stripe.Price.create(
+            unit_amount=plan["amount"],
+            currency="usd",
+            recurring={"interval": "month"},
+            product_data={"name": f"BugReaper X {body.plan.title()} Plan"},
+        )
+        price_id = price.id
+
+    session = _stripe.checkout.Session.create(
+        payment_method_types=["card"],
+        line_items=[{"price": price_id, "quantity": 1}],
+        mode="subscription",
+        success_url=body.success_url + "?session={CHECKOUT_SESSION_ID}",
+        cancel_url=body.cancel_url,
+    )
+    return {"checkout_url": session.url, "session_id": session.id}
+
+@router.post("/webhook")
+async def stripe_webhook(request: Request, stripe_signature: str = Header(None)):
+    if not STRIPE_OK:
+        raise HTTPException(503, "Stripe not configured")
+    webhook_secret = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+    payload = await request.body()
+    try:
+        event = _stripe.Webhook.construct_event(payload, stripe_signature, webhook_secret)
+    except Exception as e:
+        raise HTTPException(400, str(e))
+
+    if event["type"] == "checkout.session.completed":
+        session = event["data"]["object"]
+        # TODO: provision plan for session.customer_email
+        print(f"[STRIPE] Checkout completed: {session.get('customer_email')}")
+    elif event["type"] == "invoice.payment_failed":
+        inv = event["data"]["object"]
+        print(f"[STRIPE] Payment failed: {inv.get('customer_email')}")
+
+    return {"received": True}
+
+@router.get("/usage")
+async def usage():
+    return {"scans_used": 0, "scans_limit": 3, "plan": "free", "note": "Wire to DB for live usage"}
+PYEOF
+
 cat > "$INSTALL_DIR/api/routers/auth.py" << 'PYEOF'
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession

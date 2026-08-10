@@ -23,6 +23,14 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional
 
+# Revenue engine — import lazily so warfare.py still works without it
+try:
+    import omnimind_billing as _billing
+    BILLING_OK = True
+except ImportError:
+    _billing = None  # type: ignore[assignment]
+    BILLING_OK = False
+
 
 # =============================================================================
 # VOICE-FIRST INTERFACE
@@ -408,6 +416,53 @@ class CommandCenter:
         self.voice.speak(f"Client {client_id} upgraded. {setup_fee} dollars collected")
         self.voice.notify("Revenue Event", f"${setup_fee:.0f} setup fee collected")
 
+        if BILLING_OK:
+            try:
+                url = _billing.create_payment_link(client_id, "setup")
+                print(f"\n[STRIPE] Send payment link: {url}")
+                _billing.save_invoice(client_id)
+            except Exception as e:
+                print(f"[BILLING] {e}")
+
+    def link(self, client_id: int):
+        if not BILLING_OK:
+            print("[ERROR] omnimind_billing.py not found — place it in the same directory")
+            return
+        _billing.create_payment_link(client_id, "setup")
+
+    def subscribe(self, client_id: int, email: str = ""):
+        if not BILLING_OK:
+            print("[ERROR] omnimind_billing.py not found")
+            return
+        client = self.db.get_clients()
+        c = next((x for x in client if x["id"] == client_id), None)
+        target_email = email or (c.get("email") if c else "")
+        if not target_email:
+            print("Provide email: subscribe <id> <email>")
+            return
+        _billing.create_subscription(client_id, target_email)
+
+    def bill(self):
+        if not BILLING_OK:
+            print("[ERROR] omnimind_billing.py not found")
+            return
+        _billing.bill_all_active()
+        self.voice.speak("Monthly billing run complete")
+
+    def invoice(self, client_id: int):
+        if not BILLING_OK:
+            print("[ERROR] omnimind_billing.py not found")
+            return
+        path = _billing.save_invoice(client_id)
+        _billing.send_invoice_email(client_id)
+        self.voice.speak(f"Invoice generated and emailed for client {client_id}")
+
+    def mrr(self):
+        if not BILLING_OK:
+            print("[ERROR] omnimind_billing.py not found")
+            return
+        _billing.mrr_dashboard()
+
 
 # =============================================================================
 # CLI
@@ -422,19 +477,32 @@ def main():
         print("""
 OMNIMIND WARFARE — COMMAND CENTER
 
-Commands:
-  status                        Show revenue and client count
-  hunt [query] [city]           Scrape new leads (default: law firms, Toronto)
+Ops commands:
+  status                        Revenue + client count
+  hunt [query] [city]           Scrape new leads
   attack                        Send free scan offers to prospects
-  scan [id]                     Run scan for client ID (or all active)
-  convert <id> [fee]            Mark prospect as paid client ($600 default)
+  scan [id]                     Run scan (single client or all active)
+  convert <id> [package] [fee]  Mark prospect paid + generate Stripe link
+
+Revenue commands (requires omnimind_billing.py + env vars):
+  link <id>                     Generate Stripe payment link
+  subscribe <id> [email]        Create monthly Stripe subscription
+  bill                          Charge all active clients this month
+  invoice <id>                  Generate PDF invoice + email it
+  mrr                           MRR dashboard + $8K goal tracker
+
+Env vars for billing:
+  STRIPE_SECRET_KEY             sk_live_... or sk_test_...
+  SMTP_USER / SMTP_PASS         Gmail or any SMTP for invoice emails
 
 Examples:
   python omnimind_warfare.py status
   python omnimind_warfare.py hunt "medical clinics" "Vancouver"
   python omnimind_warfare.py attack
-  python omnimind_warfare.py scan 1
-  python omnimind_warfare.py convert 3 800
+  python omnimind_warfare.py convert 3 security 599
+  python omnimind_warfare.py link 3
+  python omnimind_warfare.py bill
+  python omnimind_warfare.py mrr
 """)
         sys.exit(0)
 
@@ -453,11 +521,32 @@ Examples:
         cmd.scan(client_id)
     elif command == "convert":
         if len(sys.argv) < 3:
-            print("Usage: convert <client_id> [setup_fee]")
+            print("Usage: convert <client_id> [package] [setup_fee]")
             sys.exit(1)
         client_id = int(sys.argv[2])
-        fee = float(sys.argv[3]) if len(sys.argv) > 3 else 600.0
-        cmd.convert(client_id, "security", fee)
+        package = sys.argv[3] if len(sys.argv) > 3 else "security"
+        fee = float(sys.argv[4]) if len(sys.argv) > 4 else 599.0
+        cmd.convert(client_id, package, fee)
+    elif command == "link":
+        if len(sys.argv) < 3:
+            print("Usage: link <client_id>")
+            sys.exit(1)
+        cmd.link(int(sys.argv[2]))
+    elif command == "subscribe":
+        if len(sys.argv) < 3:
+            print("Usage: subscribe <client_id> [email]")
+            sys.exit(1)
+        email = sys.argv[3] if len(sys.argv) > 3 else ""
+        cmd.subscribe(int(sys.argv[2]), email)
+    elif command == "bill":
+        cmd.bill()
+    elif command == "invoice":
+        if len(sys.argv) < 3:
+            print("Usage: invoice <client_id>")
+            sys.exit(1)
+        cmd.invoice(int(sys.argv[2]))
+    elif command == "mrr":
+        cmd.mrr()
     else:
         print(f"Unknown command: {command}")
         sys.exit(1)
