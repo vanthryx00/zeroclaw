@@ -36,6 +36,14 @@ from io import BytesIO
 from pathlib import Path
 from typing import Dict, List, Optional
 
+# Load .env from this directory or CWD
+try:
+    from dotenv import load_dotenv
+    _env = Path(__file__).parent / ".env"
+    load_dotenv(_env if _env.exists() else Path(".env"))
+except ImportError:
+    pass
+
 # ── Optional dependencies — degrade gracefully ────────────────────────────────
 try:
     import stripe as _stripe
