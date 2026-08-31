@@ -241,6 +241,57 @@ Examples:
         /// Command to run
         command: String,
     },
+    /// Add a scheduled agent job: runs a prompt through the agent on a
+    /// schedule and optionally delivers the result to a channel, with no
+    /// manual trigger needed once scheduled.
+    #[command(long_about = "\
+Add a scheduled agent job.
+
+Runs a prompt through the agent on a schedule (cron expression, one-shot \
+timestamp, or fixed interval) and optionally delivers the result to a \
+channel (telegram, discord, slack, mattermost) that is already configured \
+via `zeroclaw channel add`. Exactly one of --cron, --at, or --every-ms is \
+required.
+
+Examples:
+  zeroclaw cron add-agent \"Summarize today's top 3 items\" --cron '0 9 * * *' \\
+    --deliver-channel discord --deliver-to <channel-id>
+  zeroclaw cron add-agent 'Draft a short update' --every-ms 3600000 \\
+    --deliver-channel telegram --deliver-to <chat-id>")]
+    AddAgent {
+        /// Prompt to run through the agent
+        prompt: String,
+        /// Cron expression (mutually exclusive with --at/--every-ms)
+        #[arg(long)]
+        cron: Option<String>,
+        /// Optional IANA timezone for --cron (e.g. America/Los_Angeles)
+        #[arg(long)]
+        tz: Option<String>,
+        /// One-shot RFC3339 timestamp (mutually exclusive with --cron/--every-ms)
+        #[arg(long)]
+        at: Option<String>,
+        /// Fixed interval in milliseconds (mutually exclusive with --cron/--at)
+        #[arg(long = "every-ms")]
+        every_ms: Option<u64>,
+        /// Optional job name
+        #[arg(long)]
+        name: Option<String>,
+        /// Model override for this job
+        #[arg(long)]
+        model: Option<String>,
+        /// Session target: "isolated" (default) or "main"
+        #[arg(long = "session-target")]
+        session_target: Option<String>,
+        /// Channel to deliver the result to: telegram, discord, slack, mattermost
+        #[arg(long = "deliver-channel")]
+        deliver_channel: Option<String>,
+        /// Delivery target within the channel (chat id, guild:channel id, etc.)
+        #[arg(long = "deliver-to")]
+        deliver_to: Option<String>,
+        /// Delete this job after it runs once (only applies to --at jobs)
+        #[arg(long = "delete-after-run")]
+        delete_after_run: bool,
+    },
     /// Remove a scheduled task
     Remove {
         /// Task ID

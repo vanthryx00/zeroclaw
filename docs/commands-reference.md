@@ -73,6 +73,7 @@ Last verified: **February 20, 2026**.
 - `zeroclaw cron add-at <rfc3339_timestamp> <command>`
 - `zeroclaw cron add-every <every_ms> <command>`
 - `zeroclaw cron once <delay> <command>`
+- `zeroclaw cron add-agent <prompt> (--cron <expr> | --at <rfc3339_timestamp> | --every-ms <ms>) [--tz <IANA_TZ>] [--name <name>] [--model <model>] [--session-target isolated|main] [--deliver-channel <channel>] [--deliver-to <target>] [--delete-after-run]`
 - `zeroclaw cron remove <id>`
 - `zeroclaw cron pause <id>`
 - `zeroclaw cron resume <id>`
@@ -81,6 +82,7 @@ Notes:
 
 - Mutating schedule/cron actions require `cron.enabled = true`.
 - Shell command payloads for schedule creation (`create` / `add` / `once`) are validated by security command policy before job persistence.
+- `add-agent` creates a self-contained autonomous job: on each firing it runs the given prompt through the agent (no manual trigger needed) and, if `--deliver-channel`/`--deliver-to` are set, posts the result to an already-configured channel (`telegram`, `discord`, `slack`, `mattermost`) via `mode: "announce"` delivery. Exactly one of `--cron`, `--at`, or `--every-ms` must be provided.
 
 ### `models`
 
