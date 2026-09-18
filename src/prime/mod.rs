@@ -23,8 +23,10 @@ pub mod native;
 pub mod hybrid;
 pub mod context;
 pub mod runner;
+pub mod agent_adapter;
 
 pub use orchestrator::{Orchestrator, OrchestratorInput, OrchestratorTrace, OrchestratorAction};
 pub use hybrid::HybridOrchestrator;
 pub use context::PrimeContext;
 pub use runner::run;
+pub use agent_adapter::NativeAgentAdapter;
