@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Token burn monitoring utility
-# Shows current session token usage and capacity
+# Token burn rate monitor
+# Tracks burn rate (tokens/turn) - compacts when >1500/turn
 
 set -e
 
@@ -17,59 +17,67 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Calculate rough token estimate (1 line ≈ 50 tokens average)
+# Calculate burn rate (1 line ≈ 50 tokens)
 if [ -f "$LOG_FILE" ]; then
-    LINES=$(wc -l < "$LOG_FILE")
-    APPROX_TOKENS=$((LINES * 50))
+    TOTAL_LINES=$(wc -l < "$LOG_FILE")
+    # Recent burn rate: last 3 turns
+    RECENT_LINES=$(tail -3 "$LOG_FILE" | wc -l)
+    BURN_RATE=$((RECENT_LINES * 50))
 else
-    LINES=0
-    APPROX_TOKENS=0
+    TOTAL_LINES=0
+    RECENT_LINES=0
+    BURN_RATE=0
 fi
-
-# Context window estimate (approximately 100k token window)
-WINDOW_SIZE=100000
-CAPACITY_PERCENT=$((APPROX_TOKENS * 100 / WINDOW_SIZE))
-REMAINING=$((WINDOW_SIZE - APPROX_TOKENS))
 
 # Display status
 echo -e "${BLUE}════════════════════════════════════════${NC}"
-echo -e "${BLUE}Token Burn Status${NC}"
+echo -e "${BLUE}Token Burn Rate Monitor${NC}"
 echo -e "${BLUE}════════════════════════════════════════${NC}"
 echo ""
-echo "Session Log File: $LOG_FILE"
-echo "Snapshot Directory: $SNAPSHOT_DIR"
+echo "Session Log: $LOG_FILE"
 echo ""
-echo "Activity Log Lines: $LINES"
-echo "Approx. Tokens Used: $APPROX_TOKENS / $WINDOW_SIZE"
-echo "Capacity Used: $CAPACITY_PERCENT%"
-echo "Remaining Capacity: $REMAINING tokens"
+echo "Total Turns Logged: $TOTAL_LINES"
+echo "Recent Burn Rate (last 3 turns): ${BURN_RATE} tokens/turn"
+echo "Threshold: 1500 tokens/turn"
 echo ""
 
-# Capacity warning
-if [ $CAPACITY_PERCENT -ge 90 ]; then
-    echo -e "${RED}🔴 CRITICAL: >90% capacity${NC} - Compact immediately!"
-    echo "   Run: /compact"
-elif [ $CAPACITY_PERCENT -ge 75 ]; then
-    echo -e "${YELLOW}🟡 WARNING: >75% capacity${NC} - Consider compacting soon"
-elif [ $CAPACITY_PERCENT -ge 50 ]; then
-    echo -e "${YELLOW}🟡 HIGH: >50% capacity${NC} - Monitor usage"
+# Burn rate warning
+THRESHOLD=1500
+if [ $BURN_RATE -ge $THRESHOLD ]; then
+    echo -e "${RED}🔥 CRITICAL BURN RATE${NC}"
+    echo -e "${RED}Current: ${BURN_RATE} tokens/turn (exceeds ${THRESHOLD})${NC}"
+    echo ""
+    echo -e "${RED}ACTION: Run /compact immediately${NC}"
+    echo "        Compaction resets context and minimizes token waste"
+    echo ""
+elif [ $BURN_RATE -ge 1000 ]; then
+    echo -e "${YELLOW}🟡 HIGH BURN RATE${NC}"
+    echo "Current: ${BURN_RATE} tokens/turn (approaching ${THRESHOLD})"
+    echo "Monitor closely - be ready to /compact"
+    echo ""
+elif [ $BURN_RATE -gt 500 ]; then
+    echo -e "${YELLOW}🟡 MODERATE BURN${NC}"
+    echo "Current: ${BURN_RATE} tokens/turn"
+    echo "Continue working - will alert when approaching ${THRESHOLD}"
+    echo ""
 else
-    echo -e "${GREEN}🟢 OK: <50% capacity${NC}"
-fi
-
-echo ""
-
-# List recent snapshots
-if ls "$SNAPSHOT_DIR"/*.md &>/dev/null; then
-    echo -e "${BLUE}Recent Snapshots:${NC}"
-    ls -lt "$SNAPSHOT_DIR"/*.md | head -5 | awk '{print "  " $9 " (" $6 " " $7 " " $8 ")"}'
+    echo -e "${GREEN}🟢 HEALTHY BURN RATE${NC}"
+    echo "Current: ${BURN_RATE} tokens/turn"
+    echo "Keep working efficiently"
     echo ""
 fi
 
-# Show tail of log if in high capacity
-if [ $CAPACITY_PERCENT -ge 50 ]; then
-    echo -e "${BLUE}Recent Activity:${NC}"
-    tail -5 "$LOG_FILE" | sed 's/^/  /'
+# List burn alerts
+if ls "$SNAPSHOT_DIR"/BURN-ALERT-*.md &>/dev/null 2>&1; then
+    echo -e "${RED}Recent Burn Alerts:${NC}"
+    ls -lt "$SNAPSHOT_DIR"/BURN-ALERT-*.md 2>/dev/null | head -3 | awk '{print "  " $9}'
+    echo ""
+fi
+
+# Show last reset
+if ls "$SNAPSHOT_DIR"/RESET-*.md &>/dev/null 2>&1; then
+    echo -e "${GREEN}Last Context Reset:${NC}"
+    ls -lt "$SNAPSHOT_DIR"/RESET-*.md 2>/dev/null | head -1 | awk '{print "  " $9 " (" $6 " " $7 " " $8 ")"}'
     echo ""
 fi
 
