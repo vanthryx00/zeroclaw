@@ -66,7 +66,7 @@ Behavior:
 - Provider fallback chain: selected primary, then remaining of Anthropic → Gemini → Ollama.
 - Uses SQLite memory and injects `<workspace>/mindset.toml` into the system prompt; state persists in `<workspace>/empire.toml` and `<workspace>/companion_tasks.toml`.
 - Each turn is enriched with current Empire goals and enabled Companion tasks.
-- Session commands: `/status`, `/metrics`, `/help`, `/quit`.
+- Session commands: `/status`, `/metrics` (estimated cost), `/goal <title> | <desc>`, `/done <ID>`, `/active <ID>`, `/blocked <ID>`, `/note <ID> <text>`, `/help`, `/quit`.
 
 ### `gateway` / `daemon`
 

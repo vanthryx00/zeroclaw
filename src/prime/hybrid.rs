@@ -271,6 +271,13 @@ impl Orchestrator for HybridOrchestrator {
         Ok(trace)
     }
 
+    async fn estimate_cost(&self, input: &OrchestratorInput) -> Result<f64> {
+        self.select_orchestrator(input)
+            .await?
+            .estimate_cost(input)
+            .await
+    }
+
     async fn is_ready(&self) -> bool {
         for orch in self.orchestrators.values() {
             if orch.is_ready().await {

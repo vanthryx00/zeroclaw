@@ -11,7 +11,7 @@ use tracing::info;
 
 use crate::companion::tasks::CompanionTaskList;
 use crate::config::Config;
-use crate::offline::empire::Empire;
+use crate::offline::empire::{Empire, GoalStatus};
 use crate::offline::mindset::Mindset;
 
 use super::{
@@ -131,6 +131,10 @@ async fn execute_turn(
         constraints: ExecutionConstraints::default(),
     };
 
+    // Providers don't report token usage through the Agent yet, so fall back to
+    // the backend's per-request estimate when the trace carries no cost.
+    let estimated_cost = orchestrator.estimate_cost(&input).await.unwrap_or(0.0);
+
     match orchestrator.execute(input).await {
         Ok(trace) => {
             println!("\n{}\n", trace.final_response);
@@ -138,9 +142,13 @@ async fn execute_turn(
                 .add_message("assistant", &trace.final_response)
                 .await;
 
-            // Update metrics
+            let cost = if trace.total_cost_usd > 0.0 {
+                trace.total_cost_usd
+            } else {
+                estimated_cost
+            };
             context
-                .update_metrics(trace.total_cost_usd, trace.total_duration_ms, 0, 0)
+                .update_metrics(cost, trace.total_duration_ms, 0, 0)
                 .await;
         }
         Err(e) => {
@@ -187,18 +195,39 @@ async fn interactive_loop(
                 }
                 "metrics" => {
                     let trace = context.trace.lock().await;
-                    println!("Cost: ${:.2}", trace.metrics.total_cost_usd);
+                    println!("Est. cost: ${:.4}", trace.metrics.total_cost_usd);
                     println!("Duration: {}ms", trace.metrics.total_duration_ms);
                     println!("Actions: {}", trace.metrics.actions_taken);
                     println!("Goals: {}", trace.metrics.goals_completed);
                     println!("Tasks: {}", trace.metrics.tasks_executed);
                 }
                 "help" => {
-                    println!("/status     — show Empire + Companion status");
-                    println!("/metrics    — show execution metrics");
-                    println!("/quit       — save and exit");
+                    println!("/status           — show Empire + Companion status");
+                    println!("/metrics          — show execution metrics");
+                    println!("/goal <t> | <d>   — add a new goal");
+                    println!("/done <ID>        — mark goal done");
+                    println!("/active <ID>      — mark goal active");
+                    println!("/blocked <ID>     — mark goal blocked");
+                    println!("/note <ID> <text> — append note to goal");
+                    println!("/quit             — save and exit");
                 }
-                _ => println!("Unknown command: /{}", parts[0]),
+                cmd => {
+                    let args = parts.get(1).copied().unwrap_or("");
+                    let outcome = {
+                        let mut empire = context.empire.lock().await;
+                        apply_goal_command(&mut empire, cmd, args)
+                    };
+                    match outcome {
+                        Some(GoalCommandOutcome { message, completed }) => {
+                            if completed {
+                                context.update_metrics(0.0, 0, 1, 0).await;
+                            }
+                            context.save(workspace).await?;
+                            println!("{message}");
+                        }
+                        None => println!("Unknown command: /{cmd}. Type /help for commands."),
+                    }
+                }
             }
         } else {
             // Agent turn
@@ -224,18 +253,136 @@ async fn format_context_summary(context: &PrimeContext) -> String {
         empire
             .goals
             .iter()
-            .filter(|g| g.status == crate::offline::empire::GoalStatus::Done)
+            .filter(|g| g.status == GoalStatus::Done)
             .count(),
         empire
             .goals
             .iter()
-            .filter(|g| g.status == crate::offline::empire::GoalStatus::Active)
+            .filter(|g| g.status == GoalStatus::Active)
             .count(),
         empire
             .goals
             .iter()
-            .filter(|g| g.status == crate::offline::empire::GoalStatus::Pending)
+            .filter(|g| g.status == GoalStatus::Pending)
             .count(),
         companion.tasks.iter().filter(|t| t.enabled).count()
     )
+}
+
+/// Result of an Empire goal slash command.
+#[derive(Debug, PartialEq, Eq)]
+struct GoalCommandOutcome {
+    message: String,
+    /// True when a goal transitioned to Done.
+    completed: bool,
+}
+
+/// Apply an Empire goal command (`goal`, `done`, `active`, `blocked`, `note`).
+///
+/// Returns `None` for commands this function does not handle.
+fn apply_goal_command(empire: &mut Empire, cmd: &str, args: &str) -> Option<GoalCommandOutcome> {
+    let args = args.trim();
+    let reply = |message: String| {
+        Some(GoalCommandOutcome {
+            message,
+            completed: false,
+        })
+    };
+    match cmd {
+        "goal" => {
+            if args.is_empty() {
+                return reply("Usage: /goal <title> | <description>".into());
+            }
+            let (title, desc) = match args.split_once(" | ") {
+                Some((t, d)) => (t.trim(), d.trim()),
+                None => (args, ""),
+            };
+            let id = empire.add_goal(title, desc);
+            reply(format!("Goal {id} added: {title}"))
+        }
+        "done" | "complete" | "active" | "blocked" => {
+            let id = args.split_whitespace().next().unwrap_or("").to_uppercase();
+            let status = match cmd {
+                "active" => GoalStatus::Active,
+                "blocked" => GoalStatus::Blocked,
+                _ => GoalStatus::Done,
+            };
+            let done = status == GoalStatus::Done;
+            let label = match cmd {
+                "active" => "ACTIVE",
+                "blocked" => "BLOCKED",
+                _ => "DONE",
+            };
+            if !empire.set_status(&id, status) {
+                return reply(format!("Unknown goal ID: {id}"));
+            }
+            let mut message = format!("Goal {id} marked {label}.");
+            if done && empire.is_complete() {
+                message.push_str("\nAll goals complete — Empire is finished!");
+            }
+            Some(GoalCommandOutcome {
+                message,
+                completed: done,
+            })
+        }
+        "note" => {
+            let Some((id, text)) = args.split_once(char::is_whitespace) else {
+                return reply("Usage: /note <ID> <text>".into());
+            };
+            let id = id.to_uppercase();
+            if empire.add_note(&id, text.trim()) {
+                reply(format!("Note added to {id}."))
+            } else {
+                reply(format!("Unknown goal ID: {id}"))
+            }
+        }
+        _ => None,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn goal_commands_add_update_and_complete_goals() {
+        let mut empire = Empire::default();
+        let added = apply_goal_command(&mut empire, "goal", "Ship v1 | first release").unwrap();
+        assert!(!added.completed);
+        let id = empire.goals[0].id.clone();
+        assert_eq!(empire.goals[0].title, "Ship v1");
+
+        let noted = apply_goal_command(
+            &mut empire,
+            "note",
+            &format!("{} halfway", id.to_lowercase()),
+        );
+        assert_eq!(noted.unwrap().message, format!("Note added to {id}."));
+
+        let active = apply_goal_command(&mut empire, "active", &id).unwrap();
+        assert!(!active.completed);
+        assert_eq!(empire.goals[0].status, GoalStatus::Active);
+
+        let done = apply_goal_command(&mut empire, "done", &id).unwrap();
+        assert!(done.completed);
+        assert_eq!(empire.goals[0].status, GoalStatus::Done);
+    }
+
+    #[test]
+    fn goal_commands_reject_unknown_ids_and_bad_usage() {
+        let mut empire = Empire::default();
+        let unknown = apply_goal_command(&mut empire, "done", "G999").unwrap();
+        assert!(!unknown.completed);
+        assert!(unknown.message.starts_with("Unknown goal ID"));
+        assert!(apply_goal_command(&mut empire, "goal", "  ")
+            .unwrap()
+            .message
+            .starts_with("Usage"));
+        assert!(apply_goal_command(&mut empire, "note", "G1")
+            .unwrap()
+            .message
+            .starts_with("Usage"));
+        assert!(apply_goal_command(&mut empire, "bogus", "").is_none());
+        assert!(empire.goals.is_empty());
+    }
 }
