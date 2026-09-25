@@ -52,6 +52,9 @@ mod agent;
 mod approval;
 mod auth;
 mod channels;
+mod companion {
+    pub use zeroclaw::companion::*;
+}
 mod rag {
     pub use zeroclaw::rag::*;
 }
@@ -70,9 +73,14 @@ mod migration;
 mod companion;
 mod multimodal;
 mod observability;
-mod offline;
+mod offline {
+    pub use zeroclaw::offline::*;
+}
 mod onboard;
 mod peripherals;
+mod prime {
+    pub use zeroclaw::prime::*;
+}
 mod providers;
 mod runtime;
 mod security;
@@ -197,75 +205,30 @@ Examples:
         peripheral: Vec<String>,
     },
 
-    /// Run the offline Empire agent — persistent mindset, goals, multi-provider fallback
+    /// Run Prime Zero — next-generation hybrid orchestration engine
     #[command(long_about = "\
-Run the offline Empire agent.
+Run Prime Zero: next-generation hybrid autonomous agent built on intelligent
+orchestration. Merges ZeroClaw's modular architecture with multiple reasoning
+backends (Llama Prime, native agent), with persistent Empire goals and
+Companion autonomous task execution.
 
-An autonomous agent that holds persistent goals (Empire), remembers conversations \
-across sessions via SQLite memory, and works with a cascading provider chain:
-  Anthropic (Claude) → Gemini → Ollama (fully offline).
-
-The agent loads a mindset from <workspace>/mindset.toml and goal state from \
-<workspace>/empire.toml. Both files are created with defaults on first run.
-
-Slash commands inside the session:
-  /status           — show Empire goal summary
-  /goal <t> | <d>   — add a new goal (title | description)
-  /done <ID>         — mark goal done
-  /active <ID>       — mark goal active
-  /blocked <ID>      — mark goal blocked
-  /note <ID> <text>  — append note to goal
-  /mindset           — show current mindset
-  /quit              — save and exit
+Features:
+- Intelligent orchestrator routing: routes to best backend by task type
+- Multi-provider fallback: Anthropic → Gemini → Ollama (fully offline)
+- Empire goal tracking and prioritization
+- Companion autonomous task execution
+- Unified execution context with full observability
 
 Examples:
-  zeroclaw empire
-  zeroclaw empire --provider gemini
-  zeroclaw empire --provider ollama --model llama3.2
-  zeroclaw empire --mission \"Ship v1.0 of ZeroClaw Empire\" -m \"What are our top priorities?\"")]
-    Empire {
-        /// Single message mode (skip interactive loop)
+  zeroclaw prime                                   # interactive with native orchestrator
+  zeroclaw prime -m \"Build a REST API\"           # single task
+  zeroclaw prime --provider ollama --model llama3.2  # fully offline
+  zeroclaw prime -i                                # interactive mode")]
+    Prime {
+        /// Single message mode (don't enter interactive mode)
         #[arg(short, long)]
         message: Option<String>,
 
-        /// Primary provider (anthropic, gemini, ollama, auto). Default: anthropic
-        #[arg(short, long)]
-        provider: Option<String>,
-
-        /// Model override
-        #[arg(long)]
-        model: Option<String>,
-
-        /// Set or update the Empire mission statement
-        #[arg(long)]
-        mission: Option<String>,
-    },
-
-    /// Run the autonomous desktop companion (executes daily tasks in the background)
-    #[command(long_about = "\
-Run the autonomous desktop companion.
-
-Continuously executes tasks from <workspace>/companion_tasks.toml on configurable
-intervals. Each task sends a prompt to the AI agent, which can read/write files,
-run shell commands, and track Empire goals — all autonomously (ao).
-
-Provider fallback chain: Anthropic → Gemini → Ollama (offline).
-Results are logged to <workspace>/companion.log and surfaced as OS desktop
-notifications (notify-send / osascript) or terminal output.
-
-A default task list is written on first run covering:
-  - Morning Briefing (daily)
-  - Code Health Check (hourly)
-  - Progress Note (every 6 hours)
-
-Edit companion_tasks.toml to add, remove, or tune tasks.
-
-Examples:
-  zeroclaw companion                           # run forever, auto-sleep between tasks
-  zeroclaw companion --once                    # run all due tasks once and exit (for cron)
-  zeroclaw companion --provider ollama         # fully offline
-  zeroclaw companion --interval 300            # force 5-minute check interval")]
-    Companion {
         /// Provider to use (anthropic, gemini, ollama). Default: anthropic
         #[arg(short, long)]
         provider: Option<String>,
@@ -274,13 +237,13 @@ Examples:
         #[arg(long)]
         model: Option<String>,
 
-        /// Override the sleep interval between task checks (seconds)
+        /// Mission statement for this session
         #[arg(long)]
-        interval: Option<u64>,
+        mission: Option<String>,
 
-        /// Run all due tasks once and exit (useful with cron/launchd)
-        #[arg(long)]
-        once: bool,
+        /// Force interactive mode (instead of single-shot)
+        #[arg(short, long)]
+        interactive: bool,
     },
 
     /// Start the gateway server (webhooks, websockets)
@@ -966,19 +929,13 @@ async fn main() -> Result<()> {
             .await
             .map(|_| ()),
 
-        Commands::Empire {
+        Commands::Prime {
             message,
             provider,
             model,
             mission,
-        } => offline::runner::run(config, provider, model, mission, message).await,
-
-        Commands::Companion {
-            provider,
-            model,
-            interval,
-            once,
-        } => companion::runner::run(config, provider, model, interval, once).await,
+            interactive,
+        } => prime::runner::run(config, provider, model, mission, message, interactive).await,
 
         Commands::Gateway { port, host } => {
             let port = port.unwrap_or(config.gateway.port);
