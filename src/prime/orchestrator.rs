@@ -1,15 +1,15 @@
-/// Prime Zero hybrid orchestrator trait — multiple reasoning backends can implement this.
-///
-/// An Orchestrator is the core decision-making engine. Different implementations
-/// (Llama Prime, native ZeroClaw, other frameworks) all implement this trait, allowing
-/// them to be mixed and matched based on task type, availability, or performance needs.
-///
-/// Each orchestrator:
-/// - Receives a unified context (Empire goals, Companion tasks, user input, agent state)
-/// - Produces a sequence of structured actions (tool calls, decisions, reflections)
-/// - Reports outcomes (success/failure, reasoning trace, cost)
-///
-/// ZeroClaw's trait system wraps the orchestrator output and routes to tools/providers.
+//! Prime Zero hybrid orchestrator trait — multiple reasoning backends can implement this.
+//!
+//! An Orchestrator is the core decision-making engine. Different implementations
+//! (Llama Prime, native ZeroClaw, other frameworks) all implement this trait, allowing
+//! them to be mixed and matched based on task type, availability, or performance needs.
+//!
+//! Each orchestrator:
+//! - Receives a unified context (Empire goals, Companion tasks, user input, agent state)
+//! - Produces a sequence of structured actions (tool calls, decisions, reflections)
+//! - Reports outcomes (success/failure, reasoning trace, cost)
+//!
+//! ZeroClaw's trait system wraps the orchestrator output and routes to tools/providers.
 
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
@@ -129,19 +129,5 @@ pub trait Orchestrator: Send + Sync + Debug {
     /// Optional: estimate cost before execution (for budget-conscious routing).
     async fn estimate_cost(&self, _input: &OrchestratorInput) -> Result<f64> {
         Ok(0.0)
-    }
-}
-
-/// Orchestrator factory: creates orchestrators by name.
-pub fn create_orchestrator(name: &str) -> Option<Box<dyn Orchestrator>> {
-    match name {
-        "native" => Some(Box::new(crate::prime::native::NativeOrchestrator::new())),
-        "hybrid" => {
-            // Hybrid requires explicit setup; see hybrid.rs
-            None
-        }
-        // "llama-prime" => Some(Box::new(llama_prime::LlamaPrimeOrchestrator::new())),
-        // Add more as integrations are wired
-        _ => None,
     }
 }

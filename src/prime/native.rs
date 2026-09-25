@@ -1,149 +1,114 @@
-/// Native Prime Zero orchestrator — ZeroClaw's intelligent reasoning engine.
-///
-/// This is the default orchestrator that powers Prime Zero when no other backend
-/// (e.g., Llama Prime) is available. It uses the agent's native tool-calling loop
-/// integrated with Empire goals and Companion context for intelligent, goal-aware execution.
-///
-/// Features:
-/// - Multi-provider fallback (Anthropic → Gemini → Ollama)
-/// - Empire goal tracking and prioritization
-/// - Companion task awareness
-/// - Tool execution with safety enforcement
-/// - Cost tracking and budget management
+//! Native Prime Zero orchestrator — ZeroClaw's agent loop behind the `Orchestrator` trait.
+//!
+//! Holds a single long-lived [`Agent`] (built once by the runner with the mindset
+//! injected into its system prompt, SQLite memory, and the provider fallback chain),
+//! so conversation history and tool state persist across turns. Each turn is
+//! enriched with the current Empire goals and Companion task context.
 
 use crate::agent::agent::Agent;
-use crate::config::Config;
-use crate::offline::empire::Empire;
-use crate::offline::mindset::Mindset;
 use anyhow::Result;
 use std::sync::Arc;
-use tracing::{info, debug};
+use tokio::sync::Mutex;
+use tracing::info;
 
 use super::orchestrator::{
-    ExecutionConstraints, OrchestratorAction, OrchestratorInput, OrchestratorTrace, ActionOutcome,
+    ActionOutcome, Orchestrator, OrchestratorAction, OrchestratorInput, OrchestratorTrace,
 };
 
-/// Native Prime Zero orchestrator powered by ZeroClaw's agent.
-#[derive(Debug, Clone)]
 pub struct NativeOrchestrator {
-    config: Arc<Config>,
-    mindset: Arc<Mindset>,
-    empire: Arc<tokio::sync::Mutex<Empire>>,
+    agent: Arc<Mutex<Agent>>,
+    provider: String,
 }
 
 impl NativeOrchestrator {
-    pub fn new() -> Self {
-        // Default construction — would need config passed in for production
+    pub fn new(agent: Agent, provider: impl Into<String>) -> Self {
         Self {
-            config: Arc::new(Config::default()),
-            mindset: Arc::new(Mindset::default()),
-            empire: Arc::new(tokio::sync::Mutex::new(Empire::default())),
-        }
-    }
-
-    pub fn with_config(config: Config, mindset: Mindset, empire: Empire) -> Self {
-        Self {
-            config: Arc::new(config),
-            mindset: Arc::new(mindset),
-            empire: Arc::new(tokio::sync::Mutex::new(empire)),
+            agent: Arc::new(Mutex::new(agent)),
+            provider: provider.into(),
         }
     }
 }
 
+impl std::fmt::Debug for NativeOrchestrator {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("NativeOrchestrator")
+            .field("provider", &self.provider)
+            .finish_non_exhaustive()
+    }
+}
+
+/// Build the per-turn prompt: Empire goals + Companion tasks + user request.
+///
+/// The mindset is not repeated here — it already anchors the agent's system prompt.
+pub fn enrich_prompt(input: &OrchestratorInput) -> String {
+    format!(
+        "{}\n\n{}\n\nUser Request:\n{}",
+        input.empire_context, input.companion_context, input.user_prompt
+    )
+}
+
 #[async_trait::async_trait]
-impl super::orchestrator::Orchestrator for NativeOrchestrator {
+impl Orchestrator for NativeOrchestrator {
     fn name(&self) -> &str {
         "prime-zero-native"
     }
 
     async fn execute(&self, input: OrchestratorInput) -> Result<OrchestratorTrace> {
         info!("NativeOrchestrator starting execution");
-
         let start = std::time::Instant::now();
-        let mut actions = Vec::new();
-        let mut total_cost = 0.0;
-        let mut iteration = 0;
 
-        // Build the agent from config
-        let mut agent = crate::agent::agent::Agent::from_config(&self.config)?;
+        let response = self.agent.lock().await.turn(&enrich_prompt(&input)).await?;
+        let duration_ms = u64::try_from(start.elapsed().as_millis()).unwrap_or(u64::MAX);
 
-        // Construct the enriched prompt: mindset + empire context + user request
-        let enriched_prompt = format!(
-            "{}\n\n{}\n\n{}\n\nUser Request:\n{}",
-            input.mindset, input.empire_context, input.companion_context, input.user_prompt
-        );
-
-        // Execute the agent turn with the enriched prompt
-        match agent.turn(&enriched_prompt).await {
-            Ok(response) => {
-                let duration_ms = start.elapsed().as_millis() as u64;
-
-                // Record final action
-                actions.push(ActionOutcome {
-                    action: OrchestratorAction::Conclude {
-                        response: response.clone(),
-                    },
-                    success: true,
-                    output: response.clone(),
-                    cost_usd: None,
-                    duration_ms,
-                });
-
-                Ok(OrchestratorTrace {
-                    orchestrator_name: self.name().to_string(),
-                    input,
-                    actions,
-                    final_response: response,
-                    total_cost_usd: total_cost,
-                    total_duration_ms: start.elapsed().as_millis() as u64,
-                    iterations: 1,
-                })
-            }
-            Err(e) => {
-                let response = format!("Error: {}", e);
-                let duration_ms = start.elapsed().as_millis() as u64;
-
-                actions.push(ActionOutcome {
-                    action: OrchestratorAction::Conclude {
-                        response: response.clone(),
-                    },
-                    success: false,
-                    output: response.clone(),
-                    cost_usd: None,
-                    duration_ms,
-                });
-
-                Ok(OrchestratorTrace {
-                    orchestrator_name: self.name().to_string(),
-                    input,
-                    actions,
-                    final_response: response,
-                    total_cost_usd: total_cost,
-                    total_duration_ms: start.elapsed().as_millis() as u64,
-                    iterations: 1,
-                })
-            }
-        }
-    }
-
-    async fn is_ready(&self) -> bool {
-        true // Native orchestrator is always ready
+        Ok(OrchestratorTrace {
+            orchestrator_name: self.name().to_string(),
+            input,
+            actions: vec![ActionOutcome {
+                action: OrchestratorAction::Conclude {
+                    response: response.clone(),
+                },
+                success: true,
+                output: response.clone(),
+                cost_usd: None,
+                duration_ms,
+            }],
+            final_response: response,
+            total_cost_usd: 0.0,
+            total_duration_ms: duration_ms,
+            iterations: 1,
+        })
     }
 
     async fn estimate_cost(&self, _input: &OrchestratorInput) -> Result<f64> {
-        // Rough estimate based on provider
-        let provider = self.config.default_provider.as_deref().unwrap_or("anthropic");
-        Ok(match provider {
-            "anthropic" => 0.005,  // ~$0.005 per request (Claude)
-            "gemini" => 0.001,     // ~$0.001 per request (Gemini)
-            "ollama" => 0.0,       // Free (local)
+        // Rough per-request estimate by primary provider.
+        Ok(match self.provider.as_str() {
+            "gemini" => 0.001,
+            "ollama" => 0.0,
             _ => 0.005,
         })
     }
 }
 
-impl Default for NativeOrchestrator {
-    fn default() -> Self {
-        Self::new()
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::prime::orchestrator::ExecutionConstraints;
+
+    #[test]
+    fn enrich_prompt_includes_goals_tasks_and_request() {
+        let input = OrchestratorInput {
+            user_prompt: "ship v1".into(),
+            empire_context: "## Empire".into(),
+            companion_context: "## Tasks".into(),
+            mindset: "MINDSET".into(),
+            history: vec![],
+            available_tools: vec![],
+            constraints: ExecutionConstraints::default(),
+        };
+        let p = enrich_prompt(&input);
+        assert!(p.contains("## Empire"));
+        assert!(p.contains("## Tasks"));
+        assert!(p.ends_with("ship v1"));
+        assert!(!p.contains("MINDSET"));
     }
 }

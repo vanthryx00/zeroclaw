@@ -1,25 +1,23 @@
-/// Prime Zero hybrid orchestrator — intelligently routes between multiple backends.
-///
-/// The HybridOrchestrator is the secret sauce: it dispatches requests to the best
-/// available orchestrator based on task type, cost, latency, and availability.
-///
-/// Routing strategy:
-/// 1. Classify the request (simple query, complex reasoning, task automation, etc.)
-/// 2. Check which backends are ready (Llama Prime available? Ollama up? API key valid?)
-/// 3. Route to the optimal orchestrator (minimize cost, maximize quality/speed)
-/// 4. Fall back gracefully if the primary is unavailable
-/// 5. Collect metrics on what worked best for learning
-///
-/// This allows seamless integration of Llama Prime, other frameworks, and ZeroClaw's
-/// native engine without requiring code rewrites.
+//! Prime Zero hybrid orchestrator — intelligently routes between multiple backends.
+//!
+//! The HybridOrchestrator is the secret sauce: it dispatches requests to the best
+//! available orchestrator based on task type, cost, latency, and availability.
+//!
+//! Routing strategy:
+//! 1. Classify the request (simple query, complex reasoning, task automation, etc.)
+//! 2. Check which backends are ready (Llama Prime available? Ollama up? API key valid?)
+//! 3. Route to the optimal orchestrator (minimize cost, maximize quality/speed)
+//! 4. Fall back gracefully if the primary is unavailable
+//! 5. Collect metrics on what worked best for learning
+//!
+//! This allows seamless integration of Llama Prime, other frameworks, and ZeroClaw's
+//! native engine without requiring code rewrites.
 
-use crate::offline::empire::Empire;
-use crate::offline::mindset::Mindset;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
-use tracing::{info, warn, debug};
+use tracing::{debug, info};
 
 use super::orchestrator::{Orchestrator, OrchestratorInput, OrchestratorTrace};
 
@@ -86,23 +84,12 @@ pub struct HybridOrchestrator {
 }
 
 /// Tracks performance of each orchestrator over time.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct OrchestrationMetrics {
     pub calls_by_orchestrator: HashMap<String, u32>,
     pub success_by_orchestrator: HashMap<String, u32>,
     pub avg_cost_by_orchestrator: HashMap<String, f64>,
     pub avg_latency_by_orchestrator: HashMap<String, u64>, // ms
-}
-
-impl Default for OrchestrationMetrics {
-    fn default() -> Self {
-        Self {
-            calls_by_orchestrator: HashMap::new(),
-            success_by_orchestrator: HashMap::new(),
-            avg_cost_by_orchestrator: HashMap::new(),
-            avg_latency_by_orchestrator: HashMap::new(),
-        }
-    }
 }
 
 impl HybridOrchestrator {
@@ -127,7 +114,10 @@ impl HybridOrchestrator {
     }
 
     /// Find the best orchestrator for a given task
-    async fn select_orchestrator(&self, input: &OrchestratorInput) -> Result<Arc<dyn Orchestrator>> {
+    async fn select_orchestrator(
+        &self,
+        input: &OrchestratorInput,
+    ) -> Result<Arc<dyn Orchestrator>> {
         let task_type = TaskType::from_prompt(&input.user_prompt);
         debug!("Task type: {:?}", task_type);
 
@@ -144,12 +134,10 @@ impl HybridOrchestrator {
         }
 
         let selected = match &self.selection {
-            SelectionCriteria::Specific(name) => {
-                candidates
-                    .into_iter()
-                    .find(|(n, _)| n == name)
-                    .ok_or_else(|| anyhow::anyhow!("Orchestrator {} not available", name))?
-            }
+            SelectionCriteria::Specific(name) => candidates
+                .into_iter()
+                .find(|(n, _)| n == name)
+                .ok_or_else(|| anyhow::anyhow!("Orchestrator {} not available", name))?,
             SelectionCriteria::Cheapest => {
                 let mut best = None;
                 let mut min_cost = f64::MAX;
@@ -208,9 +196,14 @@ impl HybridOrchestrator {
                     }
                     TaskType::ComplexReasoning => {
                         // Use best quality (Llama Prime preferred)
-                        if let Some(found) = candidates.iter().find(|(n, _)| n.contains("llama") || n.contains("prime")) {
+                        if let Some(found) = candidates
+                            .iter()
+                            .find(|(n, _)| n.contains("llama") || n.contains("prime"))
+                        {
                             (found.0.clone(), found.1.clone())
-                        } else if let Some(found) = candidates.iter().find(|(n, _)| n.contains("native")) {
+                        } else if let Some(found) =
+                            candidates.iter().find(|(n, _)| n.contains("native"))
+                        {
                             (found.0.clone(), found.1.clone())
                         } else {
                             candidates.first().unwrap().clone()
@@ -226,15 +219,16 @@ impl HybridOrchestrator {
                     }
                     TaskType::RealtimeInteraction => {
                         // Use fastest (native/ollama)
-                        if let Some(found) = candidates.iter().find(|(n, _)| n.contains("native") || n.contains("ollama")) {
+                        if let Some(found) = candidates
+                            .iter()
+                            .find(|(n, _)| n.contains("native") || n.contains("ollama"))
+                        {
                             (found.0.clone(), found.1.clone())
                         } else {
                             candidates.first().unwrap().clone()
                         }
                     }
-                    TaskType::Specialized { domain: _ } => {
-                        candidates.first().unwrap().clone()
-                    }
+                    TaskType::Specialized { domain: _ } => candidates.first().unwrap().clone(),
                 }
             }
         };
@@ -262,13 +256,26 @@ impl Orchestrator for HybridOrchestrator {
         // Update metrics
         let mut metrics = self.metrics.lock().await;
         let orch_name = selected.name();
-        *metrics.calls_by_orchestrator.entry(orch_name.to_string()).or_insert(0) += 1;
+        *metrics
+            .calls_by_orchestrator
+            .entry(orch_name.to_string())
+            .or_insert(0) += 1;
         if trace.actions.iter().all(|a| a.success) {
-            *metrics.success_by_orchestrator.entry(orch_name.to_string()).or_insert(0) += 1;
+            *metrics
+                .success_by_orchestrator
+                .entry(orch_name.to_string())
+                .or_insert(0) += 1;
         }
 
         trace.orchestrator_name = self.name().to_string();
         Ok(trace)
+    }
+
+    async fn estimate_cost(&self, input: &OrchestratorInput) -> Result<f64> {
+        self.select_orchestrator(input)
+            .await?
+            .estimate_cost(input)
+            .await
     }
 
     async fn is_ready(&self) -> bool {
@@ -284,5 +291,92 @@ impl Orchestrator for HybridOrchestrator {
 impl Default for HybridOrchestrator {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::prime::orchestrator::{
+        ActionOutcome, ExecutionConstraints, OrchestratorAction, OrchestratorInput,
+    };
+
+    #[derive(Debug)]
+    struct EchoOrchestrator;
+
+    #[async_trait::async_trait]
+    impl Orchestrator for EchoOrchestrator {
+        fn name(&self) -> &str {
+            "echo"
+        }
+
+        async fn execute(&self, input: OrchestratorInput) -> Result<OrchestratorTrace> {
+            let response = format!("echo: {}", input.user_prompt);
+            Ok(OrchestratorTrace {
+                orchestrator_name: self.name().to_string(),
+                actions: vec![ActionOutcome {
+                    action: OrchestratorAction::Conclude {
+                        response: response.clone(),
+                    },
+                    success: true,
+                    output: response.clone(),
+                    cost_usd: None,
+                    duration_ms: 0,
+                }],
+                input,
+                final_response: response,
+                total_cost_usd: 0.0,
+                total_duration_ms: 0,
+                iterations: 1,
+            })
+        }
+    }
+
+    fn input(prompt: &str) -> OrchestratorInput {
+        OrchestratorInput {
+            user_prompt: prompt.into(),
+            empire_context: String::new(),
+            companion_context: String::new(),
+            mindset: String::new(),
+            history: vec![],
+            available_tools: vec![],
+            constraints: ExecutionConstraints::default(),
+        }
+    }
+
+    #[tokio::test]
+    async fn hybrid_without_backends_errors() {
+        let hybrid = HybridOrchestrator::new();
+        assert!(hybrid.execute(input("hello")).await.is_err());
+    }
+
+    #[tokio::test]
+    async fn hybrid_routes_to_registered_backend_and_records_metrics() {
+        let mut hybrid = HybridOrchestrator::new();
+        hybrid.register("echo", Arc::new(EchoOrchestrator));
+
+        let trace = hybrid.execute(input("hello")).await.unwrap();
+        assert_eq!(trace.final_response, "echo: hello");
+
+        let metrics = hybrid.metrics().await;
+        assert_eq!(metrics.calls_by_orchestrator.get("echo"), Some(&1));
+        assert_eq!(metrics.success_by_orchestrator.get("echo"), Some(&1));
+    }
+
+    #[test]
+    fn task_type_classifies_prompts() {
+        assert_eq!(
+            TaskType::from_prompt("run the tests"),
+            TaskType::TaskExecution
+        );
+        assert_eq!(
+            TaskType::from_prompt("analyze this"),
+            TaskType::ComplexReasoning
+        );
+        assert_eq!(
+            TaskType::from_prompt("quick answer"),
+            TaskType::RealtimeInteraction
+        );
+        assert_eq!(TaskType::from_prompt("hello"), TaskType::SimpleQuery);
     }
 }
