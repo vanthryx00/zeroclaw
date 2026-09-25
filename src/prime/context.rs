@@ -1,19 +1,19 @@
-/// Prime Zero unified execution context — merges Empire, Companion, and agent state.
-///
-/// This is the execution heart of Prime Zero: a rich context that orchestrators
-/// can query and update to make intelligent, goal-aware decisions.
-///
-/// Contains:
-/// - Empire mission and goal state
-/// - Companion active tasks
-/// - Agent mindset and persona
-/// - Conversation history
-/// - Available tools and providers
-/// - Execution metrics and traces
+//! Prime Zero unified execution context — merges Empire, Companion, and agent state.
+//!
+//! This is the execution heart of Prime Zero: a rich context that orchestrators
+//! can query and update to make intelligent, goal-aware decisions.
+//!
+//! Contains:
+//! - Empire mission and goal state
+//! - Companion active tasks
+//! - Agent mindset and persona
+//! - Conversation history
+//! - Available tools and providers
+//! - Execution metrics and traces
 
+use crate::companion::tasks::CompanionTaskList;
 use crate::offline::empire::Empire;
 use crate::offline::mindset::Mindset;
-use crate::companion::tasks::CompanionTaskList;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -69,11 +69,7 @@ pub struct ExecutionMetrics {
 
 impl PrimeContext {
     /// Create a new unified context.
-    pub fn new(
-        empire: Empire,
-        companion: CompanionTaskList,
-        mindset: Mindset,
-    ) -> Self {
+    pub fn new(empire: Empire, companion: CompanionTaskList, mindset: Mindset) -> Self {
         let session_id = uuid::Uuid::new_v4().to_string();
         Self {
             empire: Arc::new(tokio::sync::Mutex::new(empire)),
