@@ -10,6 +10,7 @@ Last verified: **February 20, 2026**.
 |---|---|
 | `onboard` | Initialize workspace/config quickly or interactively |
 | `agent` | Run interactive chat or single-message mode |
+| `prime` | Run Prime Zero (hybrid orchestrator over the native agent with Empire goals + Companion task context) |
 | `gateway` | Start webhook and WhatsApp HTTP gateway |
 | `daemon` | Start supervised runtime (gateway + channels + optional heartbeat/scheduler) |
 | `service` | Manage user-level OS service lifecycle |
@@ -51,6 +52,21 @@ Last verified: **February 20, 2026**.
 - `zeroclaw agent -m "Hello"`
 - `zeroclaw agent --provider <ID> --model <MODEL> --temperature <0.0-2.0>`
 - `zeroclaw agent --peripheral <board:path>`
+
+### `prime`
+
+- `zeroclaw prime` — interactive session (default)
+- `zeroclaw prime -m "Build a REST API"` — single message, then exit
+- `zeroclaw prime -m "..." -i` — send a message, then stay interactive
+- `zeroclaw prime --provider ollama --model llama3.2` — fully offline
+- `zeroclaw prime --mission "<statement>"` — set/update the persisted Empire mission
+
+Behavior:
+
+- Provider fallback chain: selected primary, then remaining of Anthropic → Gemini → Ollama.
+- Uses SQLite memory and injects `<workspace>/mindset.toml` into the system prompt; state persists in `<workspace>/empire.toml` and `<workspace>/companion_tasks.toml`.
+- Each turn is enriched with current Empire goals and enabled Companion tasks.
+- Session commands: `/status`, `/metrics`, `/help`, `/quit`.
 
 ### `gateway` / `daemon`
 
