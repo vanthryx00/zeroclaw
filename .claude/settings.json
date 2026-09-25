@@ -1,0 +1,43 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Read|Edit|Write|Grep|Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'mkdir -p ~/.claude/session-snapshots && echo \"[$(date +%Y-%m-%dT%H:%M:%S)] Tool: $(jq -r .tool_name)\" >> ~/.claude/session-snapshots/token-burn.log'",
+            "statusMessage": "Monitoring token usage...",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c '\nset -e\nLOG_FILE=\"$HOME/.claude/session-snapshots/token-burn.log\"\nSNAPSHOT_DIR=\"$HOME/.claude/session-snapshots\"\nmkdir -p \"$SNAPSHOT_DIR\"\n\n# Log message submission\necho \"[$(date +%Y-%m-%dT%H:%M:%S)] Message submitted\" >> \"$LOG_FILE\"\n\n# Count approximate tokens from log (rough estimate: ~4 chars per token)\nLINES=$(wc -l < \"$LOG_FILE\" 2>/dev/null || echo 0)\nAPPROX_TOKENS=$((LINES * 50))\n\n# If approaching limits (rough estimate of ~100k token window), trigger snapshot\nif [ $APPROX_TOKENS -gt 75000 ]; then\n  SNAPSHOT_FILE=\"$SNAPSHOT_DIR/snapshot-$(date +%Y%m%d-%H%M%S).md\"\n  {\n    echo \"# Session Snapshot - $(date)\"\n    echo \"\"\n    echo \"## Token Burn Analysis\"\n    echo \"- Approximate tokens: $APPROX_TOKENS\"\n    echo \"- Capacity used: ~$((APPROX_TOKENS * 100 / 100000))%\"\n    echo \"- Status: High token consumption detected (>75% capacity)\"\n    echo \"\"\n    echo \"## Recent Activity Log\"\n    echo \"\\`\\`\\`\"\n    tail -20 \"$LOG_FILE\"\n    echo \"\\`\\`\\`\"\n    echo \"\"\n    echo \"## Recommended Actions\"\n    echo \"- Review conversation context for consolidation\"\n    echo \"- Consider creating a new session for fresh context window\"\n    echo \"- Run \\`/compact\\` to compress conversation history\"\n  } > \"$SNAPSHOT_FILE\"\n  echo \"[$(date +%Y-%m-%dT%H:%M:%S)] ⚠️  Token capacity alert - Snapshot saved to $SNAPSHOT_FILE\" >> \"$LOG_FILE\"\nfi\n'",
+            "statusMessage": "Checking token capacity...",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c '\nSNAPSHOT_DIR=\"$HOME/.claude/session-snapshots\"\nLOG_FILE=\"$HOME/.claude/session-snapshots/token-burn.log\"\nmkdir -p \"$SNAPSHOT_DIR\"\n\n# Reset token burn log after compact\necho \"[$(date +%Y-%m-%dT%H:%M:%S)] Conversation compacted - token burn log reset\" > \"$LOG_FILE\"\n\n# Create post-compact snapshot\nSNAPSHOT_FILE=\"$SNAPSHOT_DIR/post-compact-$(date +%Y%m%d-%H%M%S).md\"\n{\n  echo \"# Post-Compact Snapshot - $(date)\"\n  echo \"\"\n  echo \"## Compaction Summary\"\n  echo \"- Timestamp: $(date +%Y-%m-%dT%H:%M:%S)\"\n  echo \"- Token burn log cleared and reset\"\n  echo \"- Context window refreshed\"\n  echo \"\"\n  echo \"## Next Steps\"\n  echo \"- Continue working with fresh context\"\n  echo \"- Token burn monitoring resumed\"\n  echo \"- Auto-snapshot triggers when capacity reaches 75%\"\n} > \"$SNAPSHOT_FILE\"\n'",
+            "statusMessage": "Resetting token monitoring...",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
