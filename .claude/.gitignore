@@ -1,0 +1,10 @@
+# Session snapshots and token monitoring logs
+session-snapshots/
+*.log
+
+# User-local settings (may contain sensitive data)
+settings.local.json
+
+# Cache and temporary files
+.cache/
+*.tmp

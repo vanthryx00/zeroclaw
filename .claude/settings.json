@@ -1,0 +1,43 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Read|Edit|Write|Grep|Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'mkdir -p ~/.claude/session-snapshots && echo \"[$(date +%Y-%m-%dT%H:%M:%S)] Tool: $(jq -r .tool_name)\" >> ~/.claude/session-snapshots/token-burn.log'",
+            "statusMessage": "Monitoring token usage...",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c '\nset -e\nLOG_FILE=\"$HOME/.claude/session-snapshots/token-burn.log\"\nSNAPSHOT_DIR=\"$HOME/.claude/session-snapshots\"\nmkdir -p \"$SNAPSHOT_DIR\"\nTIMESTAMP=$(date +%Y-%m-%dT%H:%M:%S)\n\n# Log message submission\necho \"[$TIMESTAMP] Turn\" >> \"$LOG_FILE\"\n\n# Monitor burn RATE: 1500 tokens/turn = danger threshold\nLINES=$(wc -l < \"$LOG_FILE\" 2>/dev/null || echo 0)\n\n# Calculate recent burn rate (last 3 turns)\nif [ $LINES -gt 3 ]; then\n  RECENT_LINES=$(tail -3 \"$LOG_FILE\" | wc -l)\n  BURN_RATE=$((RECENT_LINES * 50))\nelse\n  BURN_RATE=$((LINES * 50))\nfi\n\n# If burn rate exceeds 1500 tokens/turn, trigger compaction\nif [ $BURN_RATE -ge 1500 ]; then\n  SNAPSHOT_FILE=\"$SNAPSHOT_DIR/BURN-ALERT-$(date +%Y%m%d-%H%M%S).md\"\n  {\n    echo \"# 🔥 HIGH TOKEN BURN RATE - $(date)\"\n    echo \"\"\n    echo \"## ALERT\"\n    echo \"**Burn Rate: $BURN_RATE tokens/turn** (Threshold: 1500)\"\n    echo \"\"\n    echo \"## ACTION REQUIRED\"\n    echo \"### Run: \\`/compact\\`\"\n    echo \"\"\n    echo \"**Why:** Context is bloating. Compaction resets and minimizes token waste.\"\n    echo \"\"\n    echo \"## Stats\"\n    echo \"- Total turns logged: $LINES\"\n    echo \"- Last 3 turns consumed: ~$BURN_RATE tokens\"\n    echo \"- Efficiency: LOW (tokens wasting on old history)\"\n  } > \"$SNAPSHOT_FILE\"\n  echo \"[$TIMESTAMP] 🔥 BURN RATE $BURN_RATE/turn - COMPACT NOW\" >> \"$LOG_FILE\"\nfi\n'",
+            "statusMessage": "Monitoring burn rate (1500/turn threshold)...",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c '\nSNAPSHOT_DIR=\"$HOME/.claude/session-snapshots\"\nLOG_FILE=\"$HOME/.claude/session-snapshots/token-burn.log\"\nmkdir -p \"$SNAPSHOT_DIR\"\n\n# Reset burn tracking log after compact\necho \"[$(date +%Y-%m-%dT%H:%M:%S)] RESET - Fresh context window\" > \"$LOG_FILE\"\n\n# Create reset snapshot\nSNAPSHOT_FILE=\"$SNAPSHOT_DIR/RESET-$(date +%Y%m%d-%H%M%S).md\"\n{\n  echo \"# ✅ CONTEXT RESET - $(date)\"\n  echo \"\"\n  echo \"## Status\"\n  echo \"Conversation compacted. Context window reset to minimal.\"\n  echo \"\"\n  echo \"## Burn Rate Monitoring\"\n  echo \"Resumed. Will alert when burn rate exceeds 1500 tokens/turn.\"\n  echo \"\"\n  echo \"## Philosophy\"\n  echo \"Keep context lean. When burn rate spikes = compaction time.\"\n} > \"$SNAPSHOT_FILE\"\n'",
+            "statusMessage": "Resetting burn tracking...",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
