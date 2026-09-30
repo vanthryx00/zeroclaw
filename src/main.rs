@@ -282,6 +282,47 @@ Examples:
         interactive: bool,
     },
 
+    /// Run Prime Zero — next-generation hybrid orchestration engine
+    #[command(long_about = "\
+Run Prime Zero: next-generation hybrid autonomous agent built on intelligent
+orchestration. Merges ZeroClaw's modular architecture with multiple reasoning
+backends (Llama Prime, native agent), with persistent Empire goals and
+Companion autonomous task execution.
+
+Features:
+- Intelligent orchestrator routing: routes to best backend by task type
+- Multi-provider fallback: Anthropic → Gemini → Ollama (fully offline)
+- Empire goal tracking and prioritization
+- Companion autonomous task execution
+- Unified execution context with full observability
+
+Examples:
+  zeroclaw prime                                   # interactive with native orchestrator
+  zeroclaw prime -m \"Build a REST API\"           # single task
+  zeroclaw prime --provider ollama --model llama3.2  # fully offline
+  zeroclaw prime -i                                # interactive mode")]
+    Prime {
+        /// Single message mode (don't enter interactive mode)
+        #[arg(short, long)]
+        message: Option<String>,
+
+        /// Provider to use (anthropic, gemini, ollama). Default: anthropic
+        #[arg(short, long)]
+        provider: Option<String>,
+
+        /// Model override
+        #[arg(long)]
+        model: Option<String>,
+
+        /// Mission statement for this session
+        #[arg(long)]
+        mission: Option<String>,
+
+        /// Stay in interactive mode after a `-m` message
+        #[arg(short, long)]
+        interactive: bool,
+    },
+
     /// Start the gateway server (webhooks, websockets)
     #[command(long_about = "\
 Start the gateway server (webhooks, websockets).
@@ -964,6 +1005,14 @@ async fn main() -> Result<()> {
         } => agent::run(config, message, provider, model, temperature, peripheral)
             .await
             .map(|_| ()),
+
+        Commands::Prime {
+            message,
+            provider,
+            model,
+            mission,
+            interactive,
+        } => prime::runner::run(config, provider, model, mission, message, interactive).await,
 
         Commands::Prime {
             message,
