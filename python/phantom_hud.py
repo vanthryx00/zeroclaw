@@ -25,7 +25,6 @@ except ImportError:
 
 DB_PATH = os.environ.get("PHANTOM_DB", "./phantom_swarm.db")
 
-# ANSI colour palette
 class C:
     RESET  = "\033[0m"
     BOLD   = "\033[1m"
@@ -38,15 +37,8 @@ class C:
     CYAN   = "\033[36m"
     WHITE  = "\033[37m"
     BGBLK  = "\033[40m"
-    BGRED  = "\033[41m"
-    BGGRN  = "\033[42m"
-    BGYLW  = "\033[43m"
-    BGBLU  = "\033[44m"
-    BGMAG  = "\033[45m"
-    BGCYN  = "\033[46m"
 
 def clr(): print("\033[2J\033[H", end="")
-def mv(r, c): print(f"\033[{r};{c}H", end="")
 def hide_cursor(): print("\033[?25l", end="")
 def show_cursor(): print("\033[?25h", end="")
 
@@ -75,6 +67,7 @@ STATUS_COLORS = {
     "approved": C.GREEN,
     "denied":   C.RED,
     "pending":  C.YELLOW,
+    "clear":    C.GREEN,
 }
 
 def open_db(path):
@@ -138,7 +131,6 @@ def draw_hud(db, mission_id=None, missions=None):
     W = term_width()
     now = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
 
-    # Header
     hdr = " PHANTOM SWARM v2.0 — OPERATOR HUD "
     pad = (W - len(hdr)) // 2
     print(C.BOLD + C.BGBLK + C.CYAN + "=" * W + C.RESET)
@@ -147,7 +139,6 @@ def draw_hud(db, mission_id=None, missions=None):
     print(f"  {C.DIM}Updated: {now}   DB: {DB_PATH}{C.RESET}")
     print()
 
-    # Mission selector
     if missions is None:
         missions = get_missions(db)
 
@@ -169,7 +160,6 @@ def draw_hud(db, mission_id=None, missions=None):
             print(f"  {marker}{C.CYAN}{m['mission_id']}{C.RESET}  {m['target']:<28} {C.DIM}{m['created_at'][:19]}{C.RESET}")
         print()
 
-    # Agent grid
     agent_statuses = get_agent_status(db, active_mission["mission_id"]) if active_mission else {}
     sentinel_q = get_sentinel_queue(db, active_mission["mission_id"]) if active_mission else []
     chain_count = get_chain_count(db, active_mission["mission_id"]) if active_mission else 0
@@ -200,8 +190,6 @@ def draw_hud(db, mission_id=None, missions=None):
         print(f"  {color}{C.BOLD}{num:>3}  {name:<10}{C.RESET}  {C.DIM}{role:<32}{C.RESET}  {C.DIM}{resp_short:<38}{C.RESET}  {scol}{last[:30]}{C.RESET}")
 
     print()
-
-    # SENTINEL queue
     print(f"  {C.BOLD}SENTINEL QUEUE{C.RESET}  ({len(sentinel_q)} pending)")
     print("  " + "-" * 60)
     if sentinel_q:
@@ -214,7 +202,6 @@ def draw_hud(db, mission_id=None, missions=None):
         print(f"    {C.GREEN}All clear.{C.RESET}")
     print()
 
-    # ORACLE
     print(f"  {C.BOLD}ORACLE EVOLUTION MEMORY{C.RESET}  ({oracle_data.get('total', 0)} outcomes)")
     print("  " + "-" * 60)
     for p in oracle_data.get("profiles", [])[:6]:
@@ -223,49 +210,36 @@ def draw_hud(db, mission_id=None, missions=None):
         bar = int(succ * 20) * "#" + int((1-succ) * 20) * "."
         print(f"    {p['defender_profile']:<14} n={p['COUNT(*)']:<4} succ={succ:.0%} det={det:.0%}  [{bar}]")
     if not oracle_data.get("profiles"):
-        print(f"    {C.DIM}No evolution data yet. Record outcomes: python phantom_swarm.py evolve --record T1003:smb:1:1{C.RESET}")
+        print(f"    {C.DIM}No evolution data yet. Record: python phantom_swarm.py evolve --record T1003:smb:1:1{C.RESET}")
     print()
 
-    # Footer
     print("  " + "=" * (W - 4))
-    cmds = [
-        ("deploy", "new mission"),
-        ("status", "SENTINEL queue"),
-        ("report", "full report"),
-        ("evolve", "ORACLE memory"),
-        ("watermark", "verify identity"),
-    ]
-    cmd_line = "  Cmds: " + "  |  ".join(f"{C.CYAN}python phantom_swarm.py {k}{C.RESET} ({v})" for k, v in cmds)
-    print(cmd_line)
-    print(f"  {C.DIM}Refresh: Ctrl+C to exit | --once for single snapshot{C.RESET}")
+    cmds = [("deploy","new mission"),("status","SENTINEL queue"),("report","full report"),("evolve","ORACLE")]
+    print("  Cmds: " + "  |  ".join(f"{C.CYAN}phantom_swarm.py {k}{C.RESET} ({v})" for k, v in cmds))
+    print(f"  {C.DIM}Ctrl+C to exit | --once for single snapshot{C.RESET}")
     sys.stdout.flush()
 
 def main():
     global DB_PATH
     p = argparse.ArgumentParser(prog="phantom_hud")
     p.add_argument("--mission", help="Pin to a specific mission ID")
-    p.add_argument("--once", action="store_true", help="Single snapshot, no loop")
-    p.add_argument("--interval", type=int, default=5, help="Refresh interval seconds (default 5)")
-    p.add_argument("--db", default=DB_PATH, help="Database path")
+    p.add_argument("--once", action="store_true", help="Single snapshot")
+    p.add_argument("--interval", type=int, default=5, help="Refresh seconds")
+    p.add_argument("--db", default=DB_PATH)
     args = p.parse_args()
-
     DB_PATH = args.db
-
     hide_cursor()
     try:
         while True:
             db = open_db(DB_PATH)
-            missions = get_missions(db)
-            draw_hud(db, args.mission, missions)
+            draw_hud(db, args.mission)
             if db: db.close()
-            if args.once:
-                break
+            if args.once: break
             time.sleep(args.interval)
     except KeyboardInterrupt:
         pass
     finally:
-        show_cursor()
-        print()
+        show_cursor(); print()
 
 if __name__ == "__main__":
     main()

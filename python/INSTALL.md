@@ -18,14 +18,13 @@ sudo apt update && sudo apt install -y \
 
 ## 2. Clone / Copy the Files
 
-If you cloned the zeroclaw repo:
 ```bash
 cd /opt
 git clone https://github.com/vanthryx00/zeroclaw.git
 cd zeroclaw/python
 ```
 
-Or unzip the bundle if you have the ZIP:
+Or unzip the bundle:
 ```bash
 unzip phantom_swarm_bundle.zip -d /opt/phantom
 cd /opt/phantom
@@ -38,35 +37,26 @@ cd /opt/phantom
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install python-dotenv
-```
-
-Optional — richer terminal output:
-```bash
-pip install rich
+pip install -r requirements.txt
 ```
 
 ---
 
 ## 4. Environment Configuration
 
-Create `.env` in the `python/` directory:
-
 ```bash
 cp .env.example .env
 nano .env
 ```
 
-Edit these values:
-
 ```ini
 # Your operator identity — watermarked on every mission
 PHANTOM_OPERATOR=VANTHRYX
 
-# HMAC key for watermark signing — CHANGE THIS to a long random string
+# HMAC key for watermark signing
 PHANTOM_SECRET=change-this-to-a-long-random-secret-string
 
-# Database paths (can be the same file or separate)
+# Database path
 PHANTOM_DB=./phantom_swarm.db
 ```
 
@@ -77,7 +67,7 @@ python3 -c "import secrets; print(secrets.token_hex(32))"
 
 ---
 
-## 5. First Run — PhantomGraph (core engine)
+## 5. PhantomGraph (core engine)
 
 ```bash
 source .venv/bin/activate
@@ -85,38 +75,39 @@ source .venv/bin/activate
 # Create an engagement
 python phantom_graph.py scope --target example.com --org "Test Corp" --defender smb
 
-# Build attack graph
+# Build attack graph + kill chains
 python phantom_graph.py graph --engagement-id ENG-XXXXXX
-
-# Find kill chains
 python phantom_graph.py paths --engagement-id ENG-XXXXXX --top 5
 
-# Generate operator briefing
+# Operator briefing
 python phantom_graph.py narrative --engagement-id ENG-XXXXXX
+
+# LotL advisor
+python phantom_graph.py lotl --os windows --priv user
 ```
 
 ---
 
-## 6. First Run — PhantomSwarm (13-agent system)
+## 6. PhantomSwarm (13-agent system)
 
 ```bash
-# Deploy 13-agent team against a target
+# Deploy 13-agent team
 python phantom_swarm.py deploy \
     --target example.com \
     --operator-id VANTHRYX \
     --defender enterprise \
     --objective data_exfiltration
 
-# Check SENTINEL queue (tasks needing your approval)
+# Check SENTINEL queue
 python phantom_swarm.py status --mission-id MSN-XXXXXX
 
-# Approve a HIGH-priority task
+# Approve a task
 python phantom_swarm.py approve --mission-id MSN-XXXXXX --task-id <task-id>
 
-# Full mission report
+# Full report
 python phantom_swarm.py report --mission-id MSN-XXXXXX
 
-# Verify your watermark / identity
+# Verify watermark
 python phantom_swarm.py watermark
 ```
 
@@ -125,13 +116,13 @@ python phantom_swarm.py watermark
 ## 7. HUD (Interactive Heads-Up Display)
 
 ```bash
-# Live view, auto-refreshes every 5 seconds
+# Live view, auto-refresh every 5s
 python phantom_hud.py
 
 # Pin to a specific mission
 python phantom_hud.py --mission MSN-XXXXXX
 
-# Single snapshot (no loop)
+# Single snapshot
 python phantom_hud.py --once
 ```
 
@@ -140,40 +131,36 @@ python phantom_hud.py --once
 ## 8. HackerOne Bounty Module
 
 ```bash
-# Paste a program's scope page into a text file
-nano scope.txt   # paste the program scope/rules from HackerOne
+# Save program scope/rules to a text file
+nano scope.txt
 
-# Start new bounty (agents read, write, and proof the scope)
+# Start new bounty — 3 agents analyze the scope
 python phantom_bounty.py new --program "Acme Corp" --paste scope.txt
 
-# Read the agent-written scope document
+# Read agent-written scope document
 python phantom_bounty.py read --bounty-id BNT-XXXXXX
 
-# Review and approve the checklist (you must check all 8 items)
-python phantom_bounty.py approve --bounty-id BNT-XXXXXX
-# Check one item at a time:
-python phantom_bounty.py approve --bounty-id BNT-XXXXXX --check-item 1
-# Or approve all at once:
+# Approve checklist (must check all 8 items)
 python phantom_bounty.py approve --bounty-id BNT-XXXXXX --check-all
 
-# Record a finding (once approved)
+# Record a finding
 python phantom_bounty.py finding \
     --bounty-id BNT-XXXXXX \
     --title "Reflected XSS in search parameter" \
     --severity HIGH \
     --target "https://app.example.com/search" \
-    --description "The q= parameter reflects unsanitized input into the DOM."
+    --description "The q= parameter reflects unsanitized input."
 
 # Full report
 python phantom_bounty.py report --bounty-id BNT-XXXXXX
 
-# Export timestamped proof-of-work log (for submission evidence)
+# Export timestamped proof-of-work log
 python phantom_bounty.py proof --bounty-id BNT-XXXXXX --output proof.txt
 ```
 
 ---
 
-## 9. Multi-Target (HYDRA Deployment)
+## 9. Multi-Target (HYDRA)
 
 ```bash
 python phantom_swarm.py multi \
@@ -184,14 +171,12 @@ python phantom_swarm.py multi \
 
 ---
 
-## 10. ORACLE Evolution (self-learning)
-
-After each engagement, record outcomes to improve future path scoring:
+## 10. ORACLE Evolution
 
 ```bash
+# Record outcomes after each engagement
 # Format: TECHNIQUE_ID:DEFENDER_PROFILE:DETECTED(0|1):SUCCEEDED(0|1)
 python phantom_swarm.py evolve --record T1059:enterprise:0:1
-python phantom_swarm.py evolve --record T1003:enterprise:1:0
 
 # View evolution memory and defender pattern shifts
 python phantom_swarm.py evolve --shifts
@@ -199,55 +184,18 @@ python phantom_swarm.py evolve --shifts
 
 ---
 
-## 11. Systemd Service (optional — run HUD on boot)
-
-```bash
-sudo tee /etc/systemd/system/phantom-hud.service << 'EOF'
-[Unit]
-Description=PhantomSwarm HUD
-After=network.target
-
-[Service]
-Type=simple
-User=YOUR_USER
-WorkingDirectory=/opt/zeroclaw/python
-ExecStart=/opt/zeroclaw/python/.venv/bin/python phantom_hud.py --once
-Restart=no
-EnvironmentFile=/opt/zeroclaw/python/.env
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-sudo systemctl daemon-reload
-sudo systemctl enable phantom-hud
-```
-
----
-
-## 12. File Reference
+## 11. File Reference
 
 | File | Purpose |
-|------|---------|
-| `phantom_graph.py` | Probabilistic kill chain reasoning engine (core library) |
-| `phantom_swarm.py` | 13-agent autonomous swarm (imports phantom_graph) |
-| `phantom_hud.py`   | Interactive terminal HUD for live agent monitoring |
-| `phantom_bounty.py`| HackerOne scope coordination + proof-of-work recorder |
-| `.env`             | Operator identity + secrets (never commit this) |
-| `phantom_swarm.db` | All missions, tasks, oracle memory, kill chains |
-| `phantom_bounty.db`| All bounties, scope docs, findings, proof logs |
+|------|--------|
+| `phantom_graph.py` | Probabilistic kill chain reasoning engine |
+| `phantom_swarm.py` | 13-agent autonomous swarm |
+| `phantom_hud.py`   | Interactive terminal HUD |
+| `phantom_bounty.py`| HackerOne scope + proof-of-work recorder |
+| `.env`             | Operator identity + secrets (never commit) |
+| `requirements.txt` | Python dependencies |
 
 ---
 
-## 13. Security Notes
-
-- Set `PHANTOM_SECRET` to a long random string; it signs every mission watermark.
-- Never commit `.env` to git.
-- The `PHANTOM_OPERATOR` value is embedded in every watermark — set it to your handle.
-- All databases are SQLite files in the local directory; back them up.
-- For additional isolation, run inside a Docker container or VM.
-
----
-
-**All capabilities are for authorized assessments and CTF engagements only.**
+**All capabilities are for authorized assessments and CTF engagements only.**  
 Unauthorized access to computer systems is illegal. Know your scope.
