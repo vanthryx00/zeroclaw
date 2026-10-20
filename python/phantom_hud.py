@@ -220,13 +220,13 @@ def draw_hud(db, mission_id=None, missions=None):
     sys.stdout.flush()
 
 def main():
+    global DB_PATH
     p = argparse.ArgumentParser(prog="phantom_hud")
     p.add_argument("--mission", help="Pin to a specific mission ID")
     p.add_argument("--once", action="store_true", help="Single snapshot")
     p.add_argument("--interval", type=int, default=5, help="Refresh seconds")
     p.add_argument("--db", default=DB_PATH)
     args = p.parse_args()
-    global DB_PATH
     DB_PATH = args.db
     hide_cursor()
     try:
