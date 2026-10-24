@@ -20,8 +20,8 @@ sudo apt update && sudo apt install -y \
 
 ```bash
 cd /opt
-git clone https://github.com/vanthryx00/zeroclaw.git
-cd zeroclaw/python
+git clone https://github.com/vanthryx00/mega-zero.git
+cd mega-zero/python
 ```
 
 Or unzip the bundle:

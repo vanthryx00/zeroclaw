@@ -7,7 +7,7 @@ use crate::config::Config;
 use anyhow::{bail, Context, Result};
 use console::style;
 
-/// Handle `zeroclaw memory <subcommand>` CLI commands.
+/// Handle `mega_zero memory <subcommand>` CLI commands.
 pub async fn handle_command(command: crate::MemoryCommands, config: &Config) -> Result<()> {
     match command {
         crate::MemoryCommands::List {

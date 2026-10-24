@@ -1,4 +1,4 @@
-//! Native Prime Zero orchestrator — ZeroClaw's agent loop behind the `Orchestrator` trait.
+//! Native Prime Zero orchestrator — MegaZero's agent loop behind the `Orchestrator` trait.
 //!
 //! Holds a single long-lived [`Agent`] (built once by the runner with the mindset
 //! injected into its system prompt, SQLite memory, and the provider fallback chain),

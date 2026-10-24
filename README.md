@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="zeroclaw.png" alt="ZeroClaw" width="200" />
+  <img src="mega-zero.png" alt="MegaZero" width="200" />
 </p>
 
-<h1 align="center">ZeroClaw 🦀</h1>
+<h1 align="center">MegaZero 🦀</h1>
 
 <p align="center">
   <strong>Zero overhead. Zero compromise. 100% Rust. 100% Agnostic.</strong><br>
@@ -13,12 +13,12 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT" /></a>
   <a href="NOTICE"><img src="https://img.shields.io/badge/contributors-27+-green.svg" alt="Contributors" /></a>
   <a href="https://buymeacoffee.com/argenistherose"><img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-yellow.svg?style=flat&logo=buy-me-a-coffee" alt="Buy Me a Coffee" /></a>
-  <a href="https://x.com/zeroclawlabs?s=21"><img src="https://img.shields.io/badge/X-%40zeroclawlabs-000000?style=flat&logo=x&logoColor=white" alt="X: @zeroclawlabs" /></a>
+  <a href="https://x.com/mega-zerolabs?s=21"><img src="https://img.shields.io/badge/X-%40mega-zerolabs-000000?style=flat&logo=x&logoColor=white" alt="X: @mega-zerolabs" /></a>
   <a href="https://www.xiaohongshu.com/user/profile/67cbfc43000000000d008307?xsec_token=AB73VnYnGNx5y36EtnnZfGmAmS-6Wzv8WMuGpfwfkg6Yc%3D&xsec_source=pc_search"><img src="https://img.shields.io/badge/Xiaohongshu-Official-FF2442?style=flat" alt="Xiaohongshu: Official" /></a>
-  <a href="https://t.me/zeroclawlabs"><img src="https://img.shields.io/badge/Telegram-%40zeroclawlabs-26A5E4?style=flat&logo=telegram&logoColor=white" alt="Telegram: @zeroclawlabs" /></a>
-  <a href="https://t.me/zeroclawlabs_cn"><img src="https://img.shields.io/badge/Telegram%20CN-%40zeroclawlabs__cn-26A5E4?style=flat&logo=telegram&logoColor=white" alt="Telegram CN: @zeroclawlabs_cn" /></a>
-  <a href="https://t.me/zeroclawlabs_ru"><img src="https://img.shields.io/badge/Telegram%20RU-%40zeroclawlabs__ru-26A5E4?style=flat&logo=telegram&logoColor=white" alt="Telegram RU: @zeroclawlabs_ru" /></a>
-  <a href="https://www.reddit.com/r/zeroclawlabs/"><img src="https://img.shields.io/badge/Reddit-r%2Fzeroclawlabs-FF4500?style=flat&logo=reddit&logoColor=white" alt="Reddit: r/zeroclawlabs" /></a>
+  <a href="https://t.me/mega-zerolabs"><img src="https://img.shields.io/badge/Telegram-%40mega-zerolabs-26A5E4?style=flat&logo=telegram&logoColor=white" alt="Telegram: @mega-zerolabs" /></a>
+  <a href="https://t.me/mega-zerolabs_cn"><img src="https://img.shields.io/badge/Telegram%20CN-%40mega-zerolabs__cn-26A5E4?style=flat&logo=telegram&logoColor=white" alt="Telegram CN: @mega-zerolabs_cn" /></a>
+  <a href="https://t.me/mega-zerolabs_ru"><img src="https://img.shields.io/badge/Telegram%20RU-%40mega-zerolabs__ru-26A5E4?style=flat&logo=telegram&logoColor=white" alt="Telegram RU: @mega-zerolabs_ru" /></a>
+  <a href="https://www.reddit.com/r/mega-zerolabs/"><img src="https://img.shields.io/badge/Reddit-r%2Fmega-zerolabs-FF4500?style=flat&logo=reddit&logoColor=white" alt="Reddit: r/mega-zerolabs" /></a>
 </p>
 <p align="center">
 Built by students and members of the Harvard, MIT, and Sundai.Club communities.
@@ -58,7 +58,7 @@ Use this board for important notices (breaking changes, security advisories, mai
 
 | Date (UTC) | Level | Notice | Action |
 |---|---|---|---|
-| 2026-02-19 | _Important_ | We have **not** launched an official website yet, and we are seeing impersonation attempts. Do **not** join any investment or fundraising activity claiming the ZeroClaw name. | Use this repository as the single source of truth. Follow [X (@zeroclawlabs)](https://x.com/zeroclawlabs?s=21), [Reddit (r/zeroclawlabs)](https://www.reddit.com/r/zeroclawlabs/), [Telegram (@zeroclawlabs)](https://t.me/zeroclawlabs), [Telegram CN (@zeroclawlabs_cn)](https://t.me/zeroclawlabs_cn), [Telegram RU (@zeroclawlabs_ru)](https://t.me/zeroclawlabs_ru), and [Xiaohongshu](https://www.xiaohongshu.com/user/profile/67cbfc43000000000d008307?xsec_token=AB73VnYnGNx5y36EtnnZfGmAmS-6Wzv8WMuGpfwfkg6Yc%3D&xsec_source=pc_search) for official updates. |
+| 2026-02-19 | _Important_ | We have **not** launched an official website yet, and we are seeing impersonation attempts. Do **not** join any investment or fundraising activity claiming the MegaZero name. | Use this repository as the single source of truth. Follow [X (@mega-zerolabs)](https://x.com/mega-zerolabs?s=21), [Reddit (r/mega-zerolabs)](https://www.reddit.com/r/mega-zerolabs/), [Telegram (@mega-zerolabs)](https://t.me/mega-zerolabs), [Telegram CN (@mega-zerolabs_cn)](https://t.me/mega-zerolabs_cn), [Telegram RU (@mega-zerolabs_ru)](https://t.me/mega-zerolabs_ru), and [Xiaohongshu](https://www.xiaohongshu.com/user/profile/67cbfc43000000000d008307?xsec_token=AB73VnYnGNx5y36EtnnZfGmAmS-6Wzv8WMuGpfwfkg6Yc%3D&xsec_source=pc_search) for official updates. |
 | 2026-02-19 | _Important_ | Anthropic updated the Authentication and Credential Use terms on 2026-02-19. OAuth authentication (Free, Pro, Max) is intended exclusively for Claude Code and Claude.ai; using OAuth tokens from Claude Free/Pro/Max in any other product, tool, or service (including Agent SDK) is not permitted and may violate the Consumer Terms of Service. | Please temporarily avoid Claude Code OAuth integrations to prevent potential loss. Original clause: [Authentication and Credential Use](https://code.claude.com/docs/en/legal-and-compliance#authentication-and-credential-use). |
 
 ### ✨ Features
@@ -68,18 +68,18 @@ Use this board for important notices (breaking changes, security advisories, mai
 - ⚡ **Fast Cold Starts:** Single-binary Rust runtime keeps command and daemon startup near-instant for daily operations.
 - 🌍 **Portable Architecture:** One binary-first workflow across ARM, x86, and RISC-V with swappable providers/channels/tools.
 
-### Why teams pick ZeroClaw
+### Why teams pick MegaZero
 
 - **Lean by default:** small Rust binary, fast startup, low memory footprint.
 - **Secure by design:** pairing, strict sandboxing, explicit allowlists, workspace scoping.
 - **Fully swappable:** core systems are traits (providers, channels, tools, memory, tunnels).
 - **No lock-in:** OpenAI-compatible provider support + pluggable custom endpoints.
 
-## Benchmark Snapshot (ZeroClaw vs OpenClaw, Reproducible)
+## Benchmark Snapshot (MegaZero vs OpenClaw, Reproducible)
 
 Local machine quick benchmark (macOS arm64, Feb 2026) normalized for 0.8GHz edge hardware.
 
-| | OpenClaw | NanoBot | PicoClaw | ZeroClaw 🦀 |
+| | OpenClaw | NanoBot | PicoClaw | MegaZero 🦀 |
 |---|---|---|---|---|
 | **Language** | TypeScript | Python | Go | **Rust** |
 | **RAM** | > 1GB | > 100MB | < 10MB | **< 5MB** |
@@ -87,10 +87,10 @@ Local machine quick benchmark (macOS arm64, Feb 2026) normalized for 0.8GHz edge
 | **Binary Size** | ~28MB (dist) | N/A (Scripts) | ~8MB | **~8.8 MB** |
 | **Cost** | Mac Mini $599 | Linux SBC ~$50 | Linux Board $10 | **Any hardware $10** |
 
-> Notes: ZeroClaw results are measured on release builds using `/usr/bin/time -l`. OpenClaw requires Node.js runtime (typically ~390MB additional memory overhead), while NanoBot requires Python runtime. PicoClaw and ZeroClaw are static binaries. The RAM figures above are runtime memory; build-time compilation requirements are higher.
+> Notes: MegaZero results are measured on release builds using `/usr/bin/time -l`. OpenClaw requires Node.js runtime (typically ~390MB additional memory overhead), while NanoBot requires Python runtime. PicoClaw and MegaZero are static binaries. The RAM figures above are runtime memory; build-time compilation requirements are higher.
 
 <p align="center">
-  <img src="zero-claw.jpeg" alt="ZeroClaw vs OpenClaw Comparison" width="800" />
+  <img src="zero-claw.jpeg" alt="MegaZero vs OpenClaw Comparison" width="800" />
 </p>
 
 ### Reproducible local measurement
@@ -99,17 +99,17 @@ Benchmark claims can drift as code and toolchains evolve, so always measure your
 
 ```bash
 cargo build --release
-ls -lh target/release/zeroclaw
+ls -lh target/release/mega-zero
 
-/usr/bin/time -l target/release/zeroclaw --help
-/usr/bin/time -l target/release/zeroclaw status
+/usr/bin/time -l target/release/mega-zero --help
+/usr/bin/time -l target/release/mega-zero status
 ```
 
 Example sample (macOS arm64, measured on February 18, 2026):
 
 - Release binary size: `8.8M`
-- `zeroclaw --help`: about `0.02s` real time, ~`3.9MB` peak memory footprint
-- `zeroclaw status`: about `0.01s` real time, ~`4.1MB` peak memory footprint
+- `mega-zero --help`: about `0.02s` real time, ~`3.9MB` peak memory footprint
+- `mega-zero status`: about `0.01s` real time, ~`4.1MB` peak memory footprint
 
 ## Prerequisites
 
@@ -166,10 +166,10 @@ Example sample (macOS arm64, measured on February 18, 2026):
 
 #### One-Line Installer
 
-Or skip the steps above and install everything (system deps, Rust, ZeroClaw) in a single command:
+Or skip the steps above and install everything (system deps, Rust, MegaZero) in a single command:
 
 ```bash
-curl -LsSf https://raw.githubusercontent.com/openagen/zeroclaw/main/scripts/install.sh | bash
+curl -LsSf https://raw.githubusercontent.com/openagen/mega-zero/main/scripts/install.sh | bash
 ```
 
 #### Compilation resource requirements
@@ -207,15 +207,15 @@ To require binary-only install with no source fallback:
 ### Homebrew (macOS/Linuxbrew)
 
 ```bash
-brew install zeroclaw
+brew install mega-zero
 ```
 
 ### One-click bootstrap
 
 ```bash
 # Recommended: clone then run local bootstrap script
-git clone https://github.com/openagen/zeroclaw.git
-cd zeroclaw
+git clone https://github.com/openagen/mega-zero.git
+cd mega-zero
 ./bootstrap.sh
 
 # Optional: bootstrap dependencies + Rust on fresh machines
@@ -234,7 +234,7 @@ cd zeroclaw
 ./bootstrap.sh --docker
 
 # Optional: force Podman as container CLI
-ZEROCLAW_CONTAINER_CLI=podman ./bootstrap.sh --docker
+MEGA_ZERO_CONTAINER_CLI=podman ./bootstrap.sh --docker
 
 # Optional: in --docker mode, skip local image build and use local tag or pull fallback image
 ./bootstrap.sh --docker --skip-build
@@ -243,7 +243,7 @@ ZEROCLAW_CONTAINER_CLI=podman ./bootstrap.sh --docker
 Remote one-liner (review first in security-sensitive environments):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/openagen/zeroclaw/main/scripts/bootstrap.sh | bash
+curl -fsSL https://raw.githubusercontent.com/openagen/mega-zero/main/scripts/bootstrap.sh | bash
 ```
 
 Details: [`docs/one-click-bootstrap.md`](docs/one-click-bootstrap.md) (toolchain mode may request `sudo` for system packages).
@@ -257,19 +257,19 @@ Release assets are published for:
 - Windows: `x86_64`
 
 Download the latest assets from:
-<https://github.com/openagen/zeroclaw/releases/latest>
+<https://github.com/openagen/mega-zero/releases/latest>
 
 Example (ARM64 Linux):
 
 ```bash
-curl -fsSLO https://github.com/openagen/zeroclaw/releases/latest/download/zeroclaw-aarch64-unknown-linux-gnu.tar.gz
-tar xzf zeroclaw-aarch64-unknown-linux-gnu.tar.gz
-install -m 0755 zeroclaw "$HOME/.cargo/bin/zeroclaw"
+curl -fsSLO https://github.com/openagen/mega-zero/releases/latest/download/mega-zero-aarch64-unknown-linux-gnu.tar.gz
+tar xzf mega-zero-aarch64-unknown-linux-gnu.tar.gz
+install -m 0755 mega-zero "$HOME/.cargo/bin/mega-zero"
 ```
 
 ```bash
-git clone https://github.com/openagen/zeroclaw.git
-cd zeroclaw
+git clone https://github.com/openagen/mega-zero.git
+cd mega-zero
 cargo build --release --locked
 cargo install --path . --force --locked
 
@@ -277,110 +277,110 @@ cargo install --path . --force --locked
 export PATH="$HOME/.cargo/bin:$PATH"
 
 # Quick setup (no prompts, optional model specification)
-zeroclaw onboard --api-key sk-... --provider openrouter [--model "openrouter/auto"]
+mega-zero onboard --api-key sk-... --provider openrouter [--model "openrouter/auto"]
 
 # Or interactive wizard
-zeroclaw onboard --interactive
+mega-zero onboard --interactive
 
 # If config.toml already exists and you intentionally want to overwrite it
-zeroclaw onboard --force
+mega-zero onboard --force
 
 # Or quickly repair channels/allowlists only
-zeroclaw onboard --channels-only
+mega-zero onboard --channels-only
 
 # Chat
-zeroclaw agent -m "Hello, ZeroClaw!"
+mega-zero agent -m "Hello, MegaZero!"
 
 # Interactive mode
-zeroclaw agent
+mega-zero agent
 
 # Start the gateway (webhook server)
-zeroclaw gateway                # default: 127.0.0.1:3000
-zeroclaw gateway --port 0       # random port (security hardened)
+mega-zero gateway                # default: 127.0.0.1:3000
+mega-zero gateway --port 0       # random port (security hardened)
 
 # Start full autonomous runtime
-zeroclaw daemon
+mega-zero daemon
 
 # Check status
-zeroclaw status
-zeroclaw auth status
+mega-zero status
+mega-zero auth status
 
 # Generate shell completions (stdout only, safe to source directly)
-source <(zeroclaw completions bash)
-zeroclaw completions zsh > ~/.zfunc/_zeroclaw
+source <(mega-zero completions bash)
+mega-zero completions zsh > ~/.zfunc/_mega-zero
 
 # Run system diagnostics
-zeroclaw doctor
+mega-zero doctor
 
 # Check channel health
-zeroclaw channel doctor
+mega-zero channel doctor
 
 # Bind a Telegram identity into allowlist
-zeroclaw channel bind-telegram 123456789
+mega-zero channel bind-telegram 123456789
 
 # Get integration setup details
-zeroclaw integrations info Telegram
+mega-zero integrations info Telegram
 
 # Note: Channels (Telegram, Discord, Slack) require daemon to be running
-# zeroclaw daemon
+# mega-zero daemon
 
 # Manage background service
-zeroclaw service install
-zeroclaw service status
-zeroclaw service restart
+mega-zero service install
+mega-zero service status
+mega-zero service restart
 
-# On Alpine (OpenRC): sudo zeroclaw service install
+# On Alpine (OpenRC): sudo mega-zero service install
 
 # Migrate memory from OpenClaw (safe preview first)
-zeroclaw migrate openclaw --dry-run
-zeroclaw migrate openclaw
+mega-zero migrate openclaw --dry-run
+mega-zero migrate openclaw
 ```
 
 > **Dev fallback (no global install):** prefix commands with `cargo run --release --` (example: `cargo run --release -- status`).
 
 ## Subscription Auth (OpenAI Codex / Claude Code)
 
-ZeroClaw now supports subscription-native auth profiles (multi-account, encrypted at rest).
+MegaZero now supports subscription-native auth profiles (multi-account, encrypted at rest).
 
-- Store file: `~/.zeroclaw/auth-profiles.json`
-- Encryption key: `~/.zeroclaw/.secret_key`
+- Store file: `~/.mega-zero/auth-profiles.json`
+- Encryption key: `~/.mega-zero/.secret_key`
 - Profile id format: `<provider>:<profile_name>` (example: `openai-codex:work`)
 
 OpenAI Codex OAuth (ChatGPT subscription):
 
 ```bash
 # Recommended on servers/headless
-zeroclaw auth login --provider openai-codex --device-code
+mega-zero auth login --provider openai-codex --device-code
 
 # Browser/callback flow with paste fallback
-zeroclaw auth login --provider openai-codex --profile default
-zeroclaw auth paste-redirect --provider openai-codex --profile default
+mega-zero auth login --provider openai-codex --profile default
+mega-zero auth paste-redirect --provider openai-codex --profile default
 
 # Check / refresh / switch profile
-zeroclaw auth status
-zeroclaw auth refresh --provider openai-codex --profile default
-zeroclaw auth use --provider openai-codex --profile work
+mega-zero auth status
+mega-zero auth refresh --provider openai-codex --profile default
+mega-zero auth use --provider openai-codex --profile work
 ```
 
 Claude Code / Anthropic setup-token:
 
 ```bash
 # Paste subscription/setup token (Authorization header mode)
-zeroclaw auth paste-token --provider anthropic --profile default --auth-kind authorization
+mega-zero auth paste-token --provider anthropic --profile default --auth-kind authorization
 
 # Alias command
-zeroclaw auth setup-token --provider anthropic --profile default
+mega-zero auth setup-token --provider anthropic --profile default
 ```
 
 Run the agent with subscription auth:
 
 ```bash
-zeroclaw agent --provider openai-codex -m "hello"
-zeroclaw agent --provider openai-codex --auth-profile openai-codex:work -m "hello"
+mega-zero agent --provider openai-codex -m "hello"
+mega-zero agent --provider openai-codex --auth-profile openai-codex:work -m "hello"
 
 # Anthropic supports both API key and auth token env vars:
 # ANTHROPIC_AUTH_TOKEN, ANTHROPIC_OAUTH_TOKEN, ANTHROPIC_API_KEY
-zeroclaw agent --provider anthropic -m "hello"
+mega-zero agent --provider anthropic -m "hello"
 ```
 
 ## Architecture
@@ -388,12 +388,12 @@ zeroclaw agent --provider anthropic -m "hello"
 Every subsystem is a **trait** — swap implementations with a config change, zero code changes.
 
 <p align="center">
-  <img src="docs/architecture.svg" alt="ZeroClaw Architecture" width="900" />
+  <img src="docs/architecture.svg" alt="MegaZero Architecture" width="900" />
 </p>
 
 | Subsystem | Trait | Ships with | Extend |
 |-----------|-------|------------|--------|
-| **AI Models** | `Provider` | Provider catalog via `zeroclaw providers` (currently 29 built-ins + aliases, plus custom endpoints) | `custom:https://your-api.com` (OpenAI-compatible) or `anthropic-custom:https://your-api.com` |
+| **AI Models** | `Provider` | Provider catalog via `mega-zero providers` (currently 29 built-ins + aliases, plus custom endpoints) | `custom:https://your-api.com` (OpenAI-compatible) or `anthropic-custom:https://your-api.com` |
 | **Channels** | `Channel` | CLI, Telegram, Discord, Slack, Mattermost, iMessage, Matrix, Signal, WhatsApp, Email, IRC, Lark, DingTalk, QQ, Webhook | Any messaging API |
 | **Memory** | `Memory` | SQLite hybrid search, PostgreSQL backend (configurable storage provider), Lucid bridge, Markdown files, explicit `none` backend, snapshot/hydrate, optional response cache | Any persistence backend |
 | **Tools** | `Tool` | shell/file/memory, cron/schedule, git, pushover, browser, http_request, screenshot/image_info, composio (opt-in), delegate, hardware tools | Any capability |
@@ -411,7 +411,7 @@ Every subsystem is a **trait** — swap implementations with a config change, ze
 - ✅ Supported today: `runtime.kind = "native"` or `runtime.kind = "docker"`
 - 🚧 Planned, not implemented yet: WASM / edge runtimes
 
-When an unsupported `runtime.kind` is configured, ZeroClaw now exits with a clear error instead of silently falling back to native.
+When an unsupported `runtime.kind` is configured, MegaZero now exits with a clear error instead of silently falling back to native.
 
 ### Memory System (Full-Stack Search Engine)
 
@@ -440,12 +440,12 @@ keyword_weight = 0.3
 # backend = "none" uses an explicit no-op memory backend (no persistence)
 
 # Optional: storage-provider override for remote memory backends.
-# When provider = "postgres", ZeroClaw uses PostgreSQL for memory persistence.
+# When provider = "postgres", MegaZero uses PostgreSQL for memory persistence.
 # The db_url key also accepts alias `dbURL` for backward compatibility.
 #
 # [storage.provider.config]
 # provider = "postgres"
-# db_url = "postgres://user:password@host:5432/zeroclaw"
+# db_url = "postgres://user:password@host:5432/mega-zero"
 # schema = "public"
 # table = "memories"
 # connect_timeout_secs = 15
@@ -454,17 +454,17 @@ keyword_weight = 0.3
 # sqlite_open_timeout_secs = 30
 
 # Optional for backend = "lucid"
-# ZEROCLAW_LUCID_CMD=/usr/local/bin/lucid            # default: lucid
-# ZEROCLAW_LUCID_BUDGET=200                          # default: 200
-# ZEROCLAW_LUCID_LOCAL_HIT_THRESHOLD=3               # local hit count to skip external recall
-# ZEROCLAW_LUCID_RECALL_TIMEOUT_MS=120               # low-latency budget for lucid context recall
-# ZEROCLAW_LUCID_STORE_TIMEOUT_MS=800                # async sync timeout for lucid store
-# ZEROCLAW_LUCID_FAILURE_COOLDOWN_MS=15000           # cooldown after lucid failure to avoid repeated slow attempts
+# MEGA_ZERO_LUCID_CMD=/usr/local/bin/lucid            # default: lucid
+# MEGA_ZERO_LUCID_BUDGET=200                          # default: 200
+# MEGA_ZERO_LUCID_LOCAL_HIT_THRESHOLD=3               # local hit count to skip external recall
+# MEGA_ZERO_LUCID_RECALL_TIMEOUT_MS=120               # low-latency budget for lucid context recall
+# MEGA_ZERO_LUCID_STORE_TIMEOUT_MS=800                # async sync timeout for lucid store
+# MEGA_ZERO_LUCID_FAILURE_COOLDOWN_MS=15000           # cooldown after lucid failure to avoid repeated slow attempts
 ```
 
 ## Security
 
-ZeroClaw enforces security at **every layer** — not just the sandbox. It passes all items from the community security checklist.
+MegaZero enforces security at **every layer** — not just the sandbox. It passes all items from the community security checklist.
 
 ### Security Checklist
 
@@ -475,7 +475,7 @@ ZeroClaw enforces security at **every layer** — not just the sandbox. It passe
 | 3 | **Filesystem scoped (no /)** | ✅ | `workspace_only = true` by default. 14 system dirs + 4 sensitive dotfiles blocked. Null byte injection blocked. Symlink escape detection via canonicalization + resolved-path workspace checks in file read/write tools. |
 | 4 | **Access via tunnel only** | ✅ | Gateway refuses public bind without active tunnel. Supports Tailscale, Cloudflare, ngrok, or any custom tunnel. |
 
-> **Run your own nmap:** `nmap -p 1-65535 <your-host>` — ZeroClaw binds to localhost only, so nothing is exposed unless you explicitly configure a tunnel.
+> **Run your own nmap:** `nmap -p 1-65535 <your-host>` — MegaZero binds to localhost only, so nothing is exposed unless you explicitly configure a tunnel.
 
 ### Channel allowlists (deny-by-default)
 
@@ -501,13 +501,13 @@ Telegram operator-approval flow:
 
 1. Keep `[channels_config.telegram].allowed_users = []` for deny-by-default startup.
 2. Unauthorized users receive a hint with a copyable operator command:
-   `zeroclaw channel bind-telegram <IDENTITY>`.
+   `mega-zero channel bind-telegram <IDENTITY>`.
 3. Operator runs that command locally, then user retries sending a message.
 
 If you need a one-shot manual approval, run:
 
 ```bash
-zeroclaw channel bind-telegram 123456789
+mega-zero channel bind-telegram 123456789
 ```
 
 If you're not sure which identity to use:
@@ -520,7 +520,7 @@ If you hit authorization warnings in logs (for example: `ignoring message from u
 rerun channel setup only:
 
 ```bash
-zeroclaw onboard --channels-only
+mega-zero onboard --channels-only
 ```
 
 ### Telegram media replies
@@ -528,7 +528,7 @@ zeroclaw onboard --channels-only
 Telegram routing now replies to the source **chat ID** from incoming updates (instead of usernames),
 which avoids `Bad Request: chat not found` failures.
 
-For non-text replies, ZeroClaw can send Telegram attachments when the assistant includes markers:
+For non-text replies, MegaZero can send Telegram attachments when the assistant includes markers:
 
 - `[IMAGE:<path-or-url>]`
 - `[DOCUMENT:<path-or-url>]`
@@ -540,7 +540,7 @@ Paths can be local files (for example `/tmp/screenshot.png`) or HTTPS URLs.
 
 ### WhatsApp Setup
 
-ZeroClaw supports two WhatsApp backends:
+MegaZero supports two WhatsApp backends:
 
 - **WhatsApp Web mode** (QR / pair code, no Meta Business API required)
 - **WhatsApp Business Cloud API mode** (official Meta webhook flow)
@@ -552,17 +552,17 @@ ZeroClaw supports two WhatsApp backends:
    cargo build --features whatsapp-web
    ```
 
-2. **Configure ZeroClaw:**
+2. **Configure MegaZero:**
    ```toml
    [channels_config.whatsapp]
-   session_path = "~/.zeroclaw/state/whatsapp-web/session.db"
+   session_path = "~/.mega-zero/state/whatsapp-web/session.db"
    pair_phone = "15551234567"   # optional; omit to use QR flow
    pair_code = ""               # optional custom pair code
    allowed_numbers = ["+1234567890"]  # E.164 format, or ["*"] for all
    ```
 
 3. **Start channels/daemon and link device:**
-   - Run `zeroclaw channel start` (or `zeroclaw daemon`).
+   - Run `mega-zero channel start` (or `mega-zero daemon`).
    - Follow terminal pairing output (QR or pair code).
    - In WhatsApp on phone: **Settings → Linked Devices**.
 
@@ -582,7 +582,7 @@ WhatsApp uses Meta's Cloud API with webhooks (push-based, not polling):
    - **Phone Number ID:** From WhatsApp → API Setup → Phone number ID
    - **Verify Token:** You define this (any random string) — Meta will send it back during webhook verification
 
-3. **Configure ZeroClaw:**
+3. **Configure MegaZero:**
    ```toml
    [channels_config.whatsapp]
    access_token = "EAABx..."
@@ -593,7 +593,7 @@ WhatsApp uses Meta's Cloud API with webhooks (push-based, not polling):
 
 4. **Start the gateway with a tunnel:**
    ```bash
-   zeroclaw gateway --port 3000
+   mega-zero gateway --port 3000
    ```
    WhatsApp requires HTTPS, so use a tunnel (ngrok, Cloudflare, Tailscale Funnel).
 
@@ -603,13 +603,13 @@ WhatsApp uses Meta's Cloud API with webhooks (push-based, not polling):
    - **Verify Token:** Same as your `verify_token` in config
    - Subscribe to `messages` field
 
-6. **Test:** Send a message to your WhatsApp Business number — ZeroClaw will respond via the LLM.
+6. **Test:** Send a message to your WhatsApp Business number — MegaZero will respond via the LLM.
 
 ## Configuration
 
-Config: `~/.zeroclaw/config.toml` (created by `onboard`)
+Config: `~/.mega-zero/config.toml` (created by `onboard`)
 
-When `zeroclaw channel start` is already running, changes to `default_provider`,
+When `mega-zero channel start` is already running, changes to `default_provider`,
 `default_model`, `default_temperature`, `api_key`, `api_url`, and `reliability.*`
 are hot-applied on the next inbound channel message.
 
@@ -637,7 +637,7 @@ keyword_weight = 0.3
 # Optional remote storage-provider override (PostgreSQL example)
 # [storage.provider.config]
 # provider = "postgres"
-# db_url = "postgres://user:password@host:5432/zeroclaw"
+# db_url = "postgres://user:password@host:5432/mega-zero"
 # schema = "public"
 # table = "memories"
 # connect_timeout_secs = 15
@@ -703,7 +703,7 @@ window_allowlist = []          # optional window title/process allowlist hints
 #   "action": "mouse_click",
 #   "params": {"x": 640, "y": 360, "button": "left"},
 #   "policy": {"allowed_domains": [...], "window_allowlist": [...], "max_coordinate_x": 3840, "max_coordinate_y": 2160},
-#   "metadata": {"session_name": "...", "source": "zeroclaw.browser", "version": "..."}
+#   "metadata": {"session_name": "...", "source": "mega-zero.browser", "version": "..."}
 # }
 # Response: {"success": true, "data": {...}} or {"success": false, "error": "..."}
 
@@ -722,7 +722,7 @@ format = "openclaw"            # "openclaw" (default, markdown files) or "aieos"
 
 ### Ollama Local and Remote Endpoints
 
-ZeroClaw uses one provider key (`ollama`) for both local and remote Ollama deployments:
+MegaZero uses one provider key (`ollama`) for both local and remote Ollama deployments:
 
 - Local Ollama: keep `api_url` unset, run `ollama serve`, and use models like `llama3.2`.
 - Remote Ollama endpoint (including Ollama Cloud): set `api_url` to the remote endpoint and set `api_key` (or `OLLAMA_API_KEY`) when required.
@@ -739,7 +739,7 @@ api_key = "ollama_api_key_here"
 
 ### llama.cpp Server Endpoint
 
-ZeroClaw now supports `llama-server` as a first-class local provider:
+MegaZero now supports `llama-server` as a first-class local provider:
 
 - Provider ID: `llamacpp` (alias: `llama.cpp`)
 - Default endpoint: `http://localhost:8080/v1`
@@ -761,16 +761,16 @@ default_model = "ggml-org/gpt-oss-20b-GGUF"
 
 For detailed configuration of custom OpenAI-compatible and Anthropic-compatible endpoints, see [docs/custom-providers.md](docs/custom-providers.md).
 
-## Python Companion Package (`zeroclaw-tools`)
+## Python Companion Package (`mega-zero-tools`)
 
-For LLM providers with inconsistent native tool calling (e.g., GLM-5/Zhipu), ZeroClaw ships a Python companion package with **LangGraph-based tool calling** for guaranteed consistency:
+For LLM providers with inconsistent native tool calling (e.g., GLM-5/Zhipu), MegaZero ships a Python companion package with **LangGraph-based tool calling** for guaranteed consistency:
 
 ```bash
-pip install zeroclaw-tools
+pip install mega-zero-tools
 ```
 
 ```python
-from zeroclaw_tools import create_agent, shell, file_read
+from mega-zero_tools import create_agent, shell, file_read
 from langchain_core.messages import HumanMessage
 
 # Works with any OpenAI-compatible provider
@@ -797,7 +797,7 @@ See [`python/README.md`](python/README.md) for full documentation.
 
 ## Identity System (AIEOS Support)
 
-ZeroClaw supports **identity-agnostic** AI personas through two formats:
+MegaZero supports **identity-agnostic** AI personas through two formats:
 
 ### OpenClaw (Default)
 
@@ -809,7 +809,7 @@ Traditional markdown files in your workspace:
 
 ### AIEOS (AI Entity Object Specification)
 
-[AIEOS](https://aieos.org) is a standardization framework for portable AI identity. ZeroClaw supports AIEOS v1.1 JSON payloads, allowing you to:
+[AIEOS](https://aieos.org) is a standardization framework for portable AI identity. MegaZero supports AIEOS v1.1 JSON payloads, allowing you to:
 
 - **Import identities** from the AIEOS ecosystem
 - **Export identities** to other AIEOS-compatible systems
@@ -871,7 +871,7 @@ aieos_inline = '''
 '''
 ```
 
-ZeroClaw accepts both canonical AIEOS generator payloads and compact legacy payloads, then normalizes them into one system prompt format.
+MegaZero accepts both canonical AIEOS generator payloads and compact legacy payloads, then normalizes them into one system prompt format.
 
 #### AIEOS Schema Sections
 
@@ -924,24 +924,24 @@ For a task-oriented command guide, see [`docs/commands-reference.md`](docs/comma
 
 ### Service Management
 
-ZeroClaw supports two init systems for background services:
+MegaZero supports two init systems for background services:
 
 | Init System | Scope | Config Path | Requires |
 |------------|-------|-------------|----------|
-| **systemd** (default on Linux) | User-level | `~/.zeroclaw/config.toml` | No sudo |
-| **OpenRC** (Alpine) | System-wide | `/etc/zeroclaw/config.toml` | sudo/root |
+| **systemd** (default on Linux) | User-level | `~/.mega-zero/config.toml` | No sudo |
+| **OpenRC** (Alpine) | System-wide | `/etc/mega-zero/config.toml` | sudo/root |
 
 Init system is auto-detected (`systemd` or `OpenRC`).
 
 ```bash
 # Linux with systemd (default, user-level)
-zeroclaw service install
-zeroclaw service start
+mega-zero service install
+mega-zero service start
 
 # Alpine with OpenRC (system-wide, requires sudo)
-sudo zeroclaw service install
-sudo rc-update add zeroclaw default
-sudo rc-service zeroclaw start
+sudo mega-zero service install
+sudo rc-update add mega-zero default
+sudo rc-service mega-zero start
 ```
 
 For full OpenRC setup instructions, see [docs/network-deployment.md](docs/network-deployment.md#7-openrc-alpine-linux-service).
@@ -957,7 +957,7 @@ open_skills_enabled = true
 # prompt_injection_mode = "compact"          # optional: use for low-context local models
 ```
 
-You can also override at runtime with `ZEROCLAW_OPEN_SKILLS_ENABLED`, `ZEROCLAW_OPEN_SKILLS_DIR`, and `ZEROCLAW_SKILLS_PROMPT_MODE` (`full` or `compact`).
+You can also override at runtime with `MEGA_ZERO_OPEN_SKILLS_ENABLED`, `MEGA_ZERO_OPEN_SKILLS_DIR`, and `MEGA_ZERO_SKILLS_PROMPT_MODE` (`full` or `compact`).
 
 ## Development
 
@@ -991,7 +991,7 @@ cargo build --release --locked
 cargo install --path . --force --locked
 ```
 
-ZeroClaw is configured to use `rustls` for HTTP/TLS dependencies; `--locked` keeps the transitive graph deterministic on fresh environments.
+MegaZero is configured to use `rustls` for HTTP/TLS dependencies; `--locked` keeps the transitive graph deterministic on fresh environments.
 
 To skip the hook when you need a quick push during development:
 
@@ -1032,9 +1032,9 @@ For deployment and runtime operations:
 - Network deployment guide: [docs/network-deployment.md](docs/network-deployment.md)
 - Proxy agent playbook: [docs/proxy-agent-playbook.md](docs/proxy-agent-playbook.md)
 
-## Support ZeroClaw
+## Support MegaZero
 
-If ZeroClaw helps your work and you want to support ongoing development, you can donate here:
+If MegaZero helps your work and you want to support ongoing development, you can donate here:
 
 <a href="https://buymeacoffee.com/argenistherose"><img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-yellow.svg?style=for-the-badge&logo=buy-me-a-coffee" alt="Buy Me a Coffee" /></a>
 
@@ -1051,18 +1051,18 @@ We're building in the open because the best ideas come from everywhere. If you'r
 
 ## ⚠️ Official Repository & Impersonation Warning
 
-**This is the only official ZeroClaw repository:**
-> https://github.com/openagen/zeroclaw
+**This is the only official MegaZero repository:**
+> https://github.com/openagen/mega-zero
 
-Any other repository, organization, domain, or package claiming to be "ZeroClaw" or implying affiliation with ZeroClaw Labs is **unauthorized and not affiliated with this project**. Known unauthorized forks will be listed in [TRADEMARK.md](TRADEMARK.md).
+Any other repository, organization, domain, or package claiming to be "MegaZero" or implying affiliation with MegaZero Labs is **unauthorized and not affiliated with this project**. Known unauthorized forks will be listed in [TRADEMARK.md](TRADEMARK.md).
 
-If you encounter impersonation or trademark misuse, please [open an issue](https://github.com/openagen/zeroclaw/issues).
+If you encounter impersonation or trademark misuse, please [open an issue](https://github.com/openagen/mega-zero/issues).
 
 ---
 
 ## License
 
-ZeroClaw is dual-licensed for maximum openness and contributor protection:
+MegaZero is dual-licensed for maximum openness and contributor protection:
 
 | License | Use case |
 |---|---|
@@ -1073,7 +1073,7 @@ You may choose either license. **Contributors automatically grant rights under b
 
 ### Trademark
 
-The **ZeroClaw** name and logo are trademarks of ZeroClaw Labs. This license does not grant permission to use them to imply endorsement or affiliation. See [TRADEMARK.md](TRADEMARK.md) for permitted and prohibited uses.
+The **MegaZero** name and logo are trademarks of MegaZero Labs. This license does not grant permission to use them to imply endorsement or affiliation. See [TRADEMARK.md](TRADEMARK.md) for permitted and prohibited uses.
 
 ### Contributor Protections
 
@@ -1092,20 +1092,20 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [CLA.md](CLA.md). Implement a trait, 
 - New `Tool` → `src/tools/`
 - New `Memory` → `src/memory/`
 - New `Tunnel` → `src/tunnel/`
-- New `Skill` → `~/.zeroclaw/workspace/skills/<name>/`
+- New `Skill` → `~/.mega-zero/workspace/skills/<name>/`
 
 ---
 
-**ZeroClaw** — Zero overhead. Zero compromise. Deploy anywhere. Swap anything. 🦀
+**MegaZero** — Zero overhead. Zero compromise. Deploy anywhere. Swap anything. 🦀
 
 ## Star History
 
 <p align="center">
-  <a href="https://www.star-history.com/#openagen/zeroclaw&type=date&legend=top-left">
+  <a href="https://www.star-history.com/#openagen/mega-zero&type=date&legend=top-left">
     <picture>
-     <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=openagen/zeroclaw&type=date&theme=dark&legend=top-left" />
-     <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=openagen/zeroclaw&type=date&legend=top-left" />
-     <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=openagen/zeroclaw&type=date&legend=top-left" />
+     <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=openagen/mega-zero&type=date&theme=dark&legend=top-left" />
+     <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=openagen/mega-zero&type=date&legend=top-left" />
+     <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=openagen/mega-zero&type=date&legend=top-left" />
     </picture>
   </a>
 </p>

@@ -1,6 +1,6 @@
 # Custom Provider Configuration
 
-ZeroClaw supports custom API endpoints for both OpenAI-compatible and Anthropic-compatible providers.
+MegaZero supports custom API endpoints for both OpenAI-compatible and Anthropic-compatible providers.
 
 ## Provider Types
 
@@ -28,7 +28,7 @@ default_model = "your-model-name"
 
 ### Config File
 
-Edit `~/.zeroclaw/config.toml`:
+Edit `~/.mega-zero/config.toml`:
 
 ```toml
 api_key = "your-api-key"
@@ -42,13 +42,13 @@ For `custom:` and `anthropic-custom:` providers, use the generic key env vars:
 
 ```bash
 export API_KEY="your-api-key"
-# or: export ZEROCLAW_API_KEY="your-api-key"
-zeroclaw agent
+# or: export MEGA_ZERO_API_KEY="your-api-key"
+mega-zero agent
 ```
 
 ## llama.cpp Server (Recommended Local Setup)
 
-ZeroClaw includes a first-class local provider for `llama-server`:
+MegaZero includes a first-class local provider for `llama-server`:
 
 - Provider ID: `llamacpp` (alias: `llama.cpp`)
 - Default endpoint: `http://localhost:8080/v1`
@@ -60,7 +60,7 @@ Start a local server (example):
 llama-server -hf ggml-org/gpt-oss-20b-GGUF --jinja -c 133000 --host 127.0.0.1 --port 8033
 ```
 
-Then configure ZeroClaw:
+Then configure MegaZero:
 
 ```toml
 default_provider = "llamacpp"
@@ -72,11 +72,11 @@ default_temperature = 0.7
 Quick validation:
 
 ```bash
-zeroclaw models refresh --provider llamacpp
-zeroclaw agent -m "hello"
+mega-zero models refresh --provider llamacpp
+mega-zero agent -m "hello"
 ```
 
-You do not need to export `ZEROCLAW_API_KEY=dummy` for this flow.
+You do not need to export `MEGA_ZERO_API_KEY=dummy` for this flow.
 
 ## Testing Configuration
 
@@ -84,10 +84,10 @@ Verify your custom endpoint:
 
 ```bash
 # Interactive mode
-zeroclaw agent
+mega-zero agent
 
 # Single message test
-zeroclaw agent -m "test message"
+mega-zero agent -m "test message"
 ```
 
 ## Troubleshooting

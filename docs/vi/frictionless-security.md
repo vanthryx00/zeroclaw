@@ -124,23 +124,23 @@ impl SandboxConfig {
 ### 3. Lần chạy đầu: ghi log âm thầm
 
 ```bash
-$ zeroclaw agent -m "hello"
+$ mega-zero agent -m "hello"
 
 # Lần đầu: phát hiện âm thầm
 [INFO] Detecting security features...
 [INFO] ✓ Landlock sandbox enabled (kernel 6.2+)
 [INFO] ✓ Memory monitoring active (512MB limit)
-[INFO] ✓ Audit logging enabled (~/.config/zeroclaw/audit.log)
+[INFO] ✓ Audit logging enabled (~/.config/mega-zero/audit.log)
 
 # Các lần sau: yên lặng
-$ zeroclaw agent -m "hello"
+$ mega-zero agent -m "hello"
 [agent] Thinking...
 ```
 
 ### 4. File config: tất cả giá trị mặc định được ẩn
 
 ```toml
-# ~/.config/zeroclaw/config.toml
+# ~/.config/mega-zero/config.toml
 
 # Các section này KHÔNG được ghi trừ khi người dùng tùy chỉnh
 # [security.sandbox]
@@ -167,21 +167,21 @@ max_memory_mb = 1024  # Người dùng tăng giới hạn
 
 ```bash
 # Kiểm tra trạng thái đang hoạt động
-$ zeroclaw security --status
+$ mega-zero security --status
 Security Status:
   ✓ Sandbox: Landlock (Linux kernel 6.2)
   ✓ Memory monitoring: 512MB limit
-  ✓ Audit logging: ~/.config/zeroclaw/audit.log
+  ✓ Audit logging: ~/.config/mega-zero/audit.log
   → 47 events logged today
 
 # Tắt sandbox tường minh (ghi vào config)
-$ zeroclaw config set security.sandbox.enabled false
+$ mega-zero config set security.sandbox.enabled false
 
 # Bật backend cụ thể
-$ zeroclaw config set security.sandbox.backend firejail
+$ mega-zero config set security.sandbox.backend firejail
 
 # Điều chỉnh giới hạn
-$ zeroclaw config set security.resources.max_memory_mb 2048
+$ mega-zero config set security.resources.max_memory_mb 2048
 ```
 
 ### 6. Giảm cấp nhẹ nhàng
@@ -266,7 +266,7 @@ impl Default for SandboxBackend {
 
 ### Trước (hiện tại)
 ```bash
-$ zeroclaw onboard
+$ mega-zero onboard
 [1/9] Workspace Setup...
 [2/9] AI Provider...
 ...
@@ -276,7 +276,7 @@ $ zeroclaw onboard
 
 ### Sau (với bảo mật không gây cản trở)
 ```bash
-$ zeroclaw onboard
+$ mega-zero onboard
 [1/9] Workspace Setup...
 [2/9] AI Provider...
 ...
@@ -287,7 +287,7 @@ $ zeroclaw onboard
 
 ### Người dùng nâng cao (kiểm soát tường minh)
 ```bash
-$ zeroclaw onboard --security-level paranoid
+$ mega-zero onboard --security-level paranoid
 [1/9] Workspace Setup...
 ...
 ✓ Security: Paranoid | Landlock + Firejail | Audit signed
@@ -312,6 +312,6 @@ $ zeroclaw onboard --security-level paranoid
 ✅ **Không thêm prompt** — tự phát hiện âm thầm
 ✅ **Không breaking change** — tương thích ngược
 ✅ **Có thể opt-out** — flag config tường minh
-✅ **Hiển thị trạng thái** — `zeroclaw security --status`
+✅ **Hiển thị trạng thái** — `mega-zero security --status`
 
 Wizard vẫn là "thiết lập nhanh ứng dụng phổ quát" — bảo mật chỉ **lặng lẽ tốt hơn**.

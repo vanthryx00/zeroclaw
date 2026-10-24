@@ -5,7 +5,7 @@ Cold-start recipe for verifying changes to `python/` in this repo.
 ## Build / Install
 
 ```bash
-cd /home/user/zeroclaw/python
+cd /home/user/mega-zero/python
 python3 -m venv /tmp/phantom-venv
 source /tmp/phantom-venv/bin/activate
 pip install -q python-dotenv

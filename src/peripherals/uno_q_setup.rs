@@ -1,23 +1,23 @@
-//! Deploy ZeroClaw Bridge app to Arduino Uno Q.
+//! Deploy MegaZero Bridge app to Arduino Uno Q.
 
 use anyhow::{Context, Result};
 use std::process::Command;
 
-const BRIDGE_APP_NAME: &str = "zeroclaw-uno-q-bridge";
+const BRIDGE_APP_NAME: &str = "mega_zero-uno-q-bridge";
 
 /// Deploy the Bridge app. If host is Some, scp from repo and ssh to start.
 /// If host is None, assume we're ON the Uno Q — use embedded files and start.
 pub fn setup_uno_q_bridge(host: Option<&str>) -> Result<()> {
     let bridge_dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("firmware")
-        .join("zeroclaw-uno-q-bridge");
+        .join("mega_zero-uno-q-bridge");
 
     if let Some(h) = host {
         if bridge_dir.exists() {
             deploy_remote(h, &bridge_dir)?;
         } else {
             anyhow::bail!(
-                "Bridge app not found at {}. Run from zeroclaw repo root.",
+                "Bridge app not found at {}. Run from mega_zero repo root.",
                 bridge_dir.display()
             );
         }
@@ -66,7 +66,7 @@ fn deploy_remote(host: &str, bridge_dir: &std::path::Path) -> Result<()> {
             "arduino-app-cli",
             "app",
             "start",
-            "~/ArduinoApps/zeroclaw-uno-q-bridge",
+            "~/ArduinoApps/mega_zero-uno-q-bridge",
         ])
         .status()
         .context("arduino-app-cli start failed")?;
@@ -74,7 +74,7 @@ fn deploy_remote(host: &str, bridge_dir: &std::path::Path) -> Result<()> {
         anyhow::bail!("Failed to start Bridge app. Ensure arduino-app-cli is installed on Uno Q.");
     }
 
-    println!("ZeroClaw Bridge app started. Add to config.toml:");
+    println!("MegaZero Bridge app started. Add to config.toml:");
     println!("  [[peripherals.boards]]");
     println!("  board = \"arduino-uno-q\"");
     println!("  transport = \"bridge\"");
@@ -105,16 +105,16 @@ fn deploy_local(bridge_dir: Option<&std::path::Path>) -> Result<()> {
         anyhow::bail!("Failed to start Bridge app. Ensure arduino-app-cli is installed on Uno Q.");
     }
 
-    println!("ZeroClaw Bridge app started.");
+    println!("MegaZero Bridge app started.");
     Ok(())
 }
 
 fn write_embedded_bridge(dest: &std::path::Path) -> Result<()> {
-    let app_yaml = include_str!("../../firmware/zeroclaw-uno-q-bridge/app.yaml");
-    let sketch_ino = include_str!("../../firmware/zeroclaw-uno-q-bridge/sketch/sketch.ino");
-    let sketch_yaml = include_str!("../../firmware/zeroclaw-uno-q-bridge/sketch/sketch.yaml");
-    let main_py = include_str!("../../firmware/zeroclaw-uno-q-bridge/python/main.py");
-    let requirements = include_str!("../../firmware/zeroclaw-uno-q-bridge/python/requirements.txt");
+    let app_yaml = include_str!("../../firmware/mega_zero-uno-q-bridge/app.yaml");
+    let sketch_ino = include_str!("../../firmware/mega_zero-uno-q-bridge/sketch/sketch.ino");
+    let sketch_yaml = include_str!("../../firmware/mega_zero-uno-q-bridge/sketch/sketch.yaml");
+    let main_py = include_str!("../../firmware/mega_zero-uno-q-bridge/python/main.py");
+    let requirements = include_str!("../../firmware/mega_zero-uno-q-bridge/python/requirements.txt");
 
     std::fs::write(dest.join("app.yaml"), app_yaml)?;
     std::fs::create_dir_all(dest.join("sketch"))?;
@@ -142,9 +142,9 @@ fn copy_dir(src: &std::path::Path, dst: &std::path::Path) -> Result<()> {
     Ok(())
 }
 
-/// Deploy ZeroClaw binary + config to Arduino Uno Q via SSH/SCP.
+/// Deploy MegaZero binary + config to Arduino Uno Q via SSH/SCP.
 ///
-/// Expects a cross-compiled binary at `target/aarch64-unknown-linux-gnu/release/zeroclaw`.
+/// Expects a cross-compiled binary at `target/aarch64-unknown-linux-gnu/release/mega_zero`.
 pub fn deploy_uno_q(host: &str) -> Result<()> {
     let ssh_target = if host.contains('@') {
         host.to_string()
@@ -156,7 +156,7 @@ pub fn deploy_uno_q(host: &str) -> Result<()> {
         .join("target")
         .join("aarch64-unknown-linux-gnu")
         .join("release")
-        .join("zeroclaw");
+        .join("mega_zero");
 
     if !binary.exists() {
         anyhow::bail!(
@@ -167,18 +167,18 @@ pub fn deploy_uno_q(host: &str) -> Result<()> {
 
     println!("Creating remote directory on {}...", host);
     let status = Command::new("ssh")
-        .args([&ssh_target, "mkdir", "-p", "~/zeroclaw"])
+        .args([&ssh_target, "mkdir", "-p", "~/mega_zero"])
         .status()
         .context("ssh mkdir failed")?;
     if !status.success() {
-        anyhow::bail!("Failed to create ~/zeroclaw on Uno Q");
+        anyhow::bail!("Failed to create ~/mega_zero on Uno Q");
     }
 
-    println!("Copying zeroclaw binary...");
+    println!("Copying mega_zero binary...");
     let status = Command::new("scp")
         .args([
             binary.to_str().unwrap(),
-            &format!("{}:~/zeroclaw/zeroclaw", ssh_target),
+            &format!("{}:~/mega_zero/mega_zero", ssh_target),
         ])
         .status()
         .context("scp binary failed")?;
@@ -187,7 +187,7 @@ pub fn deploy_uno_q(host: &str) -> Result<()> {
     }
 
     let status = Command::new("ssh")
-        .args([&ssh_target, "chmod", "+x", "~/zeroclaw/zeroclaw"])
+        .args([&ssh_target, "chmod", "+x", "~/mega_zero/mega_zero"])
         .status()
         .context("ssh chmod failed")?;
     if !status.success() {
@@ -195,10 +195,10 @@ pub fn deploy_uno_q(host: &str) -> Result<()> {
     }
 
     println!();
-    println!("ZeroClaw deployed to Uno Q!");
-    println!("  Binary: ~/zeroclaw/zeroclaw");
+    println!("MegaZero deployed to Uno Q!");
+    println!("  Binary: ~/mega_zero/mega_zero");
     println!();
-    println!("Start with: ssh {} '~/zeroclaw/zeroclaw agent'", ssh_target);
+    println!("Start with: ssh {} '~/mega_zero/mega_zero agent'", ssh_target);
 
     Ok(())
 }

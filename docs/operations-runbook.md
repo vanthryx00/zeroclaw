@@ -1,4 +1,4 @@
-# ZeroClaw Operations Runbook
+# MegaZero Operations Runbook
 
 This runbook is for operators who maintain availability, security posture, and incident response.
 
@@ -19,59 +19,59 @@ For first-time installation, start from [one-click-bootstrap.md](one-click-boots
 
 | Mode | Command | When to use |
 |---|---|---|
-| Foreground runtime | `zeroclaw daemon` | local debugging, short-lived sessions |
-| Foreground gateway only | `zeroclaw gateway` | webhook endpoint testing |
-| User service | `zeroclaw service install && zeroclaw service start` | persistent operator-managed runtime |
+| Foreground runtime | `mega-zero daemon` | local debugging, short-lived sessions |
+| Foreground gateway only | `mega-zero gateway` | webhook endpoint testing |
+| User service | `mega-zero service install && mega-zero service start` | persistent operator-managed runtime |
 
 ## Baseline Operator Checklist
 
 1. Validate configuration:
 
 ```bash
-zeroclaw status
+mega-zero status
 ```
 
 2. Verify diagnostics:
 
 ```bash
-zeroclaw doctor
-zeroclaw channel doctor
+mega-zero doctor
+mega-zero channel doctor
 ```
 
 3. Start runtime:
 
 ```bash
-zeroclaw daemon
+mega-zero daemon
 ```
 
 4. For persistent user session service:
 
 ```bash
-zeroclaw service install
-zeroclaw service start
-zeroclaw service status
+mega-zero service install
+mega-zero service start
+mega-zero service status
 ```
 
 ## Health and State Signals
 
 | Signal | Command / File | Expected |
 |---|---|---|
-| Config validity | `zeroclaw doctor` | no critical errors |
-| Channel connectivity | `zeroclaw channel doctor` | configured channels healthy |
-| Runtime summary | `zeroclaw status` | expected provider/model/channels |
-| Daemon heartbeat/state | `~/.zeroclaw/daemon_state.json` | file updates periodically |
+| Config validity | `mega-zero doctor` | no critical errors |
+| Channel connectivity | `mega-zero channel doctor` | configured channels healthy |
+| Runtime summary | `mega-zero status` | expected provider/model/channels |
+| Daemon heartbeat/state | `~/.mega-zero/daemon_state.json` | file updates periodically |
 
 ## Logs and Diagnostics
 
 ### macOS / Windows (service wrapper logs)
 
-- `~/.zeroclaw/logs/daemon.stdout.log`
-- `~/.zeroclaw/logs/daemon.stderr.log`
+- `~/.mega-zero/logs/daemon.stdout.log`
+- `~/.mega-zero/logs/daemon.stderr.log`
 
 ### Linux (systemd user service)
 
 ```bash
-journalctl --user -u zeroclaw.service -f
+journalctl --user -u mega-zero.service -f
 ```
 
 ## Incident Triage Flow (Fast Path)
@@ -79,25 +79,25 @@ journalctl --user -u zeroclaw.service -f
 1. Snapshot system state:
 
 ```bash
-zeroclaw status
-zeroclaw doctor
-zeroclaw channel doctor
+mega-zero status
+mega-zero doctor
+mega-zero channel doctor
 ```
 
 2. Check service state:
 
 ```bash
-zeroclaw service status
+mega-zero service status
 ```
 
 3. If service is unhealthy, restart cleanly:
 
 ```bash
-zeroclaw service stop
-zeroclaw service start
+mega-zero service stop
+mega-zero service start
 ```
 
-4. If channels still fail, verify allowlists and credentials in `~/.zeroclaw/config.toml`.
+4. If channels still fail, verify allowlists and credentials in `~/.mega-zero/config.toml`.
 
 5. If gateway is involved, verify bind/auth settings (`[gateway]`) and local reachability.
 
@@ -105,9 +105,9 @@ zeroclaw service start
 
 Before applying config changes:
 
-1. backup `~/.zeroclaw/config.toml`
+1. backup `~/.mega-zero/config.toml`
 2. apply one logical change at a time
-3. run `zeroclaw doctor`
+3. run `mega-zero doctor`
 4. restart daemon/service
 5. verify with `status` + `channel doctor`
 

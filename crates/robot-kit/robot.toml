@@ -1,5 +1,5 @@
-# ZeroClaw Robot Kit Configuration
-# Copy to ~/.zeroclaw/robot.toml
+# MegaZero Robot Kit Configuration
+# Copy to ~/.mega-zero/robot.toml
 
 # =============================================================================
 # DRIVE SYSTEM

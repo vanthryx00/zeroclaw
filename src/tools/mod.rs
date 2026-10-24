@@ -295,7 +295,7 @@ pub fn all_tools_with_runtime(
             security.clone(),
             crate::providers::ProviderRuntimeOptions {
                 auth_profile_override: None,
-                zeroclaw_dir: root_config
+                mega_zero_dir: root_config
                     .config_path
                     .parent()
                     .map(std::path::PathBuf::from),

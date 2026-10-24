@@ -22,7 +22,7 @@ const NEW_REPOSITORY_MAP_PATHS: &[&str] = &[
     "src/skillforge/",
     "src/tunnel/",
     "crates/robot-kit/",
-    "python/zeroclaw_tools/",
+    "python/mega_zero_tools/",
     "dev/",
     "scripts/ci/",
     "fuzz/",
@@ -128,7 +128,7 @@ fn workspace_and_python_companion_claims_match_manifests() {
 
     for path in [
         "crates/robot-kit",
-        "python/zeroclaw_tools",
+        "python/mega_zero_tools",
         "python/pyproject.toml",
     ] {
         assert!(
@@ -146,11 +146,11 @@ fn workspace_and_python_companion_claims_match_manifests() {
         "robot-kit is not a member of the Cargo workspace"
     );
     assert!(
-        python_manifest.contains("name = \"zeroclaw-tools\""),
+        python_manifest.contains("name = \"mega_zero-tools\""),
         "Python companion package metadata is missing"
     );
     assert!(
-        python_manifest.contains("packages = [\"zeroclaw_tools\"]"),
+        python_manifest.contains("packages = [\"mega_zero_tools\"]"),
         "Python companion package is not included in wheel builds"
     );
 }
