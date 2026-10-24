@@ -1,4 +1,4 @@
-# CodeRabbit configuration for ZeroClaw
+# CodeRabbit configuration for MegaZero
 # Documentation: https://docs.coderabbit.ai/reference/configuration
 
 language: en-US
@@ -28,8 +28,7 @@ reviews:
     base_branch_analysis: true
   
   # Poem configuration
-  poem:
-    enabled: false
+  poem: false
   
   # Reviewer suggestions
   reviewer:

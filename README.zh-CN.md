@@ -1,20 +1,20 @@
 <p align="center">
-  <img src="zeroclaw.png" alt="ZeroClaw" width="200" />
+  <img src="mega-zero.png" alt="MegaZero" width="200" />
 </p>
 
-<h1 align="center">ZeroClaw 🦀（简体中文）</h1>
+<h1 align="center">MegaZero 🦀（简体中文）</h1>
 
 <p align="center">
   <strong>零开销、零妥协；随处部署、万物可换。</strong>
 </p>
 
 <p align="center">
-  <a href="https://x.com/zeroclawlabs?s=21"><img src="https://img.shields.io/badge/X-%40zeroclawlabs-000000?style=flat&logo=x&logoColor=white" alt="X: @zeroclawlabs" /></a>
+  <a href="https://x.com/mega-zerolabs?s=21"><img src="https://img.shields.io/badge/X-%40mega-zerolabs-000000?style=flat&logo=x&logoColor=white" alt="X: @mega-zerolabs" /></a>
   <a href="https://www.xiaohongshu.com/user/profile/67cbfc43000000000d008307?xsec_token=AB73VnYnGNx5y36EtnnZfGmAmS-6Wzv8WMuGpfwfkg6Yc%3D&xsec_source=pc_search"><img src="https://img.shields.io/badge/Xiaohongshu-Official-FF2442?style=flat" alt="Xiaohongshu: Official" /></a>
-  <a href="https://t.me/zeroclawlabs"><img src="https://img.shields.io/badge/Telegram-%40zeroclawlabs-26A5E4?style=flat&logo=telegram&logoColor=white" alt="Telegram: @zeroclawlabs" /></a>
-  <a href="https://t.me/zeroclawlabs_cn"><img src="https://img.shields.io/badge/Telegram%20CN-%40zeroclawlabs__cn-26A5E4?style=flat&logo=telegram&logoColor=white" alt="Telegram CN: @zeroclawlabs_cn" /></a>
-  <a href="https://t.me/zeroclawlabs_ru"><img src="https://img.shields.io/badge/Telegram%20RU-%40zeroclawlabs__ru-26A5E4?style=flat&logo=telegram&logoColor=white" alt="Telegram RU: @zeroclawlabs_ru" /></a>
-  <a href="https://www.reddit.com/r/zeroclawlabs/"><img src="https://img.shields.io/badge/Reddit-r%2Fzeroclawlabs-FF4500?style=flat&logo=reddit&logoColor=white" alt="Reddit: r/zeroclawlabs" /></a>
+  <a href="https://t.me/mega-zerolabs"><img src="https://img.shields.io/badge/Telegram-%40mega-zerolabs-26A5E4?style=flat&logo=telegram&logoColor=white" alt="Telegram: @mega-zerolabs" /></a>
+  <a href="https://t.me/mega-zerolabs_cn"><img src="https://img.shields.io/badge/Telegram%20CN-%40mega-zerolabs__cn-26A5E4?style=flat&logo=telegram&logoColor=white" alt="Telegram CN: @mega-zerolabs_cn" /></a>
+  <a href="https://t.me/mega-zerolabs_ru"><img src="https://img.shields.io/badge/Telegram%20RU-%40mega-zerolabs__ru-26A5E4?style=flat&logo=telegram&logoColor=white" alt="Telegram RU: @mega-zerolabs_ru" /></a>
+  <a href="https://www.reddit.com/r/mega-zerolabs/"><img src="https://img.shields.io/badge/Reddit-r%2Fmega-zerolabs-FF4500?style=flat&logo=reddit&logoColor=white" alt="Reddit: r/mega-zerolabs" /></a>
 </p>
 
 <p align="center">
@@ -50,30 +50,30 @@
 
 | 日期（UTC） | 级别 | 通知 | 处理建议 |
 |---|---|---|---|
-| 2026-02-19 | _紧急_ | 我们与 `openagen/zeroclaw` 及 `zeroclaw.org` **没有任何关系**。`zeroclaw.org` 当前会指向 `openagen/zeroclaw` 这个 fork，并且该域名/仓库正在冒充我们的官网与官方项目。 | 请不要相信上述来源发布的任何信息、二进制、募资活动或官方声明。请仅以本仓库和已验证官方社媒为准。 |
-| 2026-02-19 | _重要_ | 我们目前**尚未发布官方正式网站**，且已发现有人尝试冒充我们。请勿参与任何打着 ZeroClaw 名义进行的投资、募资或类似活动。 | 一切信息请以本仓库为准；也可关注 [X（@zeroclawlabs）](https://x.com/zeroclawlabs?s=21)、[Reddit（r/zeroclawlabs）](https://www.reddit.com/r/zeroclawlabs/)、[Telegram（@zeroclawlabs）](https://t.me/zeroclawlabs)、[Telegram 中文频道（@zeroclawlabs_cn）](https://t.me/zeroclawlabs_cn)、[Telegram 俄语频道（@zeroclawlabs_ru）](https://t.me/zeroclawlabs_ru) 与 [小红书账号](https://www.xiaohongshu.com/user/profile/67cbfc43000000000d008307?xsec_token=AB73VnYnGNx5y36EtnnZfGmAmS-6Wzv8WMuGpfwfkg6Yc%3D&xsec_source=pc_search) 获取官方最新动态。 |
+| 2026-02-19 | _紧急_ | 我们与 `openagen/mega-zero` 及 `mega-zero.org` **没有任何关系**。`mega-zero.org` 当前会指向 `openagen/mega-zero` 这个 fork，并且该域名/仓库正在冒充我们的官网与官方项目。 | 请不要相信上述来源发布的任何信息、二进制、募资活动或官方声明。请仅以本仓库和已验证官方社媒为准。 |
+| 2026-02-19 | _重要_ | 我们目前**尚未发布官方正式网站**，且已发现有人尝试冒充我们。请勿参与任何打着 MegaZero 名义进行的投资、募资或类似活动。 | 一切信息请以本仓库为准；也可关注 [X（@mega-zerolabs）](https://x.com/mega-zerolabs?s=21)、[Reddit（r/mega-zerolabs）](https://www.reddit.com/r/mega-zerolabs/)、[Telegram（@mega-zerolabs）](https://t.me/mega-zerolabs)、[Telegram 中文频道（@mega-zerolabs_cn）](https://t.me/mega-zerolabs_cn)、[Telegram 俄语频道（@mega-zerolabs_ru）](https://t.me/mega-zerolabs_ru) 与 [小红书账号](https://www.xiaohongshu.com/user/profile/67cbfc43000000000d008307?xsec_token=AB73VnYnGNx5y36EtnnZfGmAmS-6Wzv8WMuGpfwfkg6Yc%3D&xsec_source=pc_search) 获取官方最新动态。 |
 | 2026-02-19 | _重要_ | Anthropic 于 2026-02-19 更新了 Authentication and Credential Use 条款。条款明确：OAuth authentication（用于 Free、Pro、Max）仅适用于 Claude Code 与 Claude.ai；将 Claude Free/Pro/Max 账号获得的 OAuth token 用于其他任何产品、工具或服务（包括 Agent SDK）不被允许，并可能构成对 Consumer Terms of Service 的违规。 | 为避免损失，请暂时不要尝试 Claude Code OAuth 集成；原文见：[Authentication and Credential Use](https://code.claude.com/docs/en/legal-and-compliance#authentication-and-credential-use)。 |
 
 ## 项目简介
 
-ZeroClaw 是一个高性能、低资源占用、可组合的自主智能体运行时：
+MegaZero 是一个高性能、低资源占用、可组合的自主智能体运行时：
 
 - Rust 原生实现，单二进制部署，跨 ARM / x86 / RISC-V。
 - Trait 驱动架构，`Provider` / `Channel` / `Tool` / `Memory` 可替换。
 - 安全默认值优先：配对鉴权、显式 allowlist、沙箱与作用域约束。
 
-## 为什么选择 ZeroClaw
+## 为什么选择 MegaZero
 
 - **默认轻量运行时**：常见 CLI 与 `status` 工作流通常保持在几 MB 级内存范围。
 - **低成本部署友好**：面向低价板卡与小规格云主机设计，不依赖厚重运行时。
 - **冷启动很快**：Rust 单二进制让常用命令与守护进程启动更接近“秒开”。
 - **跨架构可移植**：同一套二进制优先流程覆盖 ARM / x86 / RISC-V，并保持 provider/channel/tool 可替换。
 
-## 基准快照（ZeroClaw vs OpenClaw，可复现）
+## 基准快照（MegaZero vs OpenClaw，可复现）
 
 以下是本地快速基准对比（macOS arm64，2026 年 2 月），按 0.8GHz 边缘 CPU 进行归一化展示：
 
-| | OpenClaw | NanoBot | PicoClaw | ZeroClaw 🦀 |
+| | OpenClaw | NanoBot | PicoClaw | MegaZero 🦀 |
 |---|---|---|---|---|
 | **语言** | TypeScript | Python | Go | **Rust** |
 | **RAM** | > 1GB | > 100MB | < 10MB | **< 5MB** |
@@ -81,10 +81,10 @@ ZeroClaw 是一个高性能、低资源占用、可组合的自主智能体运�
 | **二进制体积** | ~28MB（dist） | N/A（脚本） | ~8MB | **~8.8 MB** |
 | **成本** | Mac Mini $599 | Linux SBC ~$50 | Linux 板卡 $10 | **任意 $10 硬件** |
 
-> 说明：ZeroClaw 的数据来自 release 构建，并通过 `/usr/bin/time -l` 测得。OpenClaw 需要 Node.js 运行时环境，仅该运行时通常就会带来约 390MB 的额外内存占用；NanoBot 需要 Python 运行时环境。PicoClaw 与 ZeroClaw 为静态二进制。
+> 说明：MegaZero 的数据来自 release 构建，并通过 `/usr/bin/time -l` 测得。OpenClaw 需要 Node.js 运行时环境，仅该运行时通常就会带来约 390MB 的额外内存占用；NanoBot 需要 Python 运行时环境。PicoClaw 与 MegaZero 为静态二进制。
 
 <p align="center">
-  <img src="zero-claw.jpeg" alt="ZeroClaw vs OpenClaw 对比图" width="800" />
+  <img src="zero-claw.jpeg" alt="MegaZero vs OpenClaw 对比图" width="800" />
 </p>
 
 ### 本地可复现测量
@@ -93,23 +93,23 @@ ZeroClaw 是一个高性能、低资源占用、可组合的自主智能体运�
 
 ```bash
 cargo build --release
-ls -lh target/release/zeroclaw
+ls -lh target/release/mega-zero
 
-/usr/bin/time -l target/release/zeroclaw --help
-/usr/bin/time -l target/release/zeroclaw status
+/usr/bin/time -l target/release/mega-zero --help
+/usr/bin/time -l target/release/mega-zero status
 ```
 
 当前 README 的样例数据（macOS arm64，2026-02-18）：
 
 - Release 二进制：`8.8M`
-- `zeroclaw --help`：约 `0.02s`，峰值内存约 `3.9MB`
-- `zeroclaw status`：约 `0.01s`，峰值内存约 `4.1MB`
+- `mega-zero --help`：约 `0.02s`，峰值内存约 `3.9MB`
+- `mega-zero status`：约 `0.01s`，峰值内存约 `4.1MB`
 
 ## 一键部署
 
 ```bash
-git clone https://github.com/zeroclaw-labs/zeroclaw.git
-cd zeroclaw
+git clone https://github.com/mega-zero-labs/mega-zero.git
+cd mega-zero
 ./bootstrap.sh
 ```
 
@@ -122,74 +122,74 @@ cd zeroclaw
 ### Homebrew（macOS/Linuxbrew）
 
 ```bash
-brew install zeroclaw
+brew install mega-zero
 ```
 
 ```bash
-git clone https://github.com/zeroclaw-labs/zeroclaw.git
-cd zeroclaw
+git clone https://github.com/mega-zero-labs/mega-zero.git
+cd mega-zero
 cargo build --release --locked
 cargo install --path . --force --locked
 
 # 快速初始化（无交互）
-zeroclaw onboard --api-key sk-... --provider openrouter
+mega-zero onboard --api-key sk-... --provider openrouter
 
 # 或使用交互式向导
-zeroclaw onboard --interactive
+mega-zero onboard --interactive
 
 # 单次对话
-zeroclaw agent -m "Hello, ZeroClaw!"
+mega-zero agent -m "Hello, MegaZero!"
 
 # 启动网关（默认: 127.0.0.1:3000）
-zeroclaw gateway
+mega-zero gateway
 
 # 启动长期运行模式
-zeroclaw daemon
+mega-zero daemon
 ```
 
 ## Subscription Auth（OpenAI Codex / Claude Code）
 
-ZeroClaw 现已支持基于订阅的原生鉴权配置（多账号、静态加密存储）。
+MegaZero 现已支持基于订阅的原生鉴权配置（多账号、静态加密存储）。
 
-- 配置文件：`~/.zeroclaw/auth-profiles.json`
-- 加密密钥：`~/.zeroclaw/.secret_key`
+- 配置文件：`~/.mega-zero/auth-profiles.json`
+- 加密密钥：`~/.mega-zero/.secret_key`
 - Profile ID 格式：`<provider>:<profile_name>`（例：`openai-codex:work`）
 
 OpenAI Codex OAuth（ChatGPT 订阅）：
 
 ```bash
 # 推荐用于服务器/无显示器环境
-zeroclaw auth login --provider openai-codex --device-code
+mega-zero auth login --provider openai-codex --device-code
 
 # 浏览器/回调流程，支持粘贴回退
-zeroclaw auth login --provider openai-codex --profile default
-zeroclaw auth paste-redirect --provider openai-codex --profile default
+mega-zero auth login --provider openai-codex --profile default
+mega-zero auth paste-redirect --provider openai-codex --profile default
 
 # 检查 / 刷新 / 切换 profile
-zeroclaw auth status
-zeroclaw auth refresh --provider openai-codex --profile default
-zeroclaw auth use --provider openai-codex --profile work
+mega-zero auth status
+mega-zero auth refresh --provider openai-codex --profile default
+mega-zero auth use --provider openai-codex --profile work
 ```
 
 Claude Code / Anthropic setup-token：
 
 ```bash
 # 粘贴订阅/setup token（Authorization header 模式）
-zeroclaw auth paste-token --provider anthropic --profile default --auth-kind authorization
+mega-zero auth paste-token --provider anthropic --profile default --auth-kind authorization
 
 # 别名命令
-zeroclaw auth setup-token --provider anthropic --profile default
+mega-zero auth setup-token --provider anthropic --profile default
 ```
 
 使用 subscription auth 运行 agent：
 
 ```bash
-zeroclaw agent --provider openai-codex -m "hello"
-zeroclaw agent --provider openai-codex --auth-profile openai-codex:work -m "hello"
+mega-zero agent --provider openai-codex -m "hello"
+mega-zero agent --provider openai-codex --auth-profile openai-codex:work -m "hello"
 
 # Anthropic 同时支持 API key 和 auth token 环境变量：
 # ANTHROPIC_AUTH_TOKEN, ANTHROPIC_OAUTH_TOKEN, ANTHROPIC_API_KEY
-zeroclaw agent --provider anthropic -m "hello"
+mega-zero agent --provider anthropic -m "hello"
 ```
 
 ## 架构
@@ -197,12 +197,12 @@ zeroclaw agent --provider anthropic -m "hello"
 每个子系统都是一个 **Trait** — 通过配置切换即可更换实现，无需修改代码。
 
 <p align="center">
-  <img src="docs/architecture.svg" alt="ZeroClaw 架构图" width="900" />
+  <img src="docs/architecture.svg" alt="MegaZero 架构图" width="900" />
 </p>
 
 | 子系统 | Trait | 内置实现 | 扩展方式 |
 |--------|-------|----------|----------|
-| **AI 模型** | `Provider` | 通过 `zeroclaw providers` 查看（当前 28 个内置 + 别名，以及自定义端点） | `custom:https://your-api.com`（OpenAI 兼容）或 `anthropic-custom:https://your-api.com` |
+| **AI 模型** | `Provider` | 通过 `mega-zero providers` 查看（当前 28 个内置 + 别名，以及自定义端点） | `custom:https://your-api.com`（OpenAI 兼容）或 `anthropic-custom:https://your-api.com` |
 | **通道** | `Channel` | CLI, Telegram, Discord, Slack, Mattermost, iMessage, Matrix, Signal, WhatsApp, Email, IRC, Lark, DingTalk, QQ, Webhook | 任意消息 API |
 | **记忆** | `Memory` | SQLite 混合搜索, PostgreSQL 后端, Lucid 桥接, Markdown 文件, 显式 `none` 后端, 快照/恢复, 可选响应缓存 | 任意持久化后端 |
 | **工具** | `Tool` | shell/file/memory, cron/schedule, git, pushover, browser, http_request, screenshot/image_info, composio (opt-in), delegate, 硬件工具 | 任意能力 |
@@ -220,7 +220,7 @@ zeroclaw agent --provider anthropic -m "hello"
 - ✅ 当前支持：`runtime.kind = "native"` 或 `runtime.kind = "docker"`
 - 🚧 计划中，尚未实现：WASM / 边缘运行时
 
-配置了不支持的 `runtime.kind` 时，ZeroClaw 会以明确的错误退出，而非静默回退到 native。
+配置了不支持的 `runtime.kind` 时，MegaZero 会以明确的错误退出，而非静默回退到 native。
 
 ### 记忆系统（全栈搜索引擎）
 

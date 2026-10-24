@@ -1,6 +1,6 @@
 //! Prime Zero runner — main entry point for the hybrid orchestration engine.
 //!
-//! Entry point for `zeroclaw prime` command. Loads Empire + Companion + Mindset,
+//! Entry point for `mega_zero prime` command. Loads Empire + Companion + Mindset,
 //! builds the hybrid orchestrator, and runs an interactive or batch session.
 
 use anyhow::Result;
@@ -51,7 +51,7 @@ pub async fn run(
     let companion = CompanionTaskList::load(&workspace);
 
     // Provider fallback chain (Anthropic → Gemini → Ollama) + SQLite memory,
-    // shared with `zeroclaw empire`.
+    // shared with `mega_zero empire`.
     let config =
         crate::offline::runner::build_empire_config(base_config, provider_override, model_override);
     let provider = config

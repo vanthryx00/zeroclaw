@@ -43,15 +43,15 @@ jobs:
       - name: Generate new NOTICE file
         run: |
           cat > NOTICE << 'EOF'
-          ZeroClaw
-          Copyright 2025 ZeroClaw Labs
+          MegaZero
+          Copyright 2025 MegaZero Labs
 
-          This product includes software developed at ZeroClaw Labs (https://github.com/zeroclaw-labs).
+          This product includes software developed at MegaZero Labs (https://github.com/mega-zero-labs).
 
           Contributors
           ============
 
-          The following individuals have contributed to ZeroClaw:
+          The following individuals have contributed to MegaZero:
 
           EOF
 

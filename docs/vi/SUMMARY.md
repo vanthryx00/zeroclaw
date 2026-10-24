@@ -1,4 +1,4 @@
-# Mục lục tài liệu ZeroClaw (Tiếng Việt)
+# Mục lục tài liệu MegaZero (Tiếng Việt)
 
 Đây là mục lục thống nhất cho hệ thống tài liệu tiếng Việt.
 

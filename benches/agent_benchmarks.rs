@@ -1,4 +1,4 @@
-//! Performance benchmarks for ZeroClaw hot paths.
+//! Performance benchmarks for MegaZero hot paths.
 //!
 //! Benchmarks cover:
 //!   - Tool dispatch (XML parsing, native parsing)
@@ -7,19 +7,19 @@
 //!
 //! Run: `cargo bench`
 //!
-//! Ref: https://github.com/zeroclaw-labs/zeroclaw/issues/618 (item 7)
+//! Ref: https://github.com/mega_zero-labs/mega_zero/issues/618 (item 7)
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use std::sync::{Arc, Mutex};
 
-use zeroclaw::agent::agent::Agent;
-use zeroclaw::agent::dispatcher::{NativeToolDispatcher, ToolDispatcher, XmlToolDispatcher};
-use zeroclaw::config::MemoryConfig;
-use zeroclaw::memory;
-use zeroclaw::memory::{Memory, MemoryCategory};
-use zeroclaw::observability::{NoopObserver, Observer};
-use zeroclaw::providers::{ChatRequest, ChatResponse, Provider, ToolCall};
-use zeroclaw::tools::{Tool, ToolResult};
+use mega_zero::agent::agent::Agent;
+use mega_zero::agent::dispatcher::{NativeToolDispatcher, ToolDispatcher, XmlToolDispatcher};
+use mega_zero::config::MemoryConfig;
+use mega_zero::memory;
+use mega_zero::memory::{Memory, MemoryCategory};
+use mega_zero::observability::{NoopObserver, Observer};
+use mega_zero::providers::{ChatRequest, ChatResponse, Provider, ToolCall};
+use mega_zero::tools::{Tool, ToolResult};
 
 use anyhow::Result;
 use async_trait::async_trait;
@@ -144,7 +144,7 @@ fn bench_xml_parsing(c: &mut Criterion) {
         text: Some(
             r#"Here is my analysis.
 <tool_call>
-{"name": "search", "arguments": {"query": "zeroclaw architecture"}}
+{"name": "search", "arguments": {"query": "mega_zero architecture"}}
 </tool_call>
 Let me know if you need more."#
                 .into(),
@@ -190,7 +190,7 @@ fn bench_native_parsing(c: &mut Criterion) {
             ToolCall {
                 id: "tc1".into(),
                 name: "search".into(),
-                arguments: r#"{"query": "zeroclaw"}"#.into(),
+                arguments: r#"{"query": "mega_zero"}"#.into(),
             },
             ToolCall {
                 id: "tc2".into(),
@@ -219,7 +219,7 @@ fn bench_memory_operations(c: &mut Criterion) {
         for i in 0..100 {
             mem.store(
                 &format!("key_{i}"),
-                &format!("Content entry number {i} about zeroclaw agent runtime"),
+                &format!("Content entry number {i} about mega_zero agent runtime"),
                 MemoryCategory::Core,
                 None,
             )
@@ -248,7 +248,7 @@ fn bench_memory_operations(c: &mut Criterion) {
     c.bench_function("memory_recall_top10", |b| {
         b.iter(|| {
             rt.block_on(async {
-                mem.recall(black_box("zeroclaw agent"), 10, None)
+                mem.recall(black_box("mega_zero agent"), 10, None)
                     .await
                     .unwrap()
             })

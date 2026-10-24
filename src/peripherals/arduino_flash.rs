@@ -1,4 +1,4 @@
-//! Flash ZeroClaw Arduino firmware via arduino-cli.
+//! Flash MegaZero Arduino firmware via arduino-cli.
 //!
 //! Ensures arduino-cli is available (installs via brew on macOS if missing),
 //! installs the AVR core, compiles and uploads the base firmware.
@@ -6,11 +6,11 @@
 use anyhow::{Context, Result};
 use std::process::Command;
 
-/// ZeroClaw Arduino Uno base firmware (capabilities, gpio_read, gpio_write).
-const FIRMWARE_INO: &str = include_str!("../../firmware/zeroclaw-arduino/zeroclaw-arduino.ino");
+/// MegaZero Arduino Uno base firmware (capabilities, gpio_read, gpio_write).
+const FIRMWARE_INO: &str = include_str!("../../firmware/mega_zero-arduino/mega_zero-arduino.ino");
 
 const FQBN: &str = "arduino:avr:uno";
-const SKETCH_NAME: &str = "zeroclaw-arduino";
+const SKETCH_NAME: &str = "mega_zero-arduino";
 
 /// Check if arduino-cli is available.
 pub fn arduino_cli_available() -> bool {
@@ -85,12 +85,12 @@ fn ensure_avr_core() -> Result<()> {
     Ok(())
 }
 
-/// Flash ZeroClaw firmware to Arduino at the given port.
+/// Flash MegaZero firmware to Arduino at the given port.
 pub fn flash_arduino_firmware(port: &str) -> Result<()> {
     ensure_arduino_cli()?;
     ensure_avr_core()?;
 
-    let temp_dir = std::env::temp_dir().join(format!("zeroclaw_flash_{}", uuid::Uuid::new_v4()));
+    let temp_dir = std::env::temp_dir().join(format!("mega_zero_flash_{}", uuid::Uuid::new_v4()));
     let sketch_dir = temp_dir.join(SKETCH_NAME);
     let ino_path = sketch_dir.join(format!("{}.ino", SKETCH_NAME));
 
@@ -100,7 +100,7 @@ pub fn flash_arduino_firmware(port: &str) -> Result<()> {
     let sketch_path = sketch_dir.to_string_lossy();
 
     // Compile
-    println!("Compiling ZeroClaw Arduino firmware...");
+    println!("Compiling MegaZero Arduino firmware...");
     let compile = Command::new("arduino-cli")
         .args(["compile", "--fqbn", FQBN, &*sketch_path])
         .output()
@@ -126,7 +126,7 @@ pub fn flash_arduino_firmware(port: &str) -> Result<()> {
         anyhow::bail!("Upload failed:\n{}\n\nEnsure the board is connected and the port is correct (e.g. /dev/cu.usbmodem* on macOS).", stderr);
     }
 
-    println!("ZeroClaw firmware flashed successfully.");
+    println!("MegaZero firmware flashed successfully.");
     println!("The Arduino now supports: capabilities, gpio_read, gpio_write.");
     Ok(())
 }

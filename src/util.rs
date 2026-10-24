@@ -1,4 +1,4 @@
-//! Utility functions for `ZeroClaw`.
+//! Utility functions for `MegaZero`.
 //!
 //! This module contains reusable helper functions used across the codebase.
 
@@ -17,7 +17,7 @@
 ///
 /// # Examples
 /// ```ignore
-/// use zeroclaw::util::truncate_with_ellipsis;
+/// use mega_zero::util::truncate_with_ellipsis;
 ///
 /// // ASCII string - no truncation needed
 /// assert_eq!(truncate_with_ellipsis("hello", 10), "hello");
