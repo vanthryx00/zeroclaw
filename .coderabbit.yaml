@@ -28,8 +28,7 @@ reviews:
     base_branch_analysis: true
   
   # Poem configuration
-  poem:
-    enabled: false
+  poem: false
   
   # Reviewer suggestions
   reviewer:
