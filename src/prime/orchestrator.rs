@@ -1,7 +1,7 @@
 //! Prime Zero hybrid orchestrator trait — multiple reasoning backends can implement this.
 //!
 //! An Orchestrator is the core decision-making engine. Different implementations
-//! (Llama Prime, native MegaZero, other frameworks) all implement this trait, allowing
+//! (Llama Prime, native ZeroClaw, other frameworks) all implement this trait, allowing
 //! them to be mixed and matched based on task type, availability, or performance needs.
 //!
 //! Each orchestrator:
@@ -9,7 +9,7 @@
 //! - Produces a sequence of structured actions (tool calls, decisions, reflections)
 //! - Reports outcomes (success/failure, reasoning trace, cost)
 //!
-//! MegaZero's trait system wraps the orchestrator output and routes to tools/providers.
+//! ZeroClaw's trait system wraps the orchestrator output and routes to tools/providers.
 
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
@@ -108,7 +108,7 @@ pub struct OrchestratorTrace {
 ///
 /// Implementations might be:
 /// - `LlamaPrimeOrchestrator` — uses Llama Prime Agent's reasoning loop
-/// - `NativeOrchestrator` — uses MegaZero's native agentic loop
+/// - `NativeOrchestrator` — uses ZeroClaw's native agentic loop
 /// - `HybridOrchestrator` — routes between multiple backends
 /// - `StrategyOrchestrator` — uses pluggable reasoning strategies
 #[async_trait::async_trait]

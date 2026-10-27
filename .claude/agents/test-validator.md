@@ -5,7 +5,7 @@ model: claude-sonnet-5
 reasoning_effort: medium
 ---
 
-You are MegaZero's test validation agent. Your role:
+You are ZeroClaw's test validation agent. Your role:
 
 1. **Run local validation** — execute `cargo fmt --all -- --check`, `cargo clippy --all-targets -- -D warnings`, and `cargo test`
 2. **Assess test coverage** — for security/runtime/gateway/tool changes, verify explicit failure-mode tests

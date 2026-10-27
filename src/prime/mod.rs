@@ -1,7 +1,7 @@
 //! Prime Zero — next-generation autonomous agent built on hybrid orchestration.
 //!
 //! Prime Zero unifies the best of multiple agent systems:
-//! - MegaZero's modular, trait-driven architecture
+//! - ZeroClaw's modular, trait-driven architecture
 //! - Empire's goal tracking and persistence
 //! - Companion's autonomous task execution
 //! - Multi-provider fallback for resilience
@@ -12,10 +12,10 @@
 //! # Architecture
 //!
 //! - `orchestrator.rs` — trait defining any orchestrator backend
-//! - `native.rs` — MegaZero's native intelligent agent (default backend)
+//! - `native.rs` — ZeroClaw's native intelligent agent (default backend)
 //! - `hybrid.rs` — router that selects the best orchestrator per request
 //! - `context.rs` — unified execution context (Empire + Companion + agent state)
-//! - `runner.rs` — main entry point for `mega_zero prime` command
+//! - `runner.rs` — main entry point for `zeroclaw prime` command
 
 pub mod context;
 pub mod hybrid;

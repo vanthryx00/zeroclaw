@@ -69,6 +69,21 @@ Behavior:
 - Each turn is enriched with current Empire goals and enabled Companion tasks.
 - Session commands: `/status`, `/metrics` (estimated cost), `/goal <title> | <desc>`, `/done <ID>`, `/active <ID>`, `/blocked <ID>`, `/note <ID> <text>`, `/help`, `/quit`.
 
+### `prime`
+
+- `zeroclaw prime` — interactive session (default)
+- `zeroclaw prime -m "Build a REST API"` — single message, then exit
+- `zeroclaw prime -m "..." -i` — send a message, then stay interactive
+- `zeroclaw prime --provider ollama --model llama3.2` — fully offline
+- `zeroclaw prime --mission "<statement>"` — set/update the persisted Empire mission
+
+Behavior:
+
+- Provider fallback chain: selected primary, then remaining of Anthropic → Gemini → Ollama.
+- Uses SQLite memory and injects `<workspace>/mindset.toml` into the system prompt; state persists in `<workspace>/empire.toml` and `<workspace>/companion_tasks.toml`.
+- Each turn is enriched with current Empire goals and enabled Companion tasks.
+- Session commands: `/status`, `/metrics` (estimated cost), `/goal <title> | <desc>`, `/done <ID>`, `/active <ID>`, `/blocked <ID>`, `/note <ID> <text>`, `/help`, `/quit`.
+
 ### `gateway` / `daemon`
 
 - `mega-zero gateway [--host <HOST>] [--port <PORT>]`

@@ -10,7 +10,7 @@
 //! 4. Fall back gracefully if the primary is unavailable
 //! 5. Collect metrics on what worked best for learning
 //!
-//! This allows seamless integration of Llama Prime, other frameworks, and MegaZero's
+//! This allows seamless integration of Llama Prime, other frameworks, and ZeroClaw's
 //! native engine without requiring code rewrites.
 
 use anyhow::Result;
