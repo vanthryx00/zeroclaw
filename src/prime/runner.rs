@@ -58,7 +58,7 @@ pub async fn run(
         .default_provider
         .clone()
         .unwrap_or_else(|| "anthropic".to_string());
-    let agent = crate::offline::runner::build_empire_agent(&config, &mindset)?;
+    let agent = crate::offline::runner::build_empire_agent(&config, &mindset).await?;
 
     // ── Create unified context ───────────────────────────────────────
     let prime_context = PrimeContext::new(empire, companion, mindset);
