@@ -1,17 +1,17 @@
-# Adding Boards and Tools — ZeroClaw Hardware Guide
+# Adding Boards and Tools — MegaZero Hardware Guide
 
-This guide explains how to add new hardware boards and custom tools to ZeroClaw.
+This guide explains how to add new hardware boards and custom tools to MegaZero.
 
 ## Quick Start: Add a Board via CLI
 
 ```bash
-# Add a board (updates ~/.zeroclaw/config.toml)
-zeroclaw peripheral add nucleo-f401re /dev/ttyACM0
-zeroclaw peripheral add arduino-uno /dev/cu.usbmodem12345
-zeroclaw peripheral add rpi-gpio native   # for Raspberry Pi GPIO (Linux)
+# Add a board (updates ~/.mega-zero/config.toml)
+mega-zero peripheral add nucleo-f401re /dev/ttyACM0
+mega-zero peripheral add arduino-uno /dev/cu.usbmodem12345
+mega-zero peripheral add rpi-gpio native   # for Raspberry Pi GPIO (Linux)
 
 # Restart daemon to apply
-zeroclaw daemon --host 127.0.0.1 --port 3000
+mega-zero daemon --host 127.0.0.1 --port 3000
 ```
 
 ## Supported Boards
@@ -26,7 +26,7 @@ zeroclaw daemon --host 127.0.0.1 --port 3000
 
 ## Manual Config
 
-Edit `~/.zeroclaw/config.toml`:
+Edit `~/.mega-zero/config.toml`:
 
 ```toml
 [peripherals]
@@ -76,7 +76,7 @@ builtin_led: 13
 
 ### PDF Datasheets
 
-With the `rag-pdf` feature, ZeroClaw can index PDF files:
+With the `rag-pdf` feature, MegaZero can index PDF files:
 
 ```bash
 cargo build --features hardware,rag-pdf
@@ -87,7 +87,7 @@ Place PDFs in the datasheet directory. They are extracted and chunked for RAG.
 ## Adding a New Board Type
 
 1. **Create a datasheet** — `docs/datasheets/my-board.md` with pin aliases and GPIO info.
-2. **Add to config** — `zeroclaw peripheral add my-board /dev/ttyUSB0`
+2. **Add to config** — `mega-zero peripheral add my-board /dev/ttyUSB0`
 3. **Implement a peripheral** (optional) — For custom protocols, implement the `Peripheral` trait in `src/peripherals/` and register in `create_peripheral_tools`.
 
 See `docs/hardware-peripherals-design.md` for the full design.
@@ -102,12 +102,12 @@ See `docs/hardware-peripherals-design.md` for the full design.
 
 | Command | Description |
 |---------|-------------|
-| `zeroclaw peripheral list` | List configured boards |
-| `zeroclaw peripheral add <board> <path>` | Add board (writes config) |
-| `zeroclaw peripheral flash` | Flash Arduino firmware |
-| `zeroclaw peripheral flash-nucleo` | Flash Nucleo firmware |
-| `zeroclaw hardware discover` | List USB devices |
-| `zeroclaw hardware info` | Chip info via probe-rs |
+| `mega-zero peripheral list` | List configured boards |
+| `mega-zero peripheral add <board> <path>` | Add board (writes config) |
+| `mega-zero peripheral flash` | Flash Arduino firmware |
+| `mega-zero peripheral flash-nucleo` | Flash Nucleo firmware |
+| `mega-zero hardware discover` | List USB devices |
+| `mega-zero hardware info` | Chip info via probe-rs |
 
 ## Troubleshooting
 

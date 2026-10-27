@@ -1,10 +1,10 @@
 # LangGraph Integration Guide
 
-This guide explains how to use the `zeroclaw-tools` Python package for consistent tool calling with any OpenAI-compatible LLM provider.
+This guide explains how to use the `mega-zero-tools` Python package for consistent tool calling with any OpenAI-compatible LLM provider.
 
 ## Background
 
-Some LLM providers, particularly Chinese models like GLM-5 (Zhipu AI), have inconsistent tool calling behavior when using text-based tool invocation. ZeroClaw's Rust core uses structured tool calling via the OpenAI API format, but some models respond better to a different approach.
+Some LLM providers, particularly Chinese models like GLM-5 (Zhipu AI), have inconsistent tool calling behavior when using text-based tool invocation. MegaZero's Rust core uses structured tool calling via the OpenAI API format, but some models respond better to a different approach.
 
 LangGraph provides a stateful graph execution engine that guarantees consistent tool calling behavior regardless of the underlying model's native capabilities.
 
@@ -14,7 +14,7 @@ LangGraph provides a stateful graph execution engine that guarantees consistent 
 ┌─────────────────────────────────────────────────────────────┐
 │                      Your Application                        │
 ├─────────────────────────────────────────────────────────────┤
-│                   zeroclaw-tools Agent                       │
+│                   mega-zero-tools Agent                       │
 │                                                              │
 │   ┌─────────────────────────────────────────────────────┐   │
 │   │              LangGraph StateGraph                    │   │
@@ -44,14 +44,14 @@ LangGraph provides a stateful graph execution engine that guarantees consistent 
 ### Installation
 
 ```bash
-pip install zeroclaw-tools
+pip install mega-zero-tools
 ```
 
 ### Basic Usage
 
 ```python
 import asyncio
-from zeroclaw_tools import create_agent, shell, file_read, file_write
+from mega-zero_tools import create_agent, shell, file_read, file_write
 from langchain_core.messages import HumanMessage
 
 async def main():
@@ -95,7 +95,7 @@ asyncio.run(main())
 Create your own tools with the `@tool` decorator:
 
 ```python
-from zeroclaw_tools import tool, create_agent
+from mega-zero_tools import tool, create_agent
 
 @tool
 def get_weather(city: str) -> str:
@@ -161,7 +161,7 @@ agent = create_agent(
 
 ```python
 import os
-from zeroclaw_tools.integrations import DiscordBot
+from mega-zero_tools.integrations import DiscordBot
 
 bot = DiscordBot(
     token=os.environ["DISCORD_TOKEN"],
@@ -182,15 +182,15 @@ export API_KEY="your-key"
 export BRAVE_API_KEY="your-brave-key"  # Optional, for web search
 
 # Single message
-zeroclaw-tools "What is the current date?"
+mega-zero-tools "What is the current date?"
 
 # Interactive mode
-zeroclaw-tools -i
+mega-zero-tools -i
 ```
 
-## Comparison with Rust ZeroClaw
+## Comparison with Rust MegaZero
 
-| Aspect | Rust ZeroClaw | zeroclaw-tools |
+| Aspect | Rust MegaZero | mega-zero-tools |
 |--------|---------------|-----------------|
 | **Performance** | Ultra-fast (~10ms startup) | Python startup (~500ms) |
 | **Memory** | <5 MB | ~50 MB |
@@ -199,12 +199,12 @@ zeroclaw-tools -i
 | **Extensibility** | Rust traits | Python decorators |
 | **Ecosystem** | Rust crates | PyPI packages |
 
-**When to use Rust ZeroClaw:**
+**When to use Rust MegaZero:**
 - Production edge deployments
 - Resource-constrained environments (Raspberry Pi, etc.)
 - Maximum performance requirements
 
-**When to use zeroclaw-tools:**
+**When to use mega-zero-tools:**
 - Models with inconsistent native tool calling
 - Python-centric development
 - Rapid prototyping

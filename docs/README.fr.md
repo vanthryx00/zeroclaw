@@ -1,4 +1,4 @@
-# Hub de Documentation ZeroClaw
+# Hub de Documentation MegaZero
 
 Cette page est le point d'entrée principal du système de documentation.
 
@@ -10,7 +10,7 @@ Hubs localisés : [简体中文](README.zh-CN.md) · [日本語](README.ja.md) �
 
 | Je veux…                                                            | Lire ceci                                                                      |
 | ------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Installer et exécuter ZeroClaw rapidement                           | [README.md (Démarrage Rapide)](../README.md#quick-start)                       |
+| Installer et exécuter MegaZero rapidement                           | [README.md (Démarrage Rapide)](../README.md#quick-start)                       |
 | Bootstrap en une seule commande                                     | [one-click-bootstrap.md](one-click-bootstrap.md)                               |
 | Trouver des commandes par tâche                                     | [commands-reference.md](commands-reference.md)                                 |
 | Vérifier rapidement les valeurs par défaut et clés de config        | [config-reference.md](config-reference.md)                                     |

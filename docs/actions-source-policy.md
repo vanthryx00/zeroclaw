@@ -29,8 +29,8 @@ Selected allowlist patterns:
 Use these commands to export the current effective policy for audit/change control:
 
 ```bash
-gh api repos/zeroclaw-labs/zeroclaw/actions/permissions
-gh api repos/zeroclaw-labs/zeroclaw/actions/permissions/selected-actions
+gh api repos/mega-zero-labs/mega-zero/actions/permissions
+gh api repos/mega-zero-labs/mega-zero/actions/permissions/selected-actions
 ```
 
 Record each policy change with:

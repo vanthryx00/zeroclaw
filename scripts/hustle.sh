@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# hustle.sh — ZeroClaw income accelerator
+# hustle.sh — MegaZero income accelerator
 # Freelance intake · Portfolio builder · Job applications · Weekly planning
 #
 # Run once to set up:
@@ -29,9 +29,9 @@ note()    { echo -e "${YELLOW}[note]${RESET}  $*"; }
 ask()     { echo -en "${CYAN}?${RESET}  $*: "; }
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
-WORKSPACE="${ZEROCLAW_WORKSPACE:-$HOME/zeroclaw-workspace}"
+WORKSPACE="${MEGA_ZERO_WORKSPACE:-$HOME/mega-zero-workspace}"
 PROJECTS="$WORKSPACE/projects"
-CONFIG_DIR="${ZEROCLAW_CONFIG_DIR:-$HOME/.zeroclaw}"
+CONFIG_DIR="${MEGA_ZERO_CONFIG_DIR:-$HOME/.mega-zero}"
 HUSTLE_ENV="$CONFIG_DIR/hustle.env"
 SKILLS_FILE="$WORKSPACE/skills.md"
 RESUME_FILE="$WORKSPACE/resume.md"
@@ -45,13 +45,13 @@ SKILLS=""
 [[ -f "$HUSTLE_ENV" ]] && source "$HUSTLE_ENV"
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
-require_zeroclaw() {
-    command -v zeroclaw &>/dev/null && return
-    echo "ERROR: zeroclaw not found. Run scripts/setup-free.sh first."
+require_mega-zero() {
+    command -v mega-zero &>/dev/null && return
+    echo "ERROR: mega-zero not found. Run scripts/setup-free.sh first."
     exit 1
 }
 
-run_agent() { zeroclaw agent -m "$1"; }
+run_agent() { mega-zero agent -m "$1"; }
 
 read_multiline() {
     echo -e "${CYAN}$1${RESET}"
@@ -101,7 +101,7 @@ EOF
 - Years of experience:
 EOF
 
-    info "Seeding ZeroClaw memory with your background..."
+    info "Seeding MegaZero memory with your background..."
     run_agent "Store this permanently in your memory about me:
 - Skills: $SKILLS
 - Hourly rate: \$$RATE/hour
@@ -121,7 +121,7 @@ EOF
 # ── COMMAND: intake — analyze a job posting and draft a proposal ──────────────
 cmd_intake() {
     section "Job Intake"
-    require_zeroclaw
+    require_mega-zero
 
     local source="${1:-}"
     local job_text
@@ -176,7 +176,7 @@ After saving, print:
 # ── COMMAND: build — generate a complete portfolio project ────────────────────
 cmd_build() {
     section "Portfolio Project Builder"
-    require_zeroclaw
+    require_mega-zero
 
     local type="${1:-}"
     local stack="${2:-}"
@@ -227,7 +227,7 @@ After building, tell me:
 # ── COMMAND: apply — full job application package ─────────────────────────────
 cmd_apply() {
     section "Job Application Package"
-    require_zeroclaw
+    require_mega-zero
 
     local company="${1:-}"
     if [[ -z "$company" ]]; then
@@ -288,7 +288,7 @@ After saving, tell me the single most important thing to nail in this applicatio
 # ── COMMAND: plan — weekly income action plan ─────────────────────────────────
 cmd_plan() {
     section "Weekly Income Plan"
-    require_zeroclaw
+    require_mega-zero
 
     ask "Current weekly income in USD [0]"
     read -r current
@@ -384,7 +384,7 @@ case "$CMD" in
     rate)    cmd_rate    "$@" ;;
     help|--help|-h|"")
         echo ""
-        echo -e "${BOLD}${CYAN}ZeroClaw Hustle Mode${RESET} — free AI income accelerator"
+        echo -e "${BOLD}${CYAN}MegaZero Hustle Mode${RESET} — free AI income accelerator"
         echo ""
         echo -e "  ${GREEN}bash scripts/hustle.sh setup${RESET}            Set skills + rate (run once)"
         echo -e "  ${GREEN}bash scripts/hustle.sh intake [url]${RESET}     Analyze a job, draft a proposal"

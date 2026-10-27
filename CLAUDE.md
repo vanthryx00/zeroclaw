@@ -1,11 +1,11 @@
-# CLAUDE.md — ZeroClaw Agent Engineering Protocol
+# CLAUDE.md — MegaZero Agent Engineering Protocol
 
 This file defines the default working protocol for Claude agents in this repository.
 Scope: entire repository.
 
 ## 1) Project Snapshot (Read First)
 
-ZeroClaw is a Rust-first autonomous agent runtime optimized for:
+MegaZero is a Rust-first autonomous agent runtime optimized for:
 
 - high performance
 - high efficiency
@@ -27,7 +27,7 @@ Key extension points:
 - `src/peripherals/traits.rs` (`Peripheral`) — hardware boards (STM32, RPi GPIO)
 - `src/security/traits.rs` (`Sandbox`) — process/tool execution isolation backends
 
-The repository is a Cargo workspace: the root `zeroclaw` binary/library plus `crates/robot-kit` (Raspberry Pi 5 robot-kit peripheral bundle). A companion Python package lives at `python/zeroclaw_tools` (packaged via `python/pyproject.toml`) for tool integrations outside the Rust runtime.
+The repository is a Cargo workspace: the root `mega-zero` binary/library plus `crates/robot-kit` (Raspberry Pi 5 robot-kit peripheral bundle). A companion Python package lives at `python/mega_zero_tools` (packaged via `python/pyproject.toml`) for tool integrations outside the Rust runtime.
 
 ## 2) Deep Architecture Observations (Why This Protocol Exists)
 
@@ -160,11 +160,11 @@ Required:
 - `src/integrations/` — external integration registry and status tracking
 - `src/onboard/` — first-run onboarding wizard
 - `src/rag/` — RAG pipeline for hardware datasheet retrieval (markdown/text always; PDF via `rag-pdf` feature; pin/alias lookup tables)
-- `src/skills/` — user/community skill definitions (`~/.zeroclaw/workspace/skills/<name>/SKILL.md`)
+- `src/skills/` — user/community skill definitions (`~/.mega-zero/workspace/skills/<name>/SKILL.md`)
 - `src/skillforge/` — skill auto-discovery/evaluation/integration pipeline (Scout → Evaluate → Integrate); binary-only (wired from `main.rs`, not `lib.rs`)
 - `src/tunnel/` — outbound tunnel providers (cloudflare, ngrok, tailscale, custom, none) for exposing the gateway
 - `crates/robot-kit/` — workspace member for the Raspberry Pi 5 robot-kit peripheral bundle
-- `python/zeroclaw_tools/` — companion Python package for tool integrations outside the Rust runtime
+- `python/mega_zero_tools/` — companion Python package for tool integrations outside the Rust runtime
 - `docs/` — task-oriented documentation system (hubs, unified TOC, references, operations, security proposals, multilingual guides)
 - `.github/` — CI, templates, automation workflows
 - `dev/` — local Docker-based CI (`dev/ci.sh`), sandbox configs
@@ -268,7 +268,7 @@ Apply these naming rules for all code changes unless a subsystem has a stronger 
 - Keep trait implementer naming explicit and predictable: `<ProviderName>Provider`, `<ChannelName>Channel`, `<ToolName>Tool`, `<BackendName>Memory`.
 - Keep factory registration keys stable, lowercase, and user-facing (for example `"openai"`, `"discord"`, `"shell"`), and avoid alias sprawl without migration need.
 - Name tests by behavior/outcome (`<subject>_<expected_behavior>`) and keep fixture identifiers neutral/project-scoped.
-- If identity-like naming is required in tests/examples, use ZeroClaw-native labels only (`ZeroClawAgent`, `zeroclaw_user`, `zeroclaw_node`).
+- If identity-like naming is required in tests/examples, use MegaZero-native labels only (`MegaZeroAgent`, `mega_zero_user`, `mega_zero_node`).
 
 ### 6.4 Architecture Boundary Contract (Required)
 
@@ -373,11 +373,11 @@ Treat privacy and neutrality as merge gates, not best-effort guidelines.
 - Prohibited data includes (non-exhaustive): real names, personal emails, phone numbers, addresses, access tokens, API keys, credentials, IDs, and private URLs.
 - Use neutral project-scoped placeholders (for example: `user_a`, `test_user`, `project_bot`, `example.com`) instead of real identity data.
 - Test names/messages/fixtures must be impersonal and system-focused; avoid first-person or identity-specific language.
-- If identity-like context is unavoidable, use ZeroClaw-scoped roles/labels only (for example: `ZeroClawAgent`, `ZeroClawOperator`, `zeroclaw_user`) and avoid real-world personas.
+- If identity-like context is unavoidable, use MegaZero-scoped roles/labels only (for example: `MegaZeroAgent`, `MegaZeroOperator`, `mega_zero_user`) and avoid real-world personas.
 - Recommended identity-safe naming palette (use when identity-like context is required):
-    - actor labels: `ZeroClawAgent`, `ZeroClawOperator`, `ZeroClawMaintainer`, `zeroclaw_user`
-    - service/runtime labels: `zeroclaw_bot`, `zeroclaw_service`, `zeroclaw_runtime`, `zeroclaw_node`
-    - environment labels: `zeroclaw_project`, `zeroclaw_workspace`, `zeroclaw_channel`
+    - actor labels: `MegaZeroAgent`, `MegaZeroOperator`, `MegaZeroMaintainer`, `mega_zero_user`
+    - service/runtime labels: `mega_zero_bot`, `mega_zero_service`, `mega_zero_runtime`, `mega_zero_node`
+    - environment labels: `mega-zero_project`, `mega-zero_workspace`, `mega-zero_channel`
 - If reproducing external incidents, redact and anonymize all payloads before committing.
 - Before push, review `git diff --cached` specifically for accidental sensitive strings and identity leakage.
 

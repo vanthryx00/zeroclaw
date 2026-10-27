@@ -54,7 +54,7 @@ mod auth;
 mod channels;
 mod companion;
 mod rag {
-    pub use zeroclaw::rag::*;
+    pub use mega_zero::rag::*;
 }
 mod config;
 mod cron;
@@ -71,7 +71,7 @@ mod migration;
 mod multimodal;
 mod observability;
 mod offline {
-    pub use zeroclaw::offline::*;
+    pub use mega_zero::offline::*;
 }
 mod onboard;
 mod peripherals;
@@ -89,11 +89,11 @@ mod util;
 use config::Config;
 
 // Re-export so binary's hardware/peripherals modules can use crate::HardwareCommands etc.
-pub use zeroclaw::{HardwareCommands, PeripheralCommands};
+pub use mega_zero::{HardwareCommands, PeripheralCommands};
 
-/// `ZeroClaw` - Zero overhead. Zero compromise. 100% Rust.
+/// `MegaZero` - Zero overhead. Zero compromise. 100% Rust.
 #[derive(Parser, Debug)]
-#[command(name = "zeroclaw")]
+#[command(name = "mega_zero")]
 #[command(author = "theonlyhennygod")]
 #[command(version = "0.1.0")]
 #[command(about = "The fastest, smallest AI assistant.", long_about = None)]
@@ -174,10 +174,10 @@ Launches an interactive chat session with the configured AI provider. \
 Use --message for single-shot queries without entering interactive mode.
 
 Examples:
-  zeroclaw agent                              # interactive session
-  zeroclaw agent -m \"Summarize today's logs\"  # single message
-  zeroclaw agent -p anthropic --model claude-sonnet-4-20250514
-  zeroclaw agent --peripheral nucleo-f401re:/dev/ttyACM0")]
+  mega_zero agent                              # interactive session
+  mega_zero agent -m \"Summarize today's logs\"  # single message
+  mega_zero agent -p anthropic --model claude-sonnet-4-20250514
+  mega_zero agent --peripheral nucleo-f401re:/dev/ttyACM0")]
     Agent {
         /// Single message mode (don't enter interactive mode)
         #[arg(short, long)]
@@ -203,7 +203,7 @@ Examples:
     /// Run Prime Zero — next-generation hybrid orchestration engine
     #[command(long_about = "\
 Run Prime Zero: next-generation hybrid autonomous agent built on intelligent
-orchestration. Merges ZeroClaw's modular architecture with multiple reasoning
+orchestration. Merges MegaZero's modular architecture with multiple reasoning
 backends (Llama Prime, native agent), with persistent Empire goals and
 Companion autonomous task execution.
 
@@ -215,10 +215,10 @@ Features:
 - Unified execution context with full observability
 
 Examples:
-  zeroclaw prime                                   # interactive with native orchestrator
-  zeroclaw prime -m \"Build a REST API\"           # single task
-  zeroclaw prime --provider ollama --model llama3.2  # fully offline
-  zeroclaw prime -i                                # interactive mode")]
+  mega_zero prime                                   # interactive with native orchestrator
+  mega_zero prime -m \"Build a REST API\"           # single task
+  mega_zero prime --provider ollama --model llama3.2  # fully offline
+  mega_zero prime -i                                # interactive mode")]
     Prime {
         /// Single message mode (don't enter interactive mode)
         #[arg(short, long)]
@@ -237,6 +237,47 @@ Examples:
         mission: Option<String>,
 
         /// Force interactive mode (instead of single-shot)
+        #[arg(short, long)]
+        interactive: bool,
+    },
+
+    /// Run Prime Zero — next-generation hybrid orchestration engine
+    #[command(long_about = "\
+Run Prime Zero: next-generation hybrid autonomous agent built on intelligent
+orchestration. Merges MegaZero's modular architecture with multiple reasoning
+backends (Llama Prime, native agent), with persistent Empire goals and
+Companion autonomous task execution.
+
+Features:
+- Intelligent orchestrator routing: routes to best backend by task type
+- Multi-provider fallback: Anthropic → Gemini → Ollama (fully offline)
+- Empire goal tracking and prioritization
+- Companion autonomous task execution
+- Unified execution context with full observability
+
+Examples:
+  mega_zero prime                                   # interactive with native orchestrator
+  mega_zero prime -m \"Build a REST API\"           # single task
+  mega_zero prime --provider ollama --model llama3.2  # fully offline
+  mega_zero prime -i                                # interactive mode")]
+    Prime {
+        /// Single message mode (don't enter interactive mode)
+        #[arg(short, long)]
+        message: Option<String>,
+
+        /// Provider to use (anthropic, gemini, ollama). Default: anthropic
+        #[arg(short, long)]
+        provider: Option<String>,
+
+        /// Model override
+        #[arg(long)]
+        model: Option<String>,
+
+        /// Mission statement for this session
+        #[arg(long)]
+        mission: Option<String>,
+
+        /// Stay in interactive mode after a `-m` message
         #[arg(short, long)]
         interactive: bool,
     },
@@ -291,10 +332,10 @@ and WebSocket connections. Bind address defaults to the values in \
 your config file (gateway.host / gateway.port).
 
 Examples:
-  zeroclaw gateway                  # use config defaults
-  zeroclaw gateway -p 8080          # listen on port 8080
-  zeroclaw gateway --host 0.0.0.0   # bind to all interfaces
-  zeroclaw gateway -p 0             # random available port")]
+  mega_zero gateway                  # use config defaults
+  mega_zero gateway -p 8080          # listen on port 8080
+  mega_zero gateway --host 0.0.0.0   # bind to all interfaces
+  mega_zero gateway -p 0             # random available port")]
     Gateway {
         /// Port to listen on (use 0 for random available port); defaults to config gateway.port
         #[arg(short, long)]
@@ -309,18 +350,18 @@ Examples:
     #[command(long_about = "\
 Start the long-running autonomous daemon.
 
-Launches the full ZeroClaw runtime: gateway server, all configured \
+Launches the full MegaZero runtime: gateway server, all configured \
 channels (Telegram, Discord, Slack, etc.), heartbeat monitor, and \
-the cron scheduler. This is the recommended way to run ZeroClaw in \
+the cron scheduler. This is the recommended way to run MegaZero in \
 production or as an always-on assistant.
 
-Use 'zeroclaw service install' to register the daemon as an OS \
+Use 'mega_zero service install' to register the daemon as an OS \
 service (systemd/launchd) for auto-start on boot.
 
 Examples:
-  zeroclaw daemon                   # use config defaults
-  zeroclaw daemon -p 9090           # gateway on port 9090
-  zeroclaw daemon --host 127.0.0.1  # localhost only")]
+  mega_zero daemon                   # use config defaults
+  mega_zero daemon -p 9090           # gateway on port 9090
+  mega_zero daemon --host 127.0.0.1  # localhost only")]
     Daemon {
         /// Port to listen on (use 0 for random available port); defaults to config gateway.port
         #[arg(short, long)]
@@ -362,15 +403,15 @@ Cron expressions use the standard 5-field format: \
 override with --tz and an IANA timezone name.
 
 Examples:
-  zeroclaw cron list
-  zeroclaw cron add '0 9 * * 1-5' 'Good morning' --tz America/New_York
-  zeroclaw cron add '*/30 * * * *' 'Check system health'
-  zeroclaw cron add-at 2025-01-15T14:00:00Z 'Send reminder'
-  zeroclaw cron add-every 60000 'Ping heartbeat'
-  zeroclaw cron once 30m 'Run backup in 30 minutes'
-  zeroclaw cron add-agent \"Draft a short update\" --every-ms 3600000 --deliver-channel discord --deliver-to <channel-id>
-  zeroclaw cron pause <task-id>
-  zeroclaw cron update <task-id> --expression '0 8 * * *' --tz Europe/London")]
+  mega_zero cron list
+  mega_zero cron add '0 9 * * 1-5' 'Good morning' --tz America/New_York
+  mega_zero cron add '*/30 * * * *' 'Check system health'
+  mega_zero cron add-at 2025-01-15T14:00:00Z 'Send reminder'
+  mega_zero cron add-every 60000 'Ping heartbeat'
+  mega_zero cron once 30m 'Run backup in 30 minutes'
+  mega_zero cron add-agent \"Draft a short update\" --every-ms 3600000 --deliver-channel discord --deliver-to <channel-id>
+  mega_zero cron pause <task-id>
+  mega_zero cron update <task-id> --expression '0 8 * * *' --tz Europe/London")]
     Cron {
         #[command(subcommand)]
         cron_command: CronCommands,
@@ -389,16 +430,16 @@ Examples:
     #[command(long_about = "\
 Manage communication channels.
 
-Add, remove, list, and health-check channels that connect ZeroClaw \
+Add, remove, list, and health-check channels that connect MegaZero \
 to messaging platforms. Supported channel types: telegram, discord, \
 slack, whatsapp, matrix, imessage, email.
 
 Examples:
-  zeroclaw channel list
-  zeroclaw channel doctor
-  zeroclaw channel add telegram '{\"bot_token\":\"...\",\"name\":\"my-bot\"}'
-  zeroclaw channel remove my-bot
-  zeroclaw channel bind-telegram zeroclaw_user")]
+  mega_zero channel list
+  mega_zero channel doctor
+  mega_zero channel add telegram '{\"bot_token\":\"...\",\"name\":\"my-bot\"}'
+  mega_zero channel remove my-bot
+  mega_zero channel bind-telegram mega_zero_user")]
     Channel {
         #[command(subcommand)]
         channel_command: ChannelCommands,
@@ -437,12 +478,12 @@ Enumerate connected USB devices, identify known development boards \
 probe-rs / ST-Link.
 
 Examples:
-  zeroclaw hardware discover
-  zeroclaw hardware introspect /dev/ttyACM0
-  zeroclaw hardware info --chip STM32F401RETx")]
+  mega_zero hardware discover
+  mega_zero hardware introspect /dev/ttyACM0
+  mega_zero hardware info --chip STM32F401RETx")]
     Hardware {
         #[command(subcommand)]
-        hardware_command: zeroclaw::HardwareCommands,
+        hardware_command: mega_zero::HardwareCommands,
     },
 
     /// Manage hardware peripherals (STM32, RPi GPIO, etc.)
@@ -454,14 +495,14 @@ to the agent (GPIO, sensors, actuators). Supported boards: \
 nucleo-f401re, rpi-gpio, esp32, arduino-uno.
 
 Examples:
-  zeroclaw peripheral list
-  zeroclaw peripheral add nucleo-f401re /dev/ttyACM0
-  zeroclaw peripheral add rpi-gpio native
-  zeroclaw peripheral flash --port /dev/cu.usbmodem12345
-  zeroclaw peripheral flash-nucleo")]
+  mega_zero peripheral list
+  mega_zero peripheral add nucleo-f401re /dev/ttyACM0
+  mega_zero peripheral add rpi-gpio native
+  mega_zero peripheral flash --port /dev/cu.usbmodem12345
+  mega_zero peripheral flash-nucleo")]
     Peripheral {
         #[command(subcommand)]
-        peripheral_command: zeroclaw::PeripheralCommands,
+        peripheral_command: mega_zero::PeripheralCommands,
     },
 
     /// Manage agent memory (list, get, stats, clear)
@@ -473,11 +514,11 @@ Supports filtering by category and session, pagination, and \
 batch clearing with confirmation.
 
 Examples:
-  zeroclaw memory stats
-  zeroclaw memory list
-  zeroclaw memory list --category core --limit 10
-  zeroclaw memory get <key>
-  zeroclaw memory clear --category conversation --yes")]
+  mega_zero memory stats
+  mega_zero memory list
+  mega_zero memory list --category core --limit 10
+  mega_zero memory get <key>
+  mega_zero memory clear --category conversation --yes")]
     Memory {
         #[command(subcommand)]
         memory_command: MemoryCommands,
@@ -485,15 +526,15 @@ Examples:
 
     /// Manage configuration
     #[command(long_about = "\
-Manage ZeroClaw configuration.
+Manage MegaZero configuration.
 
 Inspect and export configuration settings. Use 'schema' to dump \
 the full JSON Schema for the config file, which documents every \
 available key, type, and default value.
 
 Examples:
-  zeroclaw config schema              # print JSON Schema to stdout
-  zeroclaw config schema > schema.json")]
+  mega_zero config schema              # print JSON Schema to stdout
+  mega_zero config schema > schema.json")]
     Config {
         #[command(subcommand)]
         config_command: ConfigCommands,
@@ -501,14 +542,14 @@ Examples:
 
     /// Generate shell completion script to stdout
     #[command(long_about = "\
-Generate shell completion scripts for `zeroclaw`.
+Generate shell completion scripts for `mega_zero`.
 
 The script is printed to stdout so it can be sourced directly:
 
 Examples:
-  source <(zeroclaw completions bash)
-  zeroclaw completions zsh > ~/.zfunc/_zeroclaw
-  zeroclaw completions fish > ~/.config/fish/completions/zeroclaw.fish")]
+  source <(mega_zero completions bash)
+  mega_zero completions zsh > ~/.zfunc/_mega_zero
+  mega_zero completions fish > ~/.config/fish/completions/mega_zero.fish")]
     Completions {
         /// Target shell
         #[arg(value_enum)]
@@ -615,7 +656,7 @@ enum AuthCommands {
 
 #[derive(Subcommand, Debug)]
 enum MigrateCommands {
-    /// Import memory from an `OpenClaw` workspace into this `ZeroClaw` workspace
+    /// Import memory from an `OpenClaw` workspace into this `MegaZero` workspace
     Openclaw {
         /// Optional path to `OpenClaw` workspace (defaults to ~/.openclaw/workspace)
         #[arg(long)]
@@ -671,13 +712,13 @@ Add a scheduled agent job.
 Runs a prompt through the agent on a schedule (cron expression, one-shot \
 timestamp, or fixed interval) and optionally delivers the result to a \
 channel (telegram, discord, slack, mattermost) that is already configured \
-via `zeroclaw channel add`. Exactly one of --cron, --at, or --every-ms is \
+via `mega_zero channel add`. Exactly one of --cron, --at, or --every-ms is \
 required.
 
 Examples:
-  zeroclaw cron add-agent \"Summarize today's top 3 items\" --cron '0 9 * * *' \\
+  mega_zero cron add-agent \"Summarize today's top 3 items\" --cron '0 9 * * *' \\
     --deliver-channel discord --deliver-to <channel-id>
-  zeroclaw cron add-agent 'Draft a short update' --every-ms 3600000 \\
+  mega_zero cron add-agent 'Draft a short update' --every-ms 3600000 \\
     --deliver-channel telegram --deliver-to <chat-id>")]
     AddAgent {
         /// Prompt to run through the agent
@@ -873,7 +914,7 @@ async fn main() -> Result<()> {
         if config_dir.trim().is_empty() {
             bail!("--config-dir cannot be empty");
         }
-        std::env::set_var("ZEROCLAW_CONFIG_DIR", config_dir);
+        std::env::set_var("MEGA_ZERO_CONFIG_DIR", config_dir);
     }
 
     // Completions must remain stdout-only and should not load config or initialize logging.
@@ -941,7 +982,7 @@ async fn main() -> Result<()> {
             .await
         }?;
         // Auto-start channels if user said yes during wizard
-        if std::env::var("ZEROCLAW_AUTOSTART_CHANNELS").as_deref() == Ok("1") {
+        if std::env::var("MEGA_ZERO_AUTOSTART_CHANNELS").as_deref() == Ok("1") {
             channels::start_channels(config).await?;
         }
         return Ok(());
@@ -981,13 +1022,21 @@ async fn main() -> Result<()> {
             interactive,
         } => prime::runner::run(config, provider, model, mission, message, interactive).await,
 
+        Commands::Prime {
+            message,
+            provider,
+            model,
+            mission,
+            interactive,
+        } => prime::runner::run(config, provider, model, mission, message, interactive).await,
+
         Commands::Gateway { port, host } => {
             let port = port.unwrap_or(config.gateway.port);
             let host = host.unwrap_or_else(|| config.gateway.host.clone());
             if port == 0 {
-                info!("🚀 Starting ZeroClaw Gateway on {host} (random port)");
+                info!("🚀 Starting MegaZero Gateway on {host} (random port)");
             } else {
-                info!("🚀 Starting ZeroClaw Gateway on {host}:{port}");
+                info!("🚀 Starting MegaZero Gateway on {host}:{port}");
             }
             gateway::run_gateway(&host, port, config).await
         }
@@ -996,15 +1045,15 @@ async fn main() -> Result<()> {
             let port = port.unwrap_or(config.gateway.port);
             let host = host.unwrap_or_else(|| config.gateway.host.clone());
             if port == 0 {
-                info!("🧠 Starting ZeroClaw Daemon on {host} (random port)");
+                info!("🧠 Starting MegaZero Daemon on {host} (random port)");
             } else {
-                info!("🧠 Starting ZeroClaw Daemon on {host}:{port}");
+                info!("🧠 Starting MegaZero Daemon on {host}:{port}");
             }
             daemon::run(config, host, port).await
         }
 
         Commands::Status => {
-            println!("🦀 ZeroClaw Status");
+            println!("🦀 MegaZero Status");
             println!();
             println!("Version:     {}", env!("CARGO_PKG_VERSION"));
             println!("Workspace:   {}", config.workspace_dir.display());
@@ -1445,7 +1494,7 @@ async fn handle_auth_command(auth_command: AuthCommands, config: &Config) -> Res
                 Err(e) => {
                     println!("Callback capture failed: {e}");
                     println!(
-                            "Run `zeroclaw auth paste-redirect --provider openai-codex --profile {profile}`"
+                            "Run `mega_zero auth paste-redirect --provider openai-codex --profile {profile}`"
                         );
                     return Ok(());
                 }
@@ -1477,7 +1526,7 @@ async fn handle_auth_command(auth_command: AuthCommands, config: &Config) -> Res
 
             let pending = load_pending_openai_login(config)?.ok_or_else(|| {
                 anyhow::anyhow!(
-                    "No pending OpenAI login found. Run `zeroclaw auth login --provider openai-codex` first."
+                    "No pending OpenAI login found. Run `mega_zero auth login --provider openai-codex` first."
                 )
             })?;
 
@@ -1588,7 +1637,7 @@ async fn handle_auth_command(auth_command: AuthCommands, config: &Config) -> Res
                 }
                 None => {
                     bail!(
-                        "No OpenAI Codex auth profile found. Run `zeroclaw auth login --provider openai-codex`."
+                        "No OpenAI Codex auth profile found. Run `mega_zero auth login --provider openai-codex`."
                     )
                 }
             }
@@ -1676,7 +1725,7 @@ async fn handle_auth_command(auth_command: AuthCommands, config: &Config) -> Res
                 println!();
                 println!(
                     "To regenerate the secret key and invalidate all stored encrypted values, \
-                     run: zeroclaw auth reset-key --yes"
+                     run: mega_zero auth reset-key --yes"
                 );
                 println!(
                     "Warning: after a reset you must re-enter any API keys or tokens stored in \
@@ -1741,7 +1790,7 @@ mod tests {
     #[test]
     fn onboard_cli_accepts_model_provider_and_api_key_in_quick_mode() {
         let cli = Cli::try_parse_from([
-            "zeroclaw",
+            "mega_zero",
             "onboard",
             "--provider",
             "openrouter",
@@ -1776,7 +1825,7 @@ mod tests {
     #[test]
     fn completions_cli_parses_supported_shells() {
         for shell in ["bash", "fish", "zsh", "powershell", "elvish"] {
-            let cli = Cli::try_parse_from(["zeroclaw", "completions", shell])
+            let cli = Cli::try_parse_from(["mega_zero", "completions", shell])
                 .expect("completions invocation should parse");
             match cli.command {
                 Commands::Completions { .. } => {}
@@ -1792,14 +1841,14 @@ mod tests {
             .expect("completion generation should succeed");
         let script = String::from_utf8(output).expect("completion output should be valid utf-8");
         assert!(
-            script.contains("zeroclaw"),
+            script.contains("mega_zero"),
             "completion script should reference binary name"
         );
     }
 
     #[test]
     fn onboard_cli_accepts_force_flag() {
-        let cli = Cli::try_parse_from(["zeroclaw", "onboard", "--force"])
+        let cli = Cli::try_parse_from(["mega_zero", "onboard", "--force"])
             .expect("onboard --force should parse");
 
         match cli.command {

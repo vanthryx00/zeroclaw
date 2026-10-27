@@ -480,5 +480,5 @@ BugReaper X API  ──WS──►  VR Bridge (port 9000)  ──WS──►  Un
 
 ---
 
-*BugReaper X v4.0 — integrated into ZeroClaw agent runtime.*
-*For ZeroClaw core docs see `docs/README.md`.*
+*BugReaper X v4.0 — integrated into MegaZero agent runtime.*
+*For MegaZero core docs see `docs/README.md`.*

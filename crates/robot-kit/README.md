@@ -1,6 +1,6 @@
-# ZeroClaw Robot Kit
+# MegaZero Robot Kit
 
-A complete toolkit for building AI-powered robots with ZeroClaw. Designed for Raspberry Pi deployment with offline Ollama inference.
+A complete toolkit for building AI-powered robots with MegaZero. Designed for Raspberry Pi deployment with offline Ollama inference.
 
 ## Features
 
@@ -17,7 +17,7 @@ A complete toolkit for building AI-powered robots with ZeroClaw. Designed for Ra
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                 ZeroClaw + Ollama                       │
+│                 MegaZero + Ollama                       │
 │              (High-Level AI Brain)                      │
 └─────────────────────┬───────────────────────────────────┘
                       │
@@ -84,25 +84,25 @@ pip install piper-tts
 
 ## Quick Start
 
-### 1. Build ZeroClaw with robot tools
+### 1. Build MegaZero with robot tools
 
 ```bash
 # Clone and build
-git clone https://github.com/zeroclaw-labs/zeroclaw
-cd zeroclaw
-cargo build -p zeroclaw-robot-kit --release
+git clone https://github.com/mega-zero-labs/mega-zero
+cd mega-zero
+cargo build -p mega-zero-robot-kit --release
 ```
 
 ### 2. Configure
 
 ```bash
 # Copy config
-mkdir -p ~/.zeroclaw
-cp crates/robot-kit/robot.toml ~/.zeroclaw/
-cp crates/robot-kit/SOUL.md ~/.zeroclaw/workspace/
+mkdir -p ~/.mega-zero
+cp crates/robot-kit/robot.toml ~/.mega-zero/
+cp crates/robot-kit/SOUL.md ~/.mega-zero/workspace/
 
 # Edit for your hardware
-nano ~/.zeroclaw/robot.toml
+nano ~/.mega-zero/robot.toml
 ```
 
 ### 3. Test
@@ -112,11 +112,11 @@ nano ~/.zeroclaw/robot.toml
 ollama serve &
 
 # Test in mock mode
-./target/release/zeroclaw agent -m "Say hello and show a happy face"
+./target/release/mega-zero agent -m "Say hello and show a happy face"
 
 # Test with real hardware
 # (after configuring robot.toml)
-./target/release/zeroclaw agent -m "Move forward 1 meter"
+./target/release/mega-zero agent -m "Move forward 1 meter"
 ```
 
 ## Integration
@@ -127,7 +127,7 @@ It is not auto-registered in the core runtime by default.
 Use it directly from Rust:
 
 ```rust
-use zeroclaw_robot_kit::{create_tools, RobotConfig};
+use mega-zero_robot_kit::{create_tools, RobotConfig};
 
 fn build_robot_tools() {
     let config = RobotConfig::default();
@@ -136,7 +136,7 @@ fn build_robot_tools() {
 }
 ```
 
-If you want runtime registration in `zeroclaw`, add a thin adapter that maps this
+If you want runtime registration in `mega-zero`, add a thin adapter that maps this
 crate's tools to the project's `src/tools::Tool` and register it in the factory.
 
 ## Usage Examples
@@ -183,21 +183,21 @@ Robot:
 
 ```bash
 # Package everything needed
-mkdir zeroclaw-robot-kit
-cp -r target/release/zeroclaw zeroclaw-robot-kit/
-cp -r examples/robot_kit zeroclaw-robot-kit/
-cp -r ~/.zeroclaw zeroclaw-robot-kit/dot-zeroclaw
+mkdir mega-zero-robot-kit
+cp -r target/release/mega-zero mega-zero-robot-kit/
+cp -r examples/robot_kit mega-zero-robot-kit/
+cp -r ~/.mega-zero mega-zero-robot-kit/dot-mega-zero
 
 # Include models
-mkdir -p zeroclaw-robot-kit/models
-cp ~/.zeroclaw/models/ggml-base.bin zeroclaw-robot-kit/models/
+mkdir -p mega-zero-robot-kit/models
+cp ~/.mega-zero/models/ggml-base.bin mega-zero-robot-kit/models/
 # Note: Ollama models are large, may want to download on target
 
 # Create tarball
-tar -czvf zeroclaw-robot-kit.tar.gz zeroclaw-robot-kit/
+tar -czvf mega-zero-robot-kit.tar.gz mega-zero-robot-kit/
 
 # Copy to USB
-cp zeroclaw-robot-kit.tar.gz /media/usb/TarBalls/
+cp mega-zero-robot-kit.tar.gz /media/usb/TarBalls/
 ```
 
 ## Safety Notes
@@ -210,4 +210,4 @@ cp zeroclaw-robot-kit.tar.gz /media/usb/TarBalls/
 
 ## License
 
-MIT - Same as ZeroClaw
+MIT - Same as MegaZero

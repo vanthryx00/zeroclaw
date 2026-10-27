@@ -1,4 +1,4 @@
-/// Adapter that wraps ZeroClaw's native Agent in the Orchestrator trait.
+/// Adapter that wraps MegaZero's native Agent in the Orchestrator trait.
 /// Allows native Agent to be registered as a backend in HybridOrchestrator.
 
 use crate::agent::Agent;
