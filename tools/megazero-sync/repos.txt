@@ -1,0 +1,6 @@
+# MegaZero sync — target repos, one "owner/repo" per line.
+# Lines starting with # are ignored. Fill in your repos below.
+#
+# Example:
+# vanthryx00/zeroclaw
+# vanthryx00/another-repo
