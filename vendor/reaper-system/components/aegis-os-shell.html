@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AEGIS OS — Living Shell</title>
+<style>
+  :root{
+    --bg:#04060a; --panel:rgba(10,16,24,.72); --line:rgba(140,180,220,.25);
+    --ink:#dfe9f5; --dim:#7d8ea3; --live:#59f7ff; --warn:#ffb454; --dead:#5a6a7d;
+    --white:#ffffff;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,Roboto,sans-serif;overflow:hidden}
+  #stars,#core{position:fixed;inset:0;width:100%;height:100%}
+  #stars{z-index:0}
+  #core{z-index:1}
+  .scan{position:fixed;inset:0;z-index:3;pointer-events:none;opacity:.05;
+    background:repeating-linear-gradient(0deg,#fff 0 1px,transparent 1px 3px)}
+  .vig{position:fixed;inset:0;z-index:3;pointer-events:none;
+    background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+  #hud{position:fixed;inset:0;z-index:4;display:grid;pointer-events:none;
+    grid-template-columns:300px 1fr 300px;grid-template-rows:64px 1fr 120px;
+    grid-template-areas:"top top top" "left center right" "bottom bottom bottom";padding:14px;gap:12px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:12px 14px;backdrop-filter:blur(6px);pointer-events:auto}
+  .panel h3{font-size:11px;letter-spacing:3px;color:var(--dim);font-weight:600;margin-bottom:8px}
+  #topbar{grid-area:top;display:flex;align-items:center;justify-content:space-between;padding:0 18px}
+  #topbar .brand{font-size:20px;letter-spacing:6px;font-weight:700}
+  #topbar .brand span{color:var(--live)}
+  #clock{text-align:right}
+  #clock .t{font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}
+  #clock .d{font-size:11px;color:var(--dim);letter-spacing:2px}
+  #left{grid-area:left}
+  #right{grid-area:right}
+  #center{grid-area:center}
+  #bottom{grid-area:bottom;display:flex;flex-direction:column;gap:8px}
+  .mod{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px dashed rgba(140,180,220,.12)}
+  .mod:last-child{border-bottom:none}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--dead);flex:none;box-shadow:0 0 8px transparent}
+  .dot.on{background:var(--live);box-shadow:0 0 10px var(--live)}
+  .dot.reg{background:#cfe3f5;box-shadow:0 0 6px rgba(255,255,255,.5)}
+  .mod .name{font-size:13px;letter-spacing:1px}
+  .mod .st{margin-left:auto;font-size:10px;letter-spacing:2px;color:var(--dim)}
+  #models{font-family:Consolas,"Liberation Mono",monospace;font-size:12px;line-height:1.7;color:#bcd2e8}
+  #models .none{color:var(--dim)}
+  #coreState{text-align:center;margin-top:6px}
+  #coreState .big{font-size:15px;letter-spacing:4px}
+  #coreState .sub{font-size:11px;color:var(--dim);letter-spacing:2px;margin-top:4px;line-height:1.8}
+  #log{font-family:Consolas,"Liberation Mono",monospace;font-size:12px;line-height:1.65;
+    height:64px;overflow:hidden;color:#a9c3dd}
+  #log .sys{color:var(--live)}
+  #log .you{color:#fff}
+  #cmdrow{display:flex;gap:8px}
+  #cmd{flex:1;background:rgba(0,0,0,.45);border:1px solid var(--line);border-radius:8px;
+    color:#fff;padding:10px 12px;font-family:Consolas,monospace;font-size:13px;outline:none}
+  #cmd:focus{border-color:var(--live)}
+  .btn{pointer-events:auto;cursor:pointer;background:rgba(89,247,255,.08);border:1px solid var(--line);
+    color:var(--ink);border-radius:8px;padding:10px 16px;font-size:12px;letter-spacing:2px}
+  .btn:hover{border-color:var(--live);color:#fff}
+  .btn.primary{background:rgba(89,247,255,.16);border-color:var(--live);color:#fff;font-weight:700}
+  #center .actions{display:flex;gap:10px;justify-content:center;margin-top:12px}
+  #gate{position:fixed;inset:0;z-index:10;background:rgba(2,4,8,.92);display:flex;
+    flex-direction:column;align-items:center;justify-content:center;gap:18px;cursor:pointer}
+  #gate .g1{font-size:34px;letter-spacing:10px;font-weight:700}
+  #gate .g1 span{color:var(--live)}
+  #gate .g2{font-size:12px;letter-spacing:4px;color:var(--dim)}
+  #gate .pulse{animation:pl 1.6s ease-in-out infinite}
+  @keyframes pl{0%,100%{opacity:.35}50%{opacity:1}}
+  @media (max-width:900px){#hud{grid-template-columns:1fr;grid-template-areas:"top" "center" "bottom";grid-template-rows:64px 1fr 130px}
+    #left,#right{display:none}}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<canvas id="core"></canvas>
+<div class="scan"></div><div class="vig"></div>
+
+<div id="gate">
+  <div class="g1">AEGIS <span>OS</span></div>
+  <div class="g2">OFFLINE SOVEREIGN SYSTEM</div>
+  <div class="g2 pulse">[ TAP TO INITIALIZE ]</div>
+</div>
+
+<div id="hud">
+  <div id="topbar" class="panel">
+    <div class="brand">AEGIS <span>OS</span></div>
+    <div id="clock"><div class="t">--:--:--</div><div class="d">—</div></div>
+  </div>
+
+  <div id="left" class="panel">
+    <h3>SYSTEM MODULES</h3>
+    <div id="modules"></div>
+  </div>
+
+  <div id="center">
+    <div id="coreState">
+      <div class="big" id="coreBig">CORE DORMANT</div>
+      <div class="sub" id="coreSub">awaiting initialization</div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="openJarvis">OPEN JARVIS CONSOLE</button>
+      <button class="btn" id="micBtn">MIC: OFF</button>
+      <button class="btn" id="voiceBtn">VOICE: OFF</button>
+    </div>
+  </div>
+
+  <div id="right" class="panel">
+    <h3>LOCAL MODELS — OLLAMA</h3>
+    <div id="models"><span class="none">probing 127.0.0.1:11434 …</span></div>
+  </div>
+
+  <div id="bottom" class="panel">
+    <div id="log"></div>
+    <div id="cmdrow">
+      <input id="cmd" type="text" placeholder="command — try: status / models / time / open jarvis / help" autocomplete="off">
+      <button class="btn" id="sendBtn">RUN</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ============ AEGIS OS — Living Shell ============
+   The face of the system. Fully offline, zero external assets.
+   Live where it can be: the core state and model list are REAL,
+   polled from the local Ollama API. Modules are the registered
+   stack — JARVIS is the conversation, this shell is the organism.
+   ================================================= */
+const OLLAMA = "http://127.0.0.1:11434";
+const $ = id => document.getElementById(id);
+
+const MODULES = [
+  {name:"AEGIS CORE",     key:"aegis",   st:"REGISTERED"},
+  {name:"JARVIS CONSOLE", key:"jarvis",  st:"REGISTERED"},
+  {name:"OLLAMA BRAIN",   key:"ollama",  st:"PROBING"},
+  {name:"CAN LAB",        key:"canlab",  st:"REGISTERED"},
+  {name:"PENTEST BOT",    key:"pentest", st:"REGISTERED"},
+  {name:"BOUNTY CREW",    key:"crew",    st:"STANDBY — AWAITING SCOPE"},
+  {name:"MAYA",           key:"maya",    st:"REGISTERED"},
+];
+$("modules").innerHTML = MODULES.map(m =>
+  `<div class="mod"><div class="dot reg" id="dot-${m.key}"></div>` +
+  `<div class="name">${m.name}</div><div class="st" id="st-${m.key}">${m.st}</div></div>`).join("");
+
+/* ---------- logging + voice (teammate narration) ---------- */
+let voiceOn = false;
+function log(text, cls){
+  const el = document.createElement("div");
+  if(cls) el.className = cls;
+  el.textContent = text;
+  const box = $("log"); box.appendChild(el);
+  while(box.children.length > 4) box.removeChild(box.firstChild);
+}
+function speak(text){
+  if(!voiceOn || !("speechSynthesis" in window)) return;
+  try{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 1.02; u.pitch = 0.85;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+function narrate(text){ log("AEGIS ▸ " + text, "sys"); speak(text); }
+
+/* ---------- clock ---------- */
+function tickClock(){
+  const n = new Date();
+  $("clock").querySelector(".t").textContent = n.toLocaleTimeString("en-CA",{hour12:false});
+  $("clock").querySelector(".d").textContent =
+    n.toLocaleDateString("en-CA",{weekday:"short", year:"numeric", month:"short", day:"2-digit"}).toUpperCase();
+}
+setInterval(tickClock, 1000); tickClock();
+
+/* ---------- the living core (canvas) ---------- */
+const cv = $("core"), cx = cv.getContext("2d");
+const sv = $("stars");
+let W=0,H=0, stars=[];
+function sizeCanvas(c){ c.width = innerWidth; c.height = innerHeight; }
+function resize(){
+  sizeCanvas(cv); sizeCanvas(sv); W = cv.width; H = cv.height;
+  stars = Array.from({length:130}, () => ({x:Math.random()*W, y:Math.random()*H,
+    r:Math.random()*1.3+.2, p:Math.random()*Math.PI*2, s:.008+Math.random()*.02}));
+}
+addEventListener("resize", resize); resize();
+const starCtx = sv.getContext("2d");
+
+let core = { online:false, energy:.25, target:.25, beat:0 };
+let tendrils = Array.from({length:14}, (_,i) => ({
+  a:(i/14)*Math.PI*2, len:120+Math.random()*130, wob:Math.random()*Math.PI*2,
+  sp:.004+Math.random()*.008, w:1+Math.random()*1.6
+}));
+let rings = [0,1,2].map(i => ({r:88+i*30, sp:(i%2? -1:1)*(.0016+i*.0007), off:Math.random()*6}));
+
+let micLevel = 0;
+function drawCore(t){
+  starCtx.clearRect(0,0,W,H);
+  for(const s of stars){
+    s.p += s.s;
+    starCtx.globalAlpha = .25 + .55*Math.abs(Math.sin(s.p));
+    starCtx.fillStyle = "#cfe3f5";
+    starCtx.beginPath(); starCtx.arc(s.x,s.y,s.r,0,7); starCtx.fill();
+  }
+  starCtx.globalAlpha = 1;
+
+  cx.clearRect(0,0,W,H);
+  const cxp = W/2, cyp = H/2 - 20;
+  core.energy += (core.target - core.energy) * .03;
+  const breathe = 1 + Math.sin(t*.0011)*0.045 + micLevel*.35;
+  const R = 74 * breathe * (0.9 + core.energy*.35);
+
+  // tendrils — organic filaments, the symbiote in the machine
+  cx.lineCap = "round";
+  for(const td of tendrils){
+    td.wob += td.sp * (1 + core.energy*2);
+    const sway = Math.sin(td.wob)*.35;
+    const a = td.a + Math.sin(t*.0004 + td.a)*0.08;
+    const len = td.len * (0.75 + core.energy*.5) * breathe;
+    const x1 = cxp + Math.cos(a)*R*.8, y1 = cyp + Math.sin(a)*R*.8;
+    const x2 = cxp + Math.cos(a+sway*.4)*R*1.5, y2 = cyp + Math.sin(a+sway*.4)*R*1.5;
+    const x3 = cxp + Math.cos(a+sway)*len, y3 = cyp + Math.sin(a+sway)*len;
+    const g = cx.createLinearGradient(x1,y1,x3,y3);
+    const al = .16 + core.energy*.4;
+    g.addColorStop(0, `rgba(230,242,255,${al})`);
+    g.addColorStop(1, "rgba(120,150,180,0)");
+    cx.strokeStyle = g; cx.lineWidth = td.w;
+    cx.beginPath(); cx.moveTo(x1,y1); cx.quadraticCurveTo(x2,y2,x3,y3); cx.stroke();
+  }
+
+  // rings
+  for(const r of rings){
+    r.off += r.sp * (1 + core.energy*2.5);
+    cx.strokeStyle = core.online ? "rgba(89,247,255,.5)" : "rgba(160,180,200,.35)";
+    cx.lineWidth = 1.4;
+    cx.setLineDash([26, 14]);
+    cx.lineDashOffset = r.off * 220;
+    cx.beginPath(); cx.arc(cxp, cyp, r.r * breathe, 0, 7); cx.stroke();
+  }
+  cx.setLineDash([]);
+
+  // orb
+  const og = cx.createRadialGradient(cxp, cyp, 4, cxp, cyp, R);
+  if(core.online){
+    og.addColorStop(0, "rgba(255,255,255,.98)");
+    og.addColorStop(.45, "rgba(190,230,255,.75)");
+    og.addColorStop(1, "rgba(89,247,255,0)");
+  }else{
+    og.addColorStop(0, "rgba(235,240,246,.9)");
+    og.addColorStop(.5, "rgba(150,168,188,.45)");
+    og.addColorStop(1, "rgba(120,140,165,0)");
+  }
+  cx.fillStyle = og;
+  cx.beginPath(); cx.arc(cxp, cyp, R, 0, 7); cx.fill();
+
+  // heartbeat flash on poll
+  if(core.beat > 0){
+    cx.strokeStyle = `rgba(89,247,255,${core.beat*.5})`;
+    cx.lineWidth = 2;
+    cx.beginPath(); cx.arc(cxp, cyp, R + (1-core.beat)*90, 0, 7); cx.stroke();
+    core.beat -= .02;
+  }
+  requestAnimationFrame(drawCore);
+}
+requestAnimationFrame(drawCore);
+
+/* ---------- Ollama liveness (REAL data) ---------- */
+let modelNames = [];
+async function pollOllama(){
+  try{
+    const r = await fetch(OLLAMA + "/api/tags", {cache:"no-store"});
+    if(!r.ok) throw new Error("bad status");
+    const d = await r.json();
+    modelNames = (d.models || []).map(m => m.name);
+    if(!core.online){
+      core.online = true; core.target = .85; core.beat = 1;
+      $("coreBig").textContent = "CORE ALIVE";
+      $("coreSub").innerHTML = "local brain online — nothing leaves this machine<br>uptime <span id='up'>0s</span>";
+      setDot("ollama", true, "ONLINE");
+      narrate("Local brain online. " + modelNames.length + " models loaded. All systems local.");
+    }
+    core.beat = Math.max(core.beat, .5);
+    $("models").innerHTML = modelNames.length
+      ? modelNames.map(n => "▸ " + n).join("<br>")
+      : '<span class="none">online — no models pulled yet</span>';
+  }catch(e){
+    if(core.online){
+      core.online = false; core.target = .25;
+      $("coreBig").textContent = "CORE SLEEPING";
+      $("coreSub").textContent = "ollama not answering — start it with: ollama serve";
+      setDot("ollama", false, "OFFLINE");
+      narrate("Lost the local brain. Core is sleeping until Ollama answers.");
+    }
+    $("models").innerHTML = '<span class="none">offline — run: ollama serve</span>';
+  }
+}
+function setDot(key, on, st){
+  const d = $("dot-" + key); if(d) d.className = "dot " + (on ? "on" : "reg");
+  const s = $("st-" + key); if(s) s.textContent = st;
+}
+let bootTime = Date.now();
+setInterval(() => {
+  const el = $("up"); if(!el) return;
+  const s = Math.floor((Date.now()-bootTime)/1000);
+  el.textContent = Math.floor(s/60) + "m " + (s%60) + "s";
+}, 1000);
+
+/* ---------- mic reactivity (local only, visual) ---------- */
+let micOn = false, analyser = null, micData = new Uint8Array(64);
+async function toggleMic(){
+  if(micOn){ micOn = false; $("micBtn").textContent = "MIC: OFF"; micLevel = 0; return; }
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    const actx = new (window.AudioContext||window.webkitAudioContext)();
+    analyser = actx.createAnalyser();
+    actx.createMediaStreamSource(stream).connect(analyser);
+    micOn = true; $("micBtn").textContent = "MIC: LIVE";
+    narrate("Microphone live. The core hears you — audio never leaves this page.");
+    (function loop(){
+      if(!micOn) return;
+      analyser.getByteFrequencyData(micData);
+      micLevel = micData.reduce((a,b)=>a+b,0) / micData.length / 255;
+      requestAnimationFrame(loop);
+    })();
+  }catch(e){ log("mic denied — core stays visual only", "sys"); }
+}
+
+/* ---------- commands ---------- */
+function runCommand(raw){
+  const c = raw.trim().toLowerCase();
+  if(!c) return;
+  log("you ▸ " + raw, "you");
+  if(c === "help") narrate("Commands: status, models, time, open jarvis, clear. Everything else — ask JARVIS, that's his room.");
+  else if(c === "status") narrate(core.online
+    ? "All local. Brain online with " + modelNames.length + " models. Modules registered. Nothing leaves this machine."
+    : "Core is sleeping. Ollama is not answering yet — run ollama serve and I wake up.");
+  else if(c === "models") narrate(modelNames.length ? "Loaded models: " + modelNames.join(", ") + "." : "No models answering right now.");
+  else if(c === "time") narrate("It's " + new Date().toLocaleTimeString("en-CA",{hour:"numeric",minute:"2-digit"}) + ".");
+  else if(c === "open jarvis" || c === "jarvis") openJarvis();
+  else if(c === "clear"){ $("log").innerHTML = ""; }
+  else narrate("That one's beyond the shell. Open the JARVIS console — conversation lives there.");
+}
+function openJarvis(){
+  narrate("Opening the JARVIS console.");
+  window.open("jarvis.html", "_blank");
+}
+$("sendBtn").onclick = () => { runCommand($("cmd").value); $("cmd").value = ""; };
+$("cmd").addEventListener("keydown", e => { if(e.key === "Enter") $("sendBtn").click(); });
+$("openJarvis").onclick = openJarvis;
+$("micBtn").onclick = toggleMic;
+$("voiceBtn").onclick = () => {
+  voiceOn = !voiceOn;
+  $("voiceBtn").textContent = "VOICE: " + (voiceOn ? "ON" : "OFF");
+  if(voiceOn) narrate("Voice on. I'll narrate what the system does.");
+};
+
+/* ---------- boot ---------- */
+const BOOT = [
+  "AEGIS OS shell — waking up",
+  "render core ............ online",
+  "module registry ........ 7 modules",
+  "network posture ........ local only, by design",
+  "probing local brain .... 127.0.0.1:11434",
+];
+$("gate").addEventListener("click", () => {
+  $("gate").style.display = "none";
+  bootTime = Date.now();
+  BOOT.forEach((line, i) => setTimeout(() => log(line, "sys"), i * 420));
+  setTimeout(() => { pollOllama(); setInterval(pollOllama, 5000); }, BOOT.length * 420 + 200);
+  setTimeout(() => narrate("Shell is alive. Say the word and I'll open JARVIS."), BOOT.length * 420 + 600);
+}, {once:true});
+</script>
+</body>
+</html>

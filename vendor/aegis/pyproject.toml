@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aegis"
+version = "0.1.0"
+description = "Offline AI copilot for a security-focused Linux distribution"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "AegisOS" }]
+dependencies = [
+    "httpx>=0.24",
+    "rich>=13.0",
+    "prompt_toolkit>=3.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+gui = ["PySide6>=6.5"]
+tui = ["textual>=0.40"]
+# Eyes + hands: screenshot capture (mss), GUI control (pyautogui), imaging (Pillow).
+desktop = ["mss>=9.0", "pyautogui>=0.9", "Pillow>=10.0"]
+dev = ["pytest>=7.0"]
+
+[project.scripts]
+aegis = "aegis.cli:main"
+aegis-tui = "aegis.tui:main"
+aegis-gui = "aegis.gui:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["aegis*"]
+
+[tool.setuptools.package-data]
+aegis = ["knowledge/*.md", "knowledge/**/*.md"]

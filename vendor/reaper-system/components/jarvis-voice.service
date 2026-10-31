@@ -1,0 +1,19 @@
+[Unit]
+Description=JARVIS Voice Server (Whisper STT + Piper TTS, localhost only)
+After=network.target ollama.service
+Wants=ollama.service
+
+[Service]
+Type=simple
+User=aegis
+WorkingDirectory=/home/aegis/arsenal/jarvis-voice
+ExecStart=/home/aegis/arsenal/jarvis-voice/venv/bin/python /home/aegis/arsenal/jarvis-voice/jarvis-voice-server.py
+Environment=JARVIS_VOICE_PORT=8999
+Environment=JARVIS_WHISPER_MODEL=tiny
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

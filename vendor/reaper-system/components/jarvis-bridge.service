@@ -1,0 +1,18 @@
+[Unit]
+Description=JARVIS Command Bridge (tiered, approval-gated, localhost only)
+After=network.target ollama.service
+Wants=ollama.service
+
+[Service]
+Type=simple
+User=aegis
+WorkingDirectory=/home/aegis/arsenal/jarvis-bridge
+ExecStart=/usr/bin/python3 /home/aegis/arsenal/jarvis-bridge/jarvis-bridge-server.py
+Environment=JARVIS_BRIDGE_PORT=9000
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
