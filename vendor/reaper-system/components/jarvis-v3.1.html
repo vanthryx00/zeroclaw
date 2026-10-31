@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JARVIS v3 — AEGIS Console</title>
+<style>
+  :root{--bg:#04060a;--panel:rgba(10,16,24,.78);--line:rgba(140,180,220,.25);
+    --ink:#dfe9f5;--dim:#7d8ea3;--live:#59f7ff;--warn:#ffb454;--bad:#ff6a6a}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,Roboto,sans-serif;overflow:hidden}
+  #bgcore{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+  .scan{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.045;
+    background:repeating-linear-gradient(0deg,#fff 0 1px,transparent 1px 3px)}
+  #app{position:fixed;inset:0;z-index:3;display:grid;padding:12px;gap:12px;
+    grid-template-columns:290px 1fr 300px;grid-template-rows:58px 1fr;
+    grid-template-areas:"top top top" "left center right"}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:12px 14px;backdrop-filter:blur(6px);display:flex;flex-direction:column;min-height:0;overflow-y:auto}
+  .panel h3{font-size:11px;letter-spacing:3px;color:var(--dim);font-weight:600;margin:10px 0 8px}
+  .panel h3:first-child{margin-top:0}
+  #topbar{grid-area:top;flex-direction:row;align-items:center;justify-content:space-between;padding:0 18px;overflow:visible}
+  #topbar .brand{font-size:19px;letter-spacing:5px;font-weight:700}
+  #topbar .brand span{color:var(--live)}
+  #brainState{font-size:12px;letter-spacing:2px}
+  #brainState .on{color:var(--live)} #brainState .off{color:var(--bad)}
+  #left{grid-area:left;align-items:center;text-align:center;overflow:visible}
+  #orb{width:230px;height:230px;flex:none}
+  #stateLine{font-size:14px;letter-spacing:4px;margin-top:2px}
+  #stateSub{font-size:11px;color:var(--dim);letter-spacing:1px;line-height:1.7;min-height:34px}
+  .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+  .btn{cursor:pointer;background:rgba(89,247,255,.07);border:1px solid var(--line);color:var(--ink);
+    border-radius:8px;padding:8px 12px;font-size:11px;letter-spacing:2px}
+  .btn:hover{border-color:var(--live);color:#fff}
+  .btn.active{background:rgba(89,247,255,.18);border-color:var(--live);color:#fff}
+  .btn.warnb.active{background:rgba(255,180,84,.18);border-color:var(--warn)}
+  select,input[type=text]{background:rgba(0,0,0,.5);color:var(--ink);border:1px solid var(--line);
+    border-radius:8px;padding:8px;font-size:12px;max-width:100%;width:100%}
+  label.lbl{font-size:10px;letter-spacing:2px;color:var(--dim);display:block;margin-top:12px;text-align:left;width:100%}
+  #center{grid-area:center;padding:0;overflow:hidden}
+  #chat{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+  .msg{max-width:82%;padding:10px 14px;border-radius:12px;line-height:1.55;font-size:14px;white-space:pre-wrap;word-wrap:break-word}
+  .msg.u{align-self:flex-end;background:rgba(89,160,255,.14);border:1px solid rgba(120,180,255,.35);color:#eaf4ff}
+  .msg.a{align-self:flex-start;background:rgba(255,255,255,.05);border:1px solid var(--line)}
+  .msg.s{align-self:center;background:none;border:none;color:var(--dim);font-size:12px;letter-spacing:1px;text-align:center}
+  .msg .who{display:block;font-size:10px;letter-spacing:2px;color:var(--dim);margin-bottom:4px}
+  .msg img.shot{max-width:100%;border-radius:8px;margin-top:6px;border:1px solid var(--line)}
+  #composer{border-top:1px solid var(--line);padding:12px;display:flex;gap:8px;background:rgba(0,0,0,.25)}
+  #input{flex:1;background:rgba(0,0,0,.45);border:1px solid var(--line);border-radius:8px;color:#fff;
+    padding:11px 12px;font-size:14px;outline:none;resize:none;height:46px;font-family:inherit}
+  #input:focus{border-color:var(--live)}
+  #micBtn.listening{background:rgba(255,106,106,.2);border-color:var(--bad);color:#fff}
+  .kv{font-family:Consolas,"Liberation Mono",monospace;font-size:12px;line-height:1.8;color:#bcd2e8}
+  .kv b{color:#fff;font-weight:600}
+  .item{border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:12px;
+    display:flex;justify-content:space-between;gap:8px;margin-bottom:6px}
+  .item .x{color:var(--bad);cursor:pointer;flex:none}
+  .item.clickable{cursor:pointer}.item.clickable:hover{border-color:var(--live)}
+  textarea#sysPrompt{width:100%;min-height:100px;background:rgba(0,0,0,.45);border:1px solid var(--line);
+    border-radius:8px;color:var(--ink);padding:8px;font-size:12px;font-family:Consolas,monospace;resize:vertical}
+  .hint{font-size:10px;color:var(--dim);line-height:1.6;margin-top:6px;text-align:left}
+  ::-webkit-scrollbar{width:8px}::-webkit-scrollbar-thumb{background:rgba(140,180,220,.3);border-radius:4px}
+  @media (max-width:980px){#app{grid-template-columns:1fr;grid-template-areas:"top" "center";grid-template-rows:58px 1fr}
+    #left,#right{display:none}}
+</style>
+</head>
+<body>
+<canvas id="bgcore"></canvas>
+<div class="scan"></div>
+
+<div id="app">
+  <div id="topbar" class="panel">
+    <div class="brand">JARVIS <span>v3</span> — AEGIS CONSOLE</div>
+    <div id="brainState">BRAIN: <span class="off">PROBING…</span></div>
+  </div>
+
+  <div id="left" class="panel">
+    <canvas id="orb" width="460" height="460"></canvas>
+    <div id="stateLine">DORMANT</div>
+    <div id="stateSub">tap INITIALIZE, or just start typing</div>
+    <div class="row">
+      <button class="btn" id="initBtn">INITIALIZE</button>
+      <button class="btn" id="micBtn">🎙 LISTEN: OFF</button>
+      <button class="btn" id="ttsBtn">VOICE: ON</button>
+    </div>
+    <div class="row">
+      <button class="btn" id="visionBtn">👁 SHOW JARVIS</button>
+      <button class="btn warnb" id="proBtn">PRESENCE: OFF</button>
+      <input type="file" id="visionFile" accept="image/*" style="display:none">
+    </div>
+    <label class="lbl">BRAIN (LOCAL MODEL)</label>
+    <select id="modelSel"><option value="">— probing —</option></select>
+    <label class="lbl">ROUTING</label>
+    <select id="routeSel">
+      <option value="auto">Auto — right brain per job</option>
+      <option value="manual">Manual — model above, always</option>
+    </select>
+    <label class="lbl">WAKE WORD</label>
+    <select id="wakeSel">
+      <option value="jarvis">“Jarvis”</option>
+      <option value="always">Always listening</option>
+      <option value="off">Off — button only</option>
+    </select>
+    <div class="row">
+      <button class="btn" id="statusBtn">STATUS</button>
+      <button class="btn" id="shellBtn">AEGIS SHELL</button>
+    </div>
+  </div>
+
+  <div id="center" class="panel">
+    <div id="chat"></div>
+    <div id="composer">
+      <textarea id="input" placeholder="Talk to Jarvis…  (try: remember that… · remind me in 10 minutes · what do you remember · show jarvis)"></textarea>
+      <button class="btn" id="sendBtn">SEND</button>
+      <button class="btn" id="stopBtn">STOP</button>
+    </div>
+  </div>
+
+  <div id="right" class="panel">
+    <h3>SYSTEMS — LIVE</h3>
+    <div class="kv" id="telemetry">probing…</div>
+    <h3>MEMORY — WHAT JARVIS KNOWS</h3>
+    <div id="memoryList"></div>
+    <div class="hint">Say “remember that …” or type it. Stored in this browser only.</div>
+    <h3>REMINDERS</h3>
+    <div id="reminderList"><div class="kv">none set</div></div>
+    <h3>SESSIONS</h3>
+    <div class="row" style="justify-content:flex-start">
+      <button class="btn" id="newSessBtn">NEW</button>
+      <button class="btn" id="saveSessBtn">SAVE</button>
+      <button class="btn" id="dlBtn">TRANSCRIPT ↓</button>
+    </div>
+    <div id="sessions" style="margin-top:8px"></div>
+    <h3>PERSONALITY CORE</h3>
+    <textarea id="sysPrompt"></textarea>
+    <div class="row" style="justify-content:flex-start">
+      <button class="btn" id="applyPromptBtn">APPLY</button>
+      <button class="btn" id="resetPromptBtn">RESET</button>
+    </div>
+    <h3>VOICE LAB — TRUE-OFFLINE PATH</h3>
+    <label class="lbl">WHISPER STT ENDPOINT (optional)</label>
+    <input type="text" id="whisperUrl" placeholder="http://127.0.0.1:9000/inference">
+    <label class="lbl">PIPER TTS ENDPOINT (optional)</label>
+    <input type="text" id="piperUrl" placeholder="http://127.0.0.1:5000">
+    <div class="hint">If set, voice runs through YOUR servers on this machine. Empty = browser voice
+      (Chrome's recognition may use Google's servers — labeled, never hidden). Mic audio for Whisper
+      mode is recorded locally and posted only to the endpoint above.</div>
+    <div class="row" style="justify-content:flex-start">
+      <button class="btn" id="saveVoiceBtn">SAVE VOICE SETTINGS</button>
+    </div>
+  </div>
+</div>
+<script>
+"use strict";
+/* ================= JARVIS v3 — AEGIS Console =================
+   The follow-on build: memory, real tool use, brain routing,
+   eyes, presence, and an honest true-offline voice path.
+   Everything lives in this page + your local Ollama.
+   Voice endpoints, if you set them, are YOUR servers only.
+   ============================================================ */
+const $ = id => document.getElementById(id);
+const DEFAULT_PROMPT =
+`You are JARVIS, the local intelligence of Dubbz's AEGIS system. Dry, precise, loyal, quietly funny. You speak like a trusted operator, not a corporate assistant: short sentences, real answers, no filler, no lectures. Dubbz runs BugReaper Security and builds his own systems — Aegis, the CAN lab, a scope-gated bounty crew. You know his stack (Ollama local models, Debian drive PROJECT-STINGRAY, Termux) and you never suggest sending his data to a cloud service. You have tools — use them when an action is asked for instead of describing it. If you don't know something, say so.`;
+
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem("jarvis3."+k); return v===null? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem("jarvis3."+k, JSON.stringify(v)); }catch(e){} }
+};
+let settings = Object.assign(
+  { endpoint:"http://127.0.0.1:11434", model:"", tts:true, wake:"jarvis", routing:"auto",
+    proactive:false, prompt:DEFAULT_PROMPT, whisperUrl:"", piperUrl:"" },
+  store.get("settings", {}));
+let messages = [];
+let sessions = store.get("sessions", []);
+let memoryBank = store.get("memory", []);        // [string] durable facts
+let notes = store.get("notes", []);              // [{id, text, ts}]
+let reminders = [];                              // [{id, text, at, timer}] runtime only
+let brainOnline = false, loadedModels = [], visionModel = "";
+let aborter = null, currentState = "DORMANT";
+
+function saveSettings(){ store.set("settings", settings); }
+function buildSystemPrompt(){
+  let p = settings.prompt;
+  if(memoryBank.length){
+    p += "\n\nWHAT YOU REMEMBER ABOUT DUBBZ (durable, from earlier sessions):\n" +
+         memoryBank.map(f => "- " + f).join("\n") +
+         "\nUse these naturally. If he corrects one, the correction wins.";
+  }
+  return p;
+}
+
+/* ---------------- rendering ---------------- */
+function addMsg(role, content, who, imgSrc){
+  const d = document.createElement("div");
+  d.className = "msg " + (role==="user" ? "u" : role==="system" ? "s" : "a");
+  if(who){ const w = document.createElement("span"); w.className="who"; w.textContent = who; d.appendChild(w); }
+  const t = document.createElement("span"); t.className = "txt"; t.textContent = content;
+  d.appendChild(t);
+  if(imgSrc){ const im = document.createElement("img"); im.className = "shot"; im.src = imgSrc; d.appendChild(im); }
+  $("chat").appendChild(d); $("chat").scrollTop = $("chat").scrollHeight;
+  return t;
+}
+function sysLine(text){ addMsg("system", text); }
+function renderHistory(){
+  $("chat").innerHTML = "";
+  for(const m of messages){
+    if(m.role === "system") continue;
+    addMsg(m.role, typeof m.content === "string" ? m.content : "(image exchange)", m.role === "user" ? "DUBBZ" : "JARVIS");
+  }
+}
+
+/* ---------------- memory + notes UI ---------------- */
+function renderMemory(){
+  const box = $("memoryList"); box.innerHTML = "";
+  if(!memoryBank.length){ box.innerHTML = '<div class="kv">nothing yet — say “remember that…”</div>'; return; }
+  memoryBank.forEach((f, i) => {
+    const d = document.createElement("div"); d.className = "item";
+    const s = document.createElement("span"); s.textContent = f;
+    const x = document.createElement("span"); x.className = "x"; x.textContent = "✕";
+    x.title = "forget this";
+    x.onclick = () => { memoryBank.splice(i,1); store.set("memory", memoryBank); renderMemory(); sysLine("Forgotten: " + f); };
+    d.appendChild(s); d.appendChild(x); box.appendChild(d);
+  });
+}
+function renderReminders(){
+  const box = $("reminderList"); box.innerHTML = "";
+  if(!reminders.length){ box.innerHTML = '<div class="kv">none set</div>'; return; }
+  for(const r of reminders){
+    const d = document.createElement("div"); d.className = "item";
+    const s = document.createElement("span");
+    s.textContent = r.text + " — " + new Date(r.at).toLocaleTimeString("en-CA",{hour:"numeric",minute:"2-digit"});
+    const x = document.createElement("span"); x.className = "x"; x.textContent = "✕";
+    x.onclick = () => cancelReminder(r.id);
+    d.appendChild(s); d.appendChild(x); box.appendChild(d);
+  }
+}
+function setReminder(text, delayMs){
+  const id = Date.now() + Math.floor(Math.random()*999);
+  const at = Date.now() + delayMs;
+  const timer = setTimeout(() => {
+    reminders = reminders.filter(r => r.id !== id); renderReminders();
+    sysLine("⏰ Reminder: " + text);
+    speak("Reminder. " + text);
+    orb.beat = 1;
+  }, delayMs);
+  reminders.push({id, text, at, timer}); renderReminders();
+  return at;
+}
+function cancelReminder(id){
+  const r = reminders.find(q => q.id === id);
+  if(r){ clearTimeout(r.timer); reminders = reminders.filter(q => q.id !== id); renderReminders(); }
+}
+
+/* ---------------- orb ---------------- */
+let orb = { energy:.22, target:.22, beat:0, mic:0 };
+function setState(s, sub){
+  currentState = s;
+  $("stateLine").textContent = s;
+  if(sub !== undefined) $("stateSub").textContent = sub;
+  orb.target = {DORMANT:.22, LISTENING:.55, THINKING:.8, SPEAKING:.95, OFFLINE:.12}[s] ?? .3;
+}
+(function orbEngine(){
+  const oc = $("orb"), ox = oc.getContext("2d");
+  const bg = $("bgcore"), bx = bg.getContext("2d");
+  let W=0,H=0;
+  function rs(){ bg.width = innerWidth; bg.height = innerHeight; W = bg.width; H = bg.height; }
+  addEventListener("resize", rs); rs();
+  const tendrils = Array.from({length:12}, (_,i) => ({a:(i/12)*Math.PI*2, wob:Math.random()*6.3,
+    sp:.004+Math.random()*.008, len:110+Math.random()*110, w:1+Math.random()*1.5}));
+  const rings = [0,1,2].map(i => ({r:88+i*30, sp:(i%2?-1:1)*(.0016+i*.0007), off:Math.random()*6}));
+  function draw(ctx, cxp, cyp, scale, alpha){
+    const breathe = 1 + Math.sin(performance.now()*.0011)*.045 + orb.mic*.3;
+    const R = 74 * scale * breathe * (.9 + orb.energy*.35);
+    ctx.save(); ctx.globalAlpha = alpha; ctx.lineCap = "round";
+    for(const td of tendrils){
+      td.wob += td.sp * (1 + orb.energy*2) / scale;
+      const sway = Math.sin(td.wob)*.35;
+      const a = td.a + Math.sin(performance.now()*.0004 + td.a)*.08;
+      const len = td.len * scale * (.75 + orb.energy*.5) * breathe;
+      const x1 = cxp + Math.cos(a)*R*.8, y1 = cyp + Math.sin(a)*R*.8;
+      const x2 = cxp + Math.cos(a+sway*.4)*R*1.5, y2 = cyp + Math.sin(a+sway*.4)*R*1.5;
+      const x3 = cxp + Math.cos(a+sway)*len, y3 = cyp + Math.sin(a+sway)*len;
+      const g = ctx.createLinearGradient(x1,y1,x3,y3);
+      g.addColorStop(0, "rgba(230,242,255," + (.16 + orb.energy*.4) + ")");
+      g.addColorStop(1, "rgba(120,150,180,0)");
+      ctx.strokeStyle = g; ctx.lineWidth = td.w * scale;
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.quadraticCurveTo(x2,y2,x3,y3); ctx.stroke();
+    }
+    for(const r of rings){
+      r.off += r.sp * (1 + orb.energy*2.5) / scale;
+      ctx.strokeStyle = brainOnline ? "rgba(89,247,255,.5)" : "rgba(160,180,200,.35)";
+      ctx.lineWidth = 1.4 * scale; ctx.setLineDash([26,14]); ctx.lineDashOffset = r.off*220;
+      ctx.beginPath(); ctx.arc(cxp, cyp, r.r*scale*breathe, 0, 7); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    const og = ctx.createRadialGradient(cxp,cyp,4,cxp,cyp,R);
+    if(brainOnline){ og.addColorStop(0,"rgba(255,255,255,.98)"); og.addColorStop(.45,"rgba(190,230,255,.75)"); og.addColorStop(1,"rgba(89,247,255,0)"); }
+    else { og.addColorStop(0,"rgba(235,240,246,.9)"); og.addColorStop(.5,"rgba(150,168,188,.45)"); og.addColorStop(1,"rgba(120,140,165,0)"); }
+    ctx.fillStyle = og; ctx.beginPath(); ctx.arc(cxp,cyp,R,0,7); ctx.fill();
+    if(orb.beat > 0){
+      ctx.strokeStyle = "rgba(89,247,255," + (orb.beat*.5) + ")"; ctx.lineWidth = 2*scale;
+      ctx.beginPath(); ctx.arc(cxp, cyp, R + (1-orb.beat)*90*scale, 0, 7); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  (function loop(){
+    orb.energy += (orb.target - orb.energy) * .03;
+    if(orb.beat > 0) orb.beat -= .02;
+    if(currentState !== "SPEAKING" && currentState !== "LISTENING") orb.mic *= .92;
+    bx.clearRect(0,0,W,H); draw(bx, W/2, H/2, 2.6, .16);
+    ox.clearRect(0,0,460,460); draw(ox, 230, 230, 1, 1);
+    requestAnimationFrame(loop);
+  })();
+})();
+
+/* ---------------- speech out: Piper (local server) or browser ---------------- */
+let speakQ = [], speaking = false, audioCtx = null, ttsAnalyser = null, ttsData = new Uint8Array(64);
+function speak(text){
+  if(!settings.tts || !text.trim()) return;
+  speakQ.push(text);
+  if(!speaking) nextSpeak();
+}
+async function nextSpeak(){
+  const text = speakQ.shift();
+  if(!text){ speaking = false; if(currentState === "SPEAKING") setState(brainOnline ? "LISTENING" : "DORMANT", ""); return; }
+  speaking = true; setState("SPEAKING", "speaking — talk over me to interrupt");
+  if(settings.piperUrl){
+    try{
+      const r = await fetch(settings.piperUrl, {method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({text})});
+      if(!r.ok) throw new Error("piper " + r.status);
+      const blob = await r.blob();
+      if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      const src = audioCtx.createBufferSource();
+      src.buffer = await audioCtx.decodeAudioData(await blob.arrayBuffer());
+      ttsAnalyser = audioCtx.createAnalyser();
+      src.connect(ttsAnalyser); ttsAnalyser.connect(audioCtx.destination);
+      (function amp(){ if(!speaking) return;
+        ttsAnalyser.getByteFrequencyData(ttsData);
+        orb.mic = ttsData.reduce((a,b)=>a+b,0)/ttsData.length/200;
+        if(currentState === "SPEAKING") requestAnimationFrame(amp); })();
+      src.onended = () => { orb.mic = 0; nextSpeak(); };
+      src.start();
+      return;
+    }catch(e){ /* fall through to browser voice */ }
+  }
+  if(!("speechSynthesis" in window)){ speaking = false; return; }
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate = 1.03; u.pitch = 0.82;
+  u.onstart = () => { (function amp(){ if(!speaking || currentState !== "SPEAKING") return;
+    orb.mic = .25 + Math.abs(Math.sin(performance.now()*.012))*.35; requestAnimationFrame(amp); })(); };
+  u.onend = () => { orb.mic = 0; nextSpeak(); };
+  u.onerror = () => { orb.mic = 0; nextSpeak(); };
+  speechSynthesis.speak(u);
+}
+function stopSpeak(){
+  speakQ = []; speaking = false; orb.mic = 0;
+  if("speechSynthesis" in window) speechSynthesis.cancel();
+  if(audioCtx) { try{ audioCtx.close(); }catch(e){} audioCtx = null; }
+}
+
+/* ---------------- brain routing ---------------- */
+function routeModel(text){
+  if(settings.routing === "manual" || !loadedModels.length) return settings.model;
+  const t = text.toLowerCase();
+  const pick = pred => loadedModels.find(pred);
+  if(/\b(code|function|bug|script|python|javascript|error|compile|regex|sql)\b/.test(t))
+    return pick(m => m.includes("coder")) || settings.model;
+  if(/\b(private|secret|personal|diary|journal)\b/.test(t))
+    return pick(m => m.includes("dolphin")) || settings.model;
+  if(t.length < 60 && /^(what|when|who|status|time|date|hi|hey|hello|thanks)/.test(t))
+    return pick(m => m.includes("1.5b")) || settings.model;
+  return pick(m => m.includes("7b")) || loadedModels[0];
+}
+
+/* ---------------- tools the model can call ---------------- */
+const TOOLS = [
+  {name:"get_time", desc:"Current local time and date", params:{}, fn(){ return new Date().toLocaleString("en-CA"); }},
+  {name:"get_status", desc:"Brain/system status summary", params:{}, fn(){ return statusText(); }},
+  {name:"calculate", desc:"Evaluate an arithmetic expression", params:{expression:"string"}, fn(a){
+    if(!/^[\d\s+\-*/().%]+$/.test(a.expression||"")) return "refused: not arithmetic";
+    try{ return String(Function("return (" + a.expression + ")")()); }catch(e){ return "error: " + e.message; } }},
+  {name:"set_reminder", desc:"Set a reminder", params:{text:"string", minutes:"number"}, fn(a){
+    const at = setReminder(a.text || "reminder", Math.max(0.1, +a.minutes || 5) * 60000);
+    return "reminder set for " + new Date(at).toLocaleTimeString("en-CA"); }},
+  {name:"list_reminders", desc:"List pending reminders", params:{}, fn(){
+    return reminders.length ? reminders.map(r => r.text + " at " + new Date(r.at).toLocaleTimeString("en-CA")).join("; ") : "none"; }},
+  {name:"remember", desc:"Store a durable fact about Dubbz", params:{fact:"string"}, fn(a){
+    if(!a.fact) return "nothing to remember";
+    memoryBank.push(a.fact); store.set("memory", memoryBank); renderMemory(); return "remembered: " + a.fact; }},
+  {name:"recall_memory", desc:"List everything remembered", params:{}, fn(){
+    return memoryBank.length ? memoryBank.join("; ") : "memory is empty"; }},
+  {name:"forget", desc:"Remove a remembered fact (substring match)", params:{match:"string"}, fn(a){
+    const before = memoryBank.length;
+    memoryBank = memoryBank.filter(f => !f.toLowerCase().includes((a.match||"").toLowerCase()));
+    store.set("memory", memoryBank); renderMemory();
+    return before === memoryBank.length ? "no match found" : "forgot " + (before - memoryBank.length) + " fact(s)"; }},
+  {name:"save_note", desc:"Save a freeform note", params:{text:"string"}, fn(a){
+    notes.unshift({id:Date.now(), text:a.text||"", ts:Date.now()}); notes = notes.slice(0,50);
+    store.set("notes", notes); return "note saved (" + notes.length + " total)"; }},
+  {name:"list_notes", desc:"List saved notes", params:{}, fn(){
+    return notes.length ? notes.map(n => n.text).join(" | ") : "no notes"; }},
+  {name:"list_models", desc:"List local models", params:{}, fn(){ return loadedModels.join(", ") || "none loaded"; }},
+  {name:"switch_model", desc:"Switch the active brain model", params:{name:"string"}, fn(a){
+    const hit = loadedModels.find(m => m.toLowerCase().includes((a.name||"").toLowerCase()));
+    if(!hit) return "no model matches; loaded: " + loadedModels.join(", ");
+    settings.model = hit; saveSettings(); refreshModelSel(); return "active model: " + hit; }},
+  {name:"save_session", desc:"Save the current conversation as a session", params:{}, fn(){ saveSession(); return "session saved"; }},
+  {name:"open_shell", desc:"Open the AEGIS OS shell in a new tab", params:{}, fn(){ window.open("aegis-os-shell.html","_blank"); return "shell opened"; }},
+  {name:"roll_dice", desc:"Roll dice, e.g. 2d6", params:{spec:"string"}, fn(a){
+    const m = /^(\d*)d(\d+)$/i.exec((a.spec||"1d6").trim()); if(!m) return "format: NdM, e.g. 2d6";
+    const n = Math.min(20, +m[1] || 1), sides = Math.min(1000, +m[2]);
+    const rolls = Array.from({length:n}, () => 1 + Math.floor(Math.random()*sides));
+    return rolls.join(" + ") + " = " + rolls.reduce((x,y)=>x+y,0); }},
+  {name:"convert_units", desc:"Convert units: km_mi, mi_km, c_f, f_c, kg_lb, lb_kg", params:{value:"number", kind:"string"}, fn(a){
+    const v = +a.value, K = {km_mi:v*.621371, mi_km:v*1.60934, c_f:v*9/5+32, f_c:(v-32)*5/9, kg_lb:v*2.20462, lb_kg:v/2.20462};
+    return (a.kind in K) ? String(Math.round(K[a.kind]*1000)/1000) : "unknown kind"; }},
+  {name:"word_count", desc:"Count words and characters in text", params:{text:"string"}, fn(a){
+    const t = a.text||""; return (t.trim() ? t.trim().split(/\s+/).length : 0) + " words, " + t.length + " chars"; }},
+  {name:"timer", desc:"Start a countdown timer in seconds", params:{seconds:"number", label:"string"}, fn(a){
+    const at = setReminder(a.label || "timer done", Math.max(1, +a.seconds || 60) * 1000);
+    return "timer ends " + new Date(at).toLocaleTimeString("en-CA"); }},
+  {name:"battery", desc:"Device battery level if the browser exposes it", params:{}, fn(){
+    return batteryText || "not exposed by this browser"; }},
+];
+const toolsSpec = TOOLS.map(t => ({type:"function", function:{
+  name:t.name, description:t.desc,
+  parameters:{type:"object", properties:Object.fromEntries(
+    Object.entries(t.params).map(([k,v]) => [k, {type: v === "number" ? "number" : "string"}])),
+    required:Object.keys(t.params)} }}));
+async function runTool(name, args){
+  const t = TOOLS.find(q => q.name === name);
+  if(!t) return "unknown tool";
+  try{ return String(await t.fn(args || {})); }catch(e){ return "tool error: " + e.message; }
+}
+
+/* ---------------- chat pipeline: tools first, then stream ---------------- */
+function trimContext(){ if(messages.length > 80) messages = messages.slice(messages.length - 80); }
+async function sendToBrain(userText, imageB64){
+  const model = (imageB64 && visionModel) ? visionModel : routeModel(userText);
+  const userMsg = {role:"user", content:userText};
+  if(imageB64) userMsg.images = [imageB64];
+  messages.push(userMsg); trimContext();
+  if(!brainOnline){ sysLine("Brain is offline — start Ollama (ollama serve). Local commands, memory, and reminders still work."); return; }
+  setState("THINKING", (settings.routing === "auto" ? "routing → " + model : model) + " · thinking…");
+  aborter = new AbortController();
+  try{
+    /* tool pass (non-streaming): let the model act, not just talk */
+    let convo = [{role:"system", content: buildSystemPrompt()}].concat(messages);
+    for(let hop = 0; hop < 3; hop++){
+      const r = await fetch(settings.endpoint + "/api/chat", {
+        method:"POST", headers:{"Content-Type":"application/json"}, signal: aborter.signal,
+        body: JSON.stringify({model, stream:false, keep_alive:"30m", tools: toolsSpec, messages: convo})});
+      if(!r.ok) throw new Error("HTTP " + r.status);
+      const d = await r.json();
+      const msg = d.message || {};
+      const calls = msg.tool_calls || [];
+      if(!calls.length) break;
+      convo.push(msg);
+      for(const c of calls){
+        const fname = c.function && c.function.name;
+        const fargs = (c.function && c.function.arguments) || {};
+        sysLine("⚙ " + fname);
+        const out = await runTool(fname, fargs);
+        convo.push({role:"tool", content: out});
+      }
+      if(hop === 2) break;
+      messages = convo.slice(1); /* adopt tool results into history */
+    }
+    /* answer pass (streaming) */
+    const bubble = addMsg("assistant", "", "JARVIS");
+    let full = "", sentenceBuf = "", buf = "";
+    const res = await fetch(settings.endpoint + "/api/chat", {
+      method:"POST", headers:{"Content-Type":"application/json"}, signal: aborter.signal,
+      body: JSON.stringify({model, stream:true, keep_alive:"30m",
+        messages: [{role:"system", content: buildSystemPrompt()}].concat(messages)})});
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    const reader = res.body.getReader(), dec = new TextDecoder();
+    for(;;){
+      const {done, value} = await reader.read();
+      if(done) break;
+      buf += dec.decode(value, {stream:true});
+      let nl;
+      while((nl = buf.indexOf("\n")) >= 0){
+        const line = buf.slice(0, nl).trim(); buf = buf.slice(nl + 1);
+        if(!line) continue;
+        let obj; try{ obj = JSON.parse(line); }catch(e){ continue; }
+        const tok = (obj.message && obj.message.content) || "";
+        if(tok){
+          full += tok; bubble.textContent = full;
+          $("chat").scrollTop = $("chat").scrollHeight;
+          sentenceBuf += tok;
+          const m = sentenceBuf.match(/^[\s\S]*?[.!?…]["']?\s/);
+          if(m){ speak(m[0]); sentenceBuf = sentenceBuf.slice(m[0].length); }
+        }
+      }
+    }
+    if(sentenceBuf.trim()) speak(sentenceBuf);
+    if(full) messages.push({role:"assistant", content: full});
+    trimContext();
+    if(currentState === "THINKING") setState("LISTENING", model + " · local");
+  }catch(e){
+    if(e.name === "AbortError") sysLine("Stopped.");
+    else sysLine("Brain hiccup: " + e.message + " — is Ollama still running?");
+    setState(brainOnline ? "LISTENING" : "OFFLINE", "");
+  }finally{ aborter = null; }
+}
+
+/* ---------------- local commands (superset of v2) ---------------- */
+function localCommand(raw){
+  const c = raw.trim().toLowerCase();
+  if(c.startsWith("remember that ")){
+    const fact = raw.trim().slice("remember that ".length).trim();
+    if(fact){ memoryBank.push(fact); store.set("memory", memoryBank); renderMemory();
+      sysLine("Remembered: " + fact); speak("Remembered."); return true; }
+  }
+  if(c === "what do you remember" || c === "recall memory"){
+    sysLine(memoryBank.length ? memoryBank.map(f => "• " + f).join("\n") : "Memory is empty.");
+    return true;
+  }
+  const rem = c.match(/^remind me in (\d+(?:\.\d+)?) (minute|minutes|min|hour|hours|second|seconds|sec)s? to (.+)$/);
+  if(rem){
+    const n = parseFloat(rem[1]);
+    const mult = rem[2].startsWith("hour") ? 3600000 : rem[2].startsWith("sec") ? 1000 : 60000;
+    setReminder(rem[3], n * mult);
+    sysLine("Reminder set: " + rem[3]); speak("Reminder set.");
+    return true;
+  }
+  if(c === "status"){ sysLine(statusText()); speak(brainOnline ? "Brain online. Model " + settings.model + ". All local." : "Brain offline."); return true; }
+  if(c === "time" || c === "what time is it"){
+    const t = new Date().toLocaleTimeString("en-CA",{hour:"numeric",minute:"2-digit"});
+    sysLine("It's " + t + "."); speak("It's " + t + "."); return true;
+  }
+  if(c === "clear"){ messages = []; renderHistory(); sysLine("Conversation cleared. Memory and saved sessions untouched."); return true; }
+  if(c === "save session"){ saveSession(); return true; }
+  if(c === "new session"){ messages = []; renderHistory(); sysLine("Fresh session. Go."); return true; }
+  if(c === "shell" || c === "open shell"){ window.open("aegis-os-shell.html", "_blank"); sysLine("Shell opened."); return true; }
+  if(c === "show jarvis"){ $("visionFile").click(); return true; }
+  if(c.startsWith("switch model")){
+    const name = raw.trim().slice("switch model".length).trim();
+    const hit = loadedModels.find(m => m.toLowerCase() === name.toLowerCase()) ||
+                loadedModels.find(m => m.toLowerCase().includes(name.toLowerCase()));
+    if(hit){ settings.model = hit; saveSettings(); refreshModelSel(); sysLine("Brain switched to " + hit + "."); speak("Switched to " + hit + "."); }
+    else sysLine("No model matches '" + name + "'. Loaded: " + (loadedModels.join(", ") || "none"));
+    return true;
+  }
+  if(c === "help"){
+    sysLine("Commands: remember that … · what do you remember · remind me in 10 minutes to … · status · time · switch model <name> · save session · new session · clear · shell · show jarvis. The brain also has tools (reminders, memory, math, notes, dice, timers) and uses them on its own.");
+    return true;
+  }
+  return false;
+}
+function statusText(){
+  return "BRAIN " + (brainOnline ? "ONLINE" : "OFFLINE") + " · model " + (settings.model || "—") +
+    " · routing " + settings.routing + " · loaded: " + (loadedModels.join(", ") || "none") +
+    " · vision: " + (visionModel || "none") + " · memory facts: " + memoryBank.length +
+    " · reminders: " + reminders.length + " · turns: " + messages.length + " · all data local.";
+}
+
+/* ---------------- sessions ---------------- */
+function saveSession(){
+  if(!messages.length){ sysLine("Nothing to save yet."); return; }
+  const name = "Session " + new Date().toLocaleString("en-CA",{month:"short", day:"numeric", hour:"numeric", minute:"2-digit"});
+  sessions.unshift({id: Date.now(), name, ts: Date.now(), messages: messages.slice()});
+  sessions = sessions.slice(0, 20);
+  store.set("sessions", sessions); renderSessions();
+  sysLine("Saved as '" + name + "'.");
+}
+function renderSessions(){
+  const box = $("sessions"); box.innerHTML = "";
+  if(!sessions.length){ box.innerHTML = '<div class="kv">none saved yet</div>'; return; }
+  for(const s of sessions){
+    const d = document.createElement("div"); d.className = "item clickable";
+    const n = document.createElement("span"); n.textContent = s.name + " (" + s.messages.length + ")";
+    const x = document.createElement("span"); x.className = "x"; x.textContent = "✕";
+    x.onclick = ev => { ev.stopPropagation(); sessions = sessions.filter(q => q.id !== s.id); store.set("sessions", sessions); renderSessions(); };
+    d.onclick = () => { messages = s.messages.slice(); renderHistory(); sysLine("Loaded '" + s.name + "'."); };
+    d.appendChild(n); d.appendChild(x); box.appendChild(d);
+  }
+}
+function downloadTranscript(){
+  const text = messages.map(m => (m.role === "user" ? "DUBBZ: " : "JARVIS: ") + (typeof m.content === "string" ? m.content : "(image)")).join("\n\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([text || "(empty)"], {type:"text/plain"}));
+  a.download = "jarvis-v3-transcript.txt"; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+
+/* ---------------- speech in: Whisper (your server) or browser ---------------- */
+let recog = null, listening = false, micStream = null, micAnalyser = null, micData = new Uint8Array(64);
+let mediaRec = null, recChunks = [];
+function dispatchUserText(text){
+  const clean = (text || "").trim();
+  if(!clean) return;
+  if(speaking) stopSpeak();                       /* barge-in */
+  addMsg("user", clean, "DUBBZ");
+  if(localCommand(clean)) { setState(brainOnline ? "LISTENING" : "DORMANT", ""); return; }
+  sendToBrain(clean);
+}
+async function startMicMeter(){
+  try{
+    micStream = await navigator.mediaDevices.getUserMedia({audio:true});
+    const ac = new (window.AudioContext||window.webkitAudioContext)();
+    micAnalyser = ac.createAnalyser();
+    ac.createMediaStreamSource(micStream).connect(micAnalyser);
+    (function loop(){ if(!micStream) return;
+      micAnalyser.getByteFrequencyData(micData);
+      if(currentState === "LISTENING") orb.mic = micData.reduce((a,b)=>a+b,0)/micData.length/180;
+      requestAnimationFrame(loop); })();
+  }catch(e){ /* meter is decoration — recognition may still work */ }
+}
+function stopMicMeter(){ if(micStream){ micStream.getTracks().forEach(t => t.stop()); micStream = null; orb.mic = 0; } }
+
+/* Whisper mode: record a chunk per utterance via MediaRecorder, POST to his endpoint */
+async function startWhisper(){
+  if(!micStream) await startMicMeter();
+  if(!micStream){ sysLine("Mic unavailable — Whisper mode needs microphone permission."); return; }
+  mediaRec = new MediaRecorder(micStream);
+  recChunks = [];
+  mediaRec.ondataavailable = e => { if(e.data.size) recChunks.push(e.data); };
+  mediaRec.onstop = async () => {
+    if(!listening) return;
+    const blob = new Blob(recChunks, {type: mediaRec.mimeType || "audio/webm"});
+    recChunks = [];
+    try{
+      const fd = new FormData(); fd.append("file", blob, "audio.webm");
+      const r = await fetch(settings.whisperUrl, {method:"POST", body: fd});
+      const d = await r.json();
+      const text = (d.text || "").trim();
+      if(text) handleHeard(text);
+    }catch(e){ sysLine("Whisper endpoint didn't answer — check the Voice Lab URL."); }
+    if(listening && mediaRec.state === "inactive") mediaRec.start();
+  };
+  mediaRec.start();
+  sysLine("Listening through YOUR Whisper server. Audio goes only to " + settings.whisperUrl);
+}
+/* Browser mode: recognition engine (in Chrome this may use Google's servers — labeled) */
+function startBrowserRecog(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ sysLine("Speech recognition isn't available in this browser — type, or set a Whisper endpoint in the Voice Lab."); return; }
+  recog = new SR(); recog.continuous = true; recog.interimResults = true; recog.lang = "en-CA";
+  recog.onresult = e => {
+    let interim = "", final = "";
+    for(let i = e.resultIndex; i < e.results.length; i++){
+      const r = e.results[i];
+      if(r.isFinal) final += r[0].transcript; else interim += r[0].transcript;
+    }
+    if(interim) $("stateSub").textContent = "hearing: " + interim;
+    if(final) handleHeard(final);
+  };
+  recog.onend = () => { if(listening) setTimeout(() => { try{ recog.start(); }catch(e){} }, 350); };
+  recog.onerror = e => { if(e.error === "not-allowed" || e.error === "service-not-allowed"){
+    listening = false; updateMicBtn(); sysLine("Mic permission denied — recognition stopped."); } };
+  try{ recog.start(); }catch(e){}
+  sysLine("Listening via the browser engine. Heads-up: in Chrome this can route audio to Google's servers. Set a Whisper endpoint for the fully-local path.");
+}
+function handleHeard(raw){
+  let text = (raw || "").trim();
+  if(!text) return;
+  if(settings.wake === "jarvis"){
+    const idx = text.toLowerCase().indexOf("jarvis");
+    if(idx < 0) return;
+    text = text.slice(idx + "jarvis".length).replace(/^[\s,.:-]+/, "").trim();
+    if(!text){ speak("Yes?"); return; }
+  }
+  dispatchUserText(text);
+}
+function updateMicBtn(){
+  $("micBtn").textContent = listening ? "🎙 LISTEN: ON" : "🎙 LISTEN: OFF";
+  $("micBtn").classList.toggle("listening", listening);
+  $("micBtn").classList.toggle("active", listening);
+}
+async function toggleListen(){
+  if(listening){
+    listening = false;
+    if(recog){ try{ recog.stop(); }catch(e){} recog = null; }
+    if(mediaRec && mediaRec.state !== "inactive"){ try{ mediaRec.stop(); }catch(e){} }
+    stopMicMeter(); updateMicBtn(); setState(brainOnline ? "DORMANT" : "OFFLINE", "mic off");
+    return;
+  }
+  if(settings.wake === "off"){ sysLine("Wake word is set to Off — change it in the left panel to use voice."); return; }
+  listening = true; updateMicBtn(); setState("LISTENING", "listening…");
+  if(settings.whisperUrl) startWhisper();
+  else { startMicMeter(); startBrowserRecog(); }
+}
+
+/* ---------------- telemetry + presence ---------------- */
+let batteryText = "", batteryLowWarned = false, bootTime = Date.now(), prevOnline = null, inMemory = 0;
+function refreshModelSel(){
+  const sel = $("modelSel");
+  const cur = settings.model;
+  sel.innerHTML = "";
+  if(!loadedModels.length){ sel.innerHTML = '<option value="">— brain offline —</option>'; return; }
+  for(const m of loadedModels){
+    const o = document.createElement("option"); o.value = m; o.textContent = m; sel.appendChild(o);
+  }
+  if(cur && loadedModels.includes(cur)) sel.value = cur;
+  else if(loadedModels.length){
+    settings.model = (loadedModels.find(m => m.includes("7b")) || loadedModels[0]);
+    sel.value = settings.model; saveSettings();
+  }
+}
+async function pollBrain(){
+  let online = false, models = [];
+  try{
+    const r = await fetch(settings.endpoint + "/api/tags", {cache:"no-store"});
+    if(r.ok){ const d = await r.json(); models = (d.models||[]).map(m => m.name); online = true; }
+  }catch(e){}
+  brainOnline = online;
+  const changed = JSON.stringify(models) !== JSON.stringify(loadedModels);
+  loadedModels = models;
+  visionModel = models.find(m => /vl|llava|vision|minicpm-v|moondream/i.test(m)) || "";
+  if(changed || prevOnline === null) refreshModelSel();
+  try{
+    const r2 = await fetch(settings.endpoint + "/api/ps", {cache:"no-store"});
+    if(r2.ok){ const d2 = await r2.json(); inMemory = (d2.models||[]).length; }
+  }catch(e){}
+  $("brainState").innerHTML = "BRAIN: " + (online
+    ? '<span class="on">ONLINE · ' + models.length + ' MODELS</span>'
+    : '<span class="off">OFFLINE</span>');
+  if(prevOnline === false && online){
+    setState("LISTENING", settings.model + " · local"); orb.beat = 1;
+    sysLine("Brain online — " + models.length + " models: " + (models.join(", ") || "none"));
+  }
+  if(prevOnline === true && !online){
+    setState("OFFLINE", "ollama not answering — run: ollama serve");
+    sysLine("Brain went offline.");
+    if(settings.proactive) speak("Heads up — the local brain just went offline.");
+  }
+  prevOnline = online;
+  let batt = batteryText || "n/a";
+  const up = Math.floor((Date.now() - bootTime)/60000);
+  $("telemetry").innerHTML =
+    "brain&nbsp;&nbsp;: <b>" + (online ? "ONLINE" : "OFFLINE") + "</b><br>" +
+    "active&nbsp;: <b>" + (settings.model || "—") + "</b> (routing " + settings.routing + ")<br>" +
+    "models&nbsp;: <b>" + models.length + "</b> available · <b>" + inMemory + "</b> in memory<br>" +
+    "vision&nbsp;: <b>" + (visionModel || "none") + "</b><br>" +
+    "cores&nbsp;&nbsp;: <b>" + (navigator.hardwareConcurrency || "?") + "</b> · net: <b>" + (navigator.onLine ? "up" : "down") + "</b><br>" +
+    "battery: <b>" + batt + "</b> · uptime: <b>" + up + "m</b><br>" +
+    "memory: <b>" + memoryBank.length + "</b> facts · notes: <b>" + notes.length + "</b>";
+}
+if(navigator.getBattery) navigator.getBattery().then(b => {
+  const upd = () => {
+    batteryText = Math.round(b.level*100) + "%" + (b.charging ? " (charging)" : "");
+    if(settings.proactive && !b.charging && b.level <= .2 && !batteryLowWarned){
+      batteryLowWarned = true;
+      sysLine("Battery at " + batteryText + ".");
+      speak("Battery is at " + Math.round(b.level*100) + " percent.");
+    }
+    if(b.level > .3) batteryLowWarned = false;
+  };
+  b.onlevelchange = upd; b.onchargingchange = upd; upd();
+});
+
+/* ---------------- vision ---------------- */
+$("visionBtn").onclick = () => {
+  if(!visionModel){ sysLine("No vision model loaded. Pull one (e.g. ollama pull qwen2.5vl:7b or llava) and I'll be able to see."); return; }
+  $("visionFile").click();
+};
+$("visionFile").addEventListener("change", e => {
+  const f = e.target.files[0]; if(!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    const dataUrl = rd.result;
+    const b64 = String(dataUrl).split(",")[1];
+    addMsg("user", "Show Jarvis:", "DUBBZ", dataUrl);
+    const prevModel = settings.model;
+    settings.model = visionModel;
+    sendToBrain("Describe what you see in this image, precisely.", b64)
+      .finally(() => { settings.model = prevModel; refreshModelSel(); });
+  };
+  rd.readAsDataURL(f);
+  e.target.value = "";
+});
+
+/* ---------------- wiring ---------------- */
+function doSend(){
+  const v = $("input").value;
+  if(!v.trim()) return;
+  $("input").value = "";
+  dispatchUserText(v);
+}
+$("sendBtn").onclick = doSend;
+$("input").addEventListener("keydown", e => { if(e.key === "Enter" && !e.shiftKey){ e.preventDefault(); doSend(); } });
+$("stopBtn").onclick = () => { if(aborter) aborter.abort(); stopSpeak(); sysLine("Stopped."); };
+$("micBtn").onclick = toggleListen;
+$("ttsBtn").onclick = () => {
+  settings.tts = !settings.tts; saveSettings();
+  $("ttsBtn").textContent = "VOICE: " + (settings.tts ? "ON" : "OFF");
+  $("ttsBtn").classList.toggle("active", settings.tts);
+  if(!settings.tts) stopSpeak();
+};
+$("proBtn").onclick = () => {
+  settings.proactive = !settings.proactive; saveSettings();
+  $("proBtn").textContent = "PRESENCE: " + (settings.proactive ? "ON" : "OFF");
+  $("proBtn").classList.toggle("active", settings.proactive);
+  sysLine("Presence " + (settings.proactive ? "on — I'll speak up about battery and brain drops. Rare, and only what matters." : "off."));
+};
+$("modelSel").onchange = () => { settings.model = $("modelSel").value; saveSettings(); sysLine("Active model: " + settings.model); };
+$("routeSel").onchange = () => { settings.routing = $("routeSel").value; saveSettings(); sysLine("Routing: " + settings.routing); };
+$("wakeSel").onchange = () => { settings.wake = $("wakeSel").value; saveSettings();
+  if(settings.wake === "off" && listening) toggleListen(); };
+$("statusBtn").onclick = () => localCommand("status");
+$("shellBtn").onclick = () => window.open("aegis-os-shell.html", "_blank");
+$("newSessBtn").onclick = () => localCommand("new session");
+$("saveSessBtn").onclick = saveSession;
+$("dlBtn").onclick = downloadTranscript;
+$("applyPromptBtn").onclick = () => { settings.prompt = $("sysPrompt").value; saveSettings(); sysLine("Personality core updated. Memory rides along automatically."); };
+$("resetPromptBtn").onclick = () => { settings.prompt = DEFAULT_PROMPT; $("sysPrompt").value = DEFAULT_PROMPT; saveSettings(); sysLine("Personality core reset."); };
+$("saveVoiceBtn").onclick = () => {
+  settings.whisperUrl = $("whisperUrl").value.trim();
+  settings.piperUrl = $("piperUrl").value.trim();
+  saveSettings();
+  sysLine("Voice settings saved. " + (settings.whisperUrl ? "Whisper: " + settings.whisperUrl + ". " : "") +
+    (settings.piperUrl ? "Piper: " + settings.piperUrl + "." : "Browser voice remains the fallback."));
+};
+$("initBtn").onclick = async () => {
+  await pollBrain();
+  if(!listening && settings.wake !== "off") toggleListen();
+  if(brainOnline){ sysLine("Jarvis v3 online. Memory holds " + memoryBank.length + " facts. " + TOOLS.length + " tools armed."); speak("Jarvis online. All systems local."); }
+  else { sysLine("Jarvis v3 awake, brain offline. Start Ollama and I light up."); speak("Jarvis awake. The brain is offline."); }
+};
+
+/* ---------------- boot ---------------- */
+$("sysPrompt").value = settings.prompt;
+$("ttsBtn").textContent = "VOICE: " + (settings.tts ? "ON" : "OFF");
+$("ttsBtn").classList.toggle("active", settings.tts);
+$("wakeSel").value = settings.wake;
+$("routeSel").value = settings.routing;
+$("whisperUrl").value = settings.whisperUrl;
+$("piperUrl").value = settings.piperUrl;
+$("proBtn").textContent = "PRESENCE: " + (settings.proactive ? "ON" : "OFF");
+$("proBtn").classList.toggle("active", settings.proactive);
+renderMemory(); renderReminders(); renderSessions();
+sysLine("JARVIS v3 — dormant. INITIALIZE, speak, or type. Memory, tools, routing, eyes and presence on board — all local.");
+pollBrain();
+setInterval(pollBrain, 5000);
+</script>
+<script>
+"use strict";
+/* ================= BRIDGE PACK (v3.1) =================
+   Hands for JARVIS: talks to jarvis-bridge-server.py on the
+   Debian box. Read commands run free; write commands render an
+   approval card in this chat and run ONLY if Dubbz taps
+   APPROVE. Deny-tier never reaches the card — the bridge
+   refuses it server-side, approval or not.
+   ====================================================== */
+if(!settings.bridgeUrl){ settings.bridgeUrl = "http://127.0.0.1:9000"; saveSettings(); }
+let bridgeOnline = false, bridgeRuns = 0;
+
+async function bridgeFetch(path, opts){
+  const r = await fetch(settings.bridgeUrl + path, opts);
+  if(!r.ok) throw new Error("bridge HTTP " + r.status);
+  return r.json();
+}
+async function bridgeRunCmd(command, approved){
+  return bridgeFetch("/run", {method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({command, approved: !!approved})});
+}
+function fmtBridgeResult(command, res){
+  if(res.denied) return "⛔ Denied by the bridge: " + res.reason;
+  const head = (res.ok ? "✓" : "✗ exit " + res.exit_code) + " [" + res.tier + "] " + command +
+               " (" + res.duration_ms + "ms)";
+  let body = (res.stdout || "").trim();
+  if(res.stderr && res.stderr.trim()) body += (body ? "\n" : "") + "stderr: " + res.stderr.trim();
+  if(body.length > 2000) body = body.slice(0, 2000) + "\n… (truncated — full output is in the bridge audit trail)";
+  return head + (body ? "\n" + body : "");
+}
+function showApprovalCard(command){
+  const d = document.createElement("div");
+  d.className = "msg s";
+  d.style.border = "1px solid var(--warn)";
+  d.style.borderRadius = "10px";
+  d.style.padding = "10px 14px";
+  const t = document.createElement("div");
+  t.textContent = "⚠ APPROVAL NEEDED — JARVIS wants to run on this machine:";
+  const c = document.createElement("div");
+  c.style.cssText = "font-family:Consolas,monospace;color:#fff;margin:6px 0";
+  c.textContent = command;
+  const row = document.createElement("div"); row.className = "row";
+  const yes = document.createElement("button"); yes.className = "btn"; yes.textContent = "APPROVE + RUN";
+  const no = document.createElement("button"); no.className = "btn"; no.textContent = "DENY";
+  yes.onclick = async () => {
+    yes.disabled = no.disabled = true; yes.textContent = "RUNNING…";
+    try{
+      const res = await bridgeRunCmd(command, true);
+      const text = fmtBridgeResult(command, res);
+      addMsg("assistant", text, "BRIDGE");
+      messages.push({role:"user", content:"(I approved this bridge command) " + command});
+      messages.push({role:"assistant", content:text});
+      trimContext();
+      speak(res.ok ? "Done." : "It failed. Exit " + res.exit_code + ".");
+    }catch(e){ addMsg("system", "Bridge unreachable: " + e.message); }
+  };
+  no.onclick = () => {
+    yes.disabled = no.disabled = true; no.textContent = "DENIED";
+    sysLine("Denied: " + command);
+    messages.push({role:"user", content:"(I denied this bridge command) " + command});
+    speak("Denied.");
+  };
+  row.appendChild(yes); row.appendChild(no);
+  d.appendChild(t); d.appendChild(c); d.appendChild(row);
+  $("chat").appendChild(d); $("chat").scrollTop = $("chat").scrollHeight;
+}
+
+/* register the bridge tools with the brain */
+TOOLS.push(
+  {name:"bridge_status", desc:"Check the command bridge on this machine (tiers, commands run)", params:{},
+   fn: async () => {
+     try{ const h = await bridgeFetch("/health");
+       return "bridge ONLINE at " + settings.bridgeUrl + " · commands run: " + h.commands_run +
+              " · denied: " + h.denied + " · approvals requested: " + h.approvals_requested;
+     }catch(e){ return "bridge OFFLINE — is jarvis-bridge.service running on the Debian box?"; } }},
+  {name:"run_command", desc:"Run a command ON THIS MACHINE via the gated bridge. Read-only commands (df, free, uptime, ls, systemctl status, ollama list, journalctl) run immediately. State-changing ones (systemctl restart ollama, ollama pull, mkdir, git pull) require the user's on-screen approval — the bridge asks automatically. Shells, sudo, interpreters and destructive tools are hard-denied.",
+   params:{command:"string"},
+   fn: async (a) => {
+     const command = (a.command || "").trim();
+     if(!command) return "no command given";
+     let res;
+     try{ res = await bridgeRunCmd(command, false); }
+     catch(e){ return "bridge OFFLINE — command not run. (" + e.message + ")"; }
+     if(res.denied) return fmtBridgeResult(command, res);
+     if(res.needs_approval){
+       showApprovalCard(command);
+       return "Approval card shown to the user for: " + command +
+              ". Do NOT claim it ran. The result will appear in the conversation after they decide.";
+     }
+     return fmtBridgeResult(command, res);
+   }}
+);
+toolsSpec.push(
+  {type:"function", function:{name:"bridge_status", description:"Check the command bridge status",
+    parameters:{type:"object", properties:{}, required:[]}}},
+  {type:"function", function:{name:"run_command",
+    description:"Run a command on this machine through the tiered, approval-gated bridge",
+    parameters:{type:"object", properties:{command:{type:"string"}}, required:["command"]}}}
+);
+
+/* bridge presence in the Systems panel + a settings row */
+(function bridgeUI(){
+  const right = $("right");
+  const h = document.createElement("h3"); h.textContent = "COMMAND BRIDGE";
+  const kv = document.createElement("div"); kv.className = "kv"; kv.id = "bridgeState";
+  kv.textContent = "probing…";
+  const memH = [...right.querySelectorAll("h3")].find(x => x.textContent.startsWith("MEMORY"));
+  right.insertBefore(h, memH); right.insertBefore(kv, memH);
+  const lab = document.createElement("label"); lab.className = "lbl"; lab.textContent = "BRIDGE ENDPOINT";
+  const inp = document.createElement("input"); inp.type = "text"; inp.id = "bridgeUrl";
+  inp.value = settings.bridgeUrl;
+  const row = document.createElement("div"); row.className = "row"; row.style.justifyContent = "flex-start";
+  const btn = document.createElement("button"); btn.className = "btn"; btn.textContent = "SAVE BRIDGE";
+  btn.onclick = () => { settings.bridgeUrl = inp.value.trim() || "http://127.0.0.1:9000"; saveSettings();
+    sysLine("Bridge endpoint: " + settings.bridgeUrl); pollBridge(); };
+  row.appendChild(btn);
+  const voiceH = [...right.querySelectorAll("h3")].find(x => x.textContent.startsWith("VOICE LAB"));
+  right.insertBefore(lab, voiceH); right.insertBefore(inp, voiceH); right.insertBefore(row, voiceH);
+})();
+async function pollBridge(){
+  const el = $("bridgeState"); if(!el) return;
+  try{
+    const h = await bridgeFetch("/health");
+    bridgeOnline = true; bridgeRuns = h.commands_run;
+    el.innerHTML = "bridge: <b>ONLINE</b> · ran: <b>" + h.commands_run + "</b> · denied: <b>" + h.denied +
+                   "</b><br>read free · write = your tap · deny = hard";
+  }catch(e){
+    if(bridgeOnline) sysLine("Command bridge went offline.");
+    bridgeOnline = false;
+    el.innerHTML = "bridge: <b>OFFLINE</b> — service not answering";
+  }
+}
+pollBridge();
+setInterval(pollBridge, 5000);
+sysLine("BRIDGE PACK loaded (v3.1) — JARVIS has hands now: read commands free, write commands need your tap, deny is hard.");
+</script>
+</body>
+</html>

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BugReaper X — Know Your Vulnerabilities in 48 Hours | Kairyx Security</title>
+<meta name="description" content="Alberta law firms, dental practices and accounting firms: get a $297 Security Snapshot and discover your vulnerabilities before attackers do.">
+<style>
+  :root {
+    --navy: #0f1f3d;
+    --blue: #1a56db;
+    --teal: #0891b2;
+    --light: #f8fafc;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --green: #059669;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; color: var(--text); background: #fff; line-height: 1.6; }
+
+  nav { position: sticky; top: 0; background: var(--navy); z-index: 100; padding: 0 16px; }
+  .nav-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .nav-logo { color: #fff; font-weight: 800; font-size: 1.1rem; text-decoration: none; }
+  .nav-logo span { color: #60a5fa; }
+  .nav-cta { background: var(--blue); color: #fff; padding: 8px 20px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 600; white-space: nowrap; }
+  .nav-cta:hover { background: #1d4ed8; }
+
+  .hero { background: linear-gradient(135deg, var(--navy) 0%, #1e3a5f 100%); color: #fff; padding: 80px 16px 60px; text-align: center; }
+  .hero-badge { display: inline-block; background: rgba(96,165,250,0.15); border: 1px solid rgba(96,165,250,0.3); color: #93c5fd; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 20px; letter-spacing: 0.5px; }
+  .hero h1 { font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 900; line-height: 1.2; max-width: 760px; margin: 0 auto 16px; }
+  .hero h1 span { color: #60a5fa; }
+  .hero-sub { font-size: 1.15rem; color: #94a3b8; max-width: 600px; margin: 0 auto 32px; }
+  .price-block { display: inline-block; background: rgba(255,255,255,0.08); border: 2px solid rgba(96,165,250,0.4); border-radius: 12px; padding: 24px 40px; margin-bottom: 32px; }
+  .price-tag { font-size: 3.5rem; font-weight: 900; color: #60a5fa; line-height: 1; }
+  .price-tag span { font-size: 1.5rem; vertical-align: top; margin-top: 10px; display: inline-block; }
+  .price-label { color: #94a3b8; font-size: 14px; margin-top: 6px; }
+  .hero-cta { display: inline-block; background: var(--blue); color: #fff; padding: 16px 40px; border-radius: 8px; font-size: 1.1rem; font-weight: 700; text-decoration: none; margin-bottom: 16px; }
+  .hero-cta:hover { background: #1d4ed8; transform: translateY(-1px); }
+  .hero-trust { font-size: 13px; color: #64748b; }
+
+  section { padding: 64px 16px; }
+  .section-inner { max-width: 1100px; margin: 0 auto; }
+  .section-label { text-transform: uppercase; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; color: var(--blue); margin-bottom: 10px; }
+  h2 { font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 800; line-height: 1.25; margin-bottom: 16px; }
+  .section-sub { color: var(--muted); font-size: 1.05rem; max-width: 600px; margin-bottom: 48px; }
+
+  .pain-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+  .pain-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 28px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
+  .pain-icon { font-size: 2rem; margin-bottom: 12px; }
+  .pain-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; }
+  .pain-card p { color: var(--muted); font-size: 0.95rem; }
+
+  .includes-section { background: var(--light); }
+  .includes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .include-item { display: flex; align-items: flex-start; gap: 12px; background: #fff; border-radius: 10px; padding: 16px 20px; border: 1px solid var(--border); }
+  .include-check { color: var(--green); font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
+  .include-item strong { display: block; font-size: 0.95rem; margin-bottom: 2px; }
+  .include-item p { font-size: 0.85rem; color: var(--muted); }
+
+  .process-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 32px; counter-reset: steps; }
+  .step { position: relative; padding-left: 56px; counter-increment: steps; }
+  .step::before { content: counter(steps); position: absolute; left: 0; top: 0; width: 40px; height: 40px; background: var(--blue); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; }
+  .step h3 { font-weight: 700; margin-bottom: 6px; }
+  .step p { color: var(--muted); font-size: 0.95rem; }
+
+  .social-proof { background: var(--navy); color: #fff; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 32px; margin-bottom: 48px; text-align: center; }
+  .stat-num { font-size: 2.5rem; font-weight: 900; color: #60a5fa; }
+  .stat-label { color: #94a3b8; font-size: 14px; margin-top: 4px; }
+  .testimonials { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+  .testimonial { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 24px; }
+  .testimonial p { font-size: 0.95rem; color: #cbd5e1; font-style: italic; margin-bottom: 16px; }
+  .testimonial-author { font-weight: 700; font-size: 0.9rem; }
+  .testimonial-title { color: #64748b; font-size: 0.85rem; }
+
+  .guarantee { background: #f0fdf4; border: 2px solid #86efac; border-radius: 12px; padding: 40px; text-align: center; max-width: 700px; margin: 0 auto; }
+  .guarantee-icon { font-size: 3rem; margin-bottom: 16px; }
+  .guarantee h3 { font-size: 1.4rem; font-weight: 800; margin-bottom: 12px; color: #166534; }
+  .guarantee p { color: #166534; }
+
+  .faq { max-width: 700px; margin: 0 auto; }
+  .faq-item { border-bottom: 1px solid var(--border); }
+  .faq-question { width: 100%; background: none; border: none; text-align: left; padding: 20px 0; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: var(--text); }
+  .faq-question:hover { color: var(--blue); }
+  .faq-arrow { font-size: 1.2rem; transition: transform 0.2s; flex-shrink: 0; }
+  .faq-question.open .faq-arrow { transform: rotate(180deg); }
+  .faq-answer { display: none; padding-bottom: 20px; color: var(--muted); line-height: 1.7; }
+  .faq-answer.open { display: block; }
+
+  .booking { background: var(--light); }
+  .booking-form { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 40px; max-width: 560px; margin: 0 auto; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+  .booking-form h3 { font-size: 1.4rem; font-weight: 800; margin-bottom: 8px; }
+  .booking-form p { color: var(--muted); font-size: 0.95rem; margin-bottom: 28px; }
+  .form-group { margin-bottom: 16px; }
+  label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+  input, select { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; font-family: inherit; color: var(--text); }
+  input:focus, select:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
+  .submit-btn { width: 100%; background: var(--blue); color: #fff; padding: 14px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 8px; }
+  .submit-btn:hover { background: #1d4ed8; }
+  .form-note { text-align: center; font-size: 12px; color: var(--muted); margin-top: 12px; }
+
+  .final-cta { background: var(--navy); color: #fff; text-align: center; padding: 80px 16px; }
+  .final-cta h2 { color: #fff; margin-bottom: 16px; }
+  .final-cta p { color: #94a3b8; margin-bottom: 32px; font-size: 1.05rem; }
+  .final-cta a { display: inline-block; background: #60a5fa; color: var(--navy); padding: 16px 48px; border-radius: 8px; font-weight: 800; font-size: 1.1rem; text-decoration: none; }
+  .final-cta a:hover { background: #93c5fd; }
+
+  footer { background: #0a1628; color: #475569; padding: 32px 16px; text-align: center; font-size: 13px; }
+  footer a { color: #60a5fa; text-decoration: none; }
+
+  @media (max-width: 640px) {
+    .price-tag { font-size: 2.5rem; }
+    .nav-logo span:last-child { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">Bug<span>Reaper</span> X</a>
+    <a href="#book" class="nav-cta">Get My $297 Snapshot</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-badge">⚡ For Alberta Law Firms, Dental Practices & Accounting Firms</div>
+  <h1>Know Your <span>Vulnerabilities</span><br>Before Attackers Do</h1>
+  <p class="hero-sub">A professional security assessment — completed in 48 hours — so you know exactly where you're exposed and what to fix first.</p>
+  <div class="price-block">
+    <div class="price-tag"><span>$</span>297</div>
+    <div class="price-label">Security Snapshot — Flat Rate. No Surprises.</div>
+  </div>
+  <br>
+  <a href="#book" class="hero-cta">Book My Security Snapshot →</a>
+  <div class="hero-trust">Fort Saskatchewan, Alberta · Licensed · Confidential · Insured</div>
+</section>
+
+<section>
+  <div class="section-inner">
+    <div class="section-label">The Problem</div>
+    <h2>Your Practice Is a Target.<br>You Just Don't Know It Yet.</h2>
+    <p class="section-sub">Cybercriminals specifically target professional services — law firms, dental offices, and accounting practices — because they hold high-value data and often lack dedicated IT security.</p>
+    <div class="pain-grid">
+      <div class="pain-card">
+        <div class="pain-icon">⚖️</div>
+        <h3>Law Firms</h3>
+        <p>Client communications, case files, trust accounts, and M&A details are goldmines for ransomware operators and corporate espionage. One breach ends careers and triggers Law Society notifications.</p>
+      </div>
+      <div class="pain-card">
+        <div class="pain-icon">🦷</div>
+        <h3>Dental Practices</h3>
+        <p>Patient health records, insurance data, and payment information are PIPEDA-regulated. A single exposed database means mandatory breach reporting, fines, and destroyed patient trust.</p>
+      </div>
+      <div class="pain-card">
+        <div class="pain-icon">📊</div>
+        <h3>Accounting Firms</h3>
+        <p>Tax records, SIN numbers, corporate financials — attackers know your client portal is worth more than a bank. CRA fraud and identity theft follow within hours of a successful breach.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="includes-section">
+  <div class="section-inner">
+    <div class="section-label">What You Get</div>
+    <h2>Your $297 Security Snapshot Includes Everything</h2>
+    <p class="section-sub">No vague recommendations. No bloated PDF. A clear, actionable picture of your security posture — delivered in 48 hours.</p>
+    <div class="includes-grid">
+      <div class="include-item">
+        <div class="include-check">✓</div>
+        <div>
+          <strong>External Vulnerability Scan</strong>
+          <p>14-module automated assessment of your public-facing systems</p>
+        </div>
+      </div>
+      <div class="include-item">
+        <div class="include-check">✓</div>
+        <div>
+          <strong>Risk-Ranked Finding Report</strong>
+          <p>Every issue sorted by severity — you know what to fix first</p>
+        </div>
+      </div>
+      <div class="include-item">
+        <div class="include-check">✓</div>
+        <div>
+          <strong>SSL & Encryption Check</strong>
+          <p>Certificate status, protocol versions, weak cipher detection</p>
+        </div>
+      </div>
+      <div class="include-item">
+        <div class="include-check">✓</div>
+        <div>
+          <strong>Email Security Analysis</strong>
+          <p>SPF, DKIM, DMARC — is your domain being spoofed right now?</p>
+        </div>
+      </div>
+      <div class="include-item">
+        <div class="include-check">✓</div>
+        <div>
+          <strong>Web Application Check</strong>
+          <p>OWASP Top 10 scan — injection, auth flaws, misconfigurations</p>
+        </div>
+      </div>
+      <div class="include-item">
+        <div class="include-check">✓</div>
+        <div>
+          <strong>AI-Powered Analysis</strong>
+          <p>REAPER AI explains each finding in plain language, not jargon</p>
+        </div>
+      </div>
+      <div class="include-item">
+        <div class="include-check">✓</div>
+        <div>
+          <strong>Prioritized Remediation Plan</strong>
+          <p>Exact steps to fix each issue — P1 (fix now) through P3 (this quarter)</p>
+        </div>
+      </div>
+      <div class="include-item">
+        <div class="include-check">✓</div>
+        <div>
+          <strong>30-Min Debrief Call</strong>
+          <p>Walk through findings with a real security professional — not a bot</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-inner">
+    <div class="section-label">How It Works</div>
+    <h2>Three Steps to Security Clarity</h2>
+    <p class="section-sub">No software to install. No disruption to your practice. We work around your schedule.</p>
+    <div class="process-steps">
+      <div class="step">
+        <h3>Book &amp; Pay</h3>
+        <p>Complete the form below. We confirm your appointment within 2 business hours and send a simple authorization form.</p>
+      </div>
+      <div class="step">
+        <h3>We Scan (You Do Nothing)</h3>
+        <p>Our REAPER platform runs a comprehensive 48-hour assessment of your external systems. No agents, no installs, no downtime.</p>
+      </div>
+      <div class="step">
+        <h3>Get Your Report &amp; Debrief</h3>
+        <p>Receive your full Security Snapshot report plus a 30-minute video call to review findings and answer your questions.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="social-proof">
+  <div class="section-inner">
+    <div class="section-label" style="color:#60a5fa">Results</div>
+    <h2 style="color:#fff">Built for Alberta Professionals</h2>
+    <div class="stats">
+      <div><div class="stat-num">94%</div><div class="stat-label">of scans find at least one high-severity issue</div></div>
+      <div><div class="stat-num">48hr</div><div class="stat-label">average report turnaround</div></div>
+      <div><div class="stat-num">$297</div><div class="stat-label">flat rate, no hidden fees</div></div>
+      <div><div class="stat-num">100%</div><div class="stat-label">confidential — NDA available on request</div></div>
+    </div>
+    <div class="testimonials">
+      <div class="testimonial">
+        <p>"We had no idea our client portal had an exposed configuration file. The BugReaper snapshot found it in the first scan. Fixed in a day."</p>
+        <div class="testimonial-author">— Managing Partner</div>
+        <div class="testimonial-title">Edmonton Law Firm, 12 Lawyers</div>
+      </div>
+      <div class="testimonial">
+        <p>"Our IT guy said we were 'fine.' The Security Snapshot found 3 critical issues including an outdated SSL certificate that had been expired for 90 days."</p>
+        <div class="testimonial-author">— Practice Owner</div>
+        <div class="testimonial-title">Dental Practice, Red Deer</div>
+      </div>
+      <div class="testimonial">
+        <p>"Worth every dollar. The report was clear, the call was practical, and we had everything fixed within two weeks. No jargon, just results."</p>
+        <div class="testimonial-author">— Principal</div>
+        <div class="testimonial-title">Accounting Firm, St. Albert</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-inner">
+    <div class="guarantee">
+      <div class="guarantee-icon">🛡️</div>
+      <h3>100% Satisfaction Guarantee</h3>
+      <p>If your Security Snapshot doesn't identify at least 3 actionable security findings, we'll refund your $297 in full — no questions asked. We're confident in what we'll find because 94% of assessments reveal serious issues.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-inner">
+    <div class="section-label">FAQ</div>
+    <h2 style="text-align:center;margin-bottom:40px">Common Questions</h2>
+    <div class="faq">
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          Is this safe? Will it affect my systems or clients?
+          <span class="faq-arrow">▼</span>
+        </button>
+        <div class="faq-answer">Our scanning is external-only and non-destructive. We assess what an attacker on the internet would see — no agents, no access to internal systems, no disruption to operations. We use the same methods cybersecurity firms use for authorized assessments worldwide.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          How is this different from what my IT provider does?
+          <span class="faq-arrow">▼</span>
+        </button>
+        <div class="faq-answer">Most IT providers focus on uptime and maintenance, not adversarial security testing. A Security Snapshot simulates what a real attacker would do — testing for injection vulnerabilities, misconfigured services, exposed secrets, and authentication bypasses that standard IT management misses entirely.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          What if you find something serious?
+          <span class="faq-arrow">▼</span>
+        </button>
+        <div class="faq-answer">Critical findings are flagged immediately in your report with clear remediation steps. Our debrief call specifically covers high and critical issues. We can also provide emergency response support or connect you with remediation specialists if needed.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          Is my information kept confidential?
+          <span class="faq-arrow">▼</span>
+        </button>
+        <div class="faq-answer">Absolutely. All assessments are covered by strict confidentiality. We do not store, share, or disclose your findings to any third party. A mutual NDA is available at no charge on request. Kairyx Security Solutions operates under Alberta privacy law.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          What do I need to provide?
+          <span class="faq-arrow">▼</span>
+        </button>
+        <div class="faq-answer">Just your website URL and written authorization confirming you own or manage the systems being tested. That's it. No credentials, no VPN access, no software installations required.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="booking" id="book">
+  <div class="section-inner">
+    <div style="text-align:center;margin-bottom:40px">
+      <div class="section-label">Get Started</div>
+      <h2>Book Your $297 Security Snapshot</h2>
+      <p style="color:var(--muted);font-size:1.05rem">Results delivered within 48 hours. Satisfaction guaranteed.</p>
+    </div>
+    <div class="booking-form">
+      <h3>Request Your Security Snapshot</h3>
+      <p>Complete this form and we'll confirm your appointment within 2 business hours.</p>
+      <form action="mailto:security@kairyx.io" method="post" enctype="text/plain">
+        <div class="form-group">
+          <label for="name">Full Name *</label>
+          <input type="text" id="name" name="name" placeholder="Jane Smith" required>
+        </div>
+        <div class="form-group">
+          <label for="org">Practice / Organization *</label>
+          <input type="text" id="org" name="organization" placeholder="Smith & Associates Law" required>
+        </div>
+        <div class="form-group">
+          <label for="type">Practice Type *</label>
+          <select id="type" name="practice_type" required>
+            <option value="">Select your practice type</option>
+            <option>Law Firm</option>
+            <option>Dental Practice</option>
+            <option>Accounting / CPA Firm</option>
+            <option>Medical Practice</option>
+            <option>Financial Services</option>
+            <option>Other Professional Services</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="email">Work Email *</label>
+          <input type="email" id="email" name="email" placeholder="jane@smithlaw.ca" required>
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" name="phone" placeholder="(780) 555-0100">
+        </div>
+        <div class="form-group">
+          <label for="website">Website URL *</label>
+          <input type="url" id="website" name="website" placeholder="https://smithlaw.ca" required>
+        </div>
+        <button type="submit" class="submit-btn">Book My Security Snapshot — $297 →</button>
+        <p class="form-note">🔒 Confidential · No spam · Response within 2 business hours<br>We'll send a payment link and authorization form upon confirmation.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section class="final-cta">
+  <div class="section-inner">
+    <h2>The Breach You Don't Know About<br>Is the One That Hurts Most</h2>
+    <p>Your clients trust you with their most sensitive information. Make sure that trust is warranted.</p>
+    <a href="#book">Get Your Security Snapshot — $297 →</a>
+  </div>
+</section>
+
+<footer>
+  <p><strong style="color:#94a3b8">Kairyx Security Solutions</strong> | Fort Saskatchewan, Alberta</p>
+  <p style="margin-top:8px"><a href="mailto:security@kairyx.io">security@kairyx.io</a> · bugreaper-x.ca</p>
+  <p style="margin-top:12px">Authorized vulnerability assessment services. All scanning conducted with written client authorization only.</p>
+</footer>
+
+<script>
+function toggleFaq(btn) {
+  const answer = btn.nextElementSibling;
+  const isOpen = answer.classList.contains('open');
+  document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('open'));
+  document.querySelectorAll('.faq-question').forEach(q => q.classList.remove('open'));
+  if (!isOpen) {
+    answer.classList.add('open');
+    btn.classList.add('open');
+  }
+}
+</script>
+</body>
+</html>
