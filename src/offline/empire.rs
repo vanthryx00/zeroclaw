@@ -59,6 +59,44 @@ impl Empire {
         format!("Mission: {}\n", self.mission)
     }
 
+    /// Add a new goal and return its generated ID.
+    pub fn add_goal(&mut self, title: &str, description: &str) -> String {
+        let id = format!("G{:03}", self.goals.len() + 1);
+        let now = chrono::Utc::now().to_rfc3339();
+        self.goals.push(EmpireGoal {
+            id: id.clone(),
+            title: title.to_string(),
+            description: description.to_string(),
+            status: GoalStatus::Pending,
+            created_at: now.clone(),
+            updated_at: now,
+            notes: Vec::new(),
+        });
+        id
+    }
+
+    /// Set a goal's status by ID. Returns false if the ID is unknown.
+    pub fn set_status(&mut self, id: &str, status: GoalStatus) -> bool {
+        if let Some(g) = self.goals.iter_mut().find(|g| g.id == id) {
+            g.status = status;
+            g.updated_at = chrono::Utc::now().to_rfc3339();
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Append a text note to a goal. Returns false if the ID is unknown.
+    pub fn add_note(&mut self, id: &str, note: &str) -> bool {
+        if let Some(g) = self.goals.iter_mut().find(|g| g.id == id) {
+            g.notes.push(note.to_string());
+            g.updated_at = chrono::Utc::now().to_rfc3339();
+            true
+        } else {
+            false
+        }
+    }
+
     pub fn is_complete(&self) -> bool {
         !self.goals.is_empty() && self.goals.iter().all(|g| g.status == GoalStatus::Done)
     }
