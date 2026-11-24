@@ -158,6 +158,11 @@ impl Tool for ImageInfoTool {
 
         let path = Path::new(path_str);
 
+        // Prevent path traversal attacks by rejecting paths containing '..'.
+        if path.components().any(|c| c == std::path::Component::ParentDir) {
+            return Err(anyhow::anyhow!("Invalid input: {}", path.display()));
+        }
+
         // Restrict reads to workspace directory to prevent arbitrary file exfiltration
         if !self.security.is_path_allowed(path_str) {
             return Ok(ToolResult {
