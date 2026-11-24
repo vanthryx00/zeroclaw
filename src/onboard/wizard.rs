@@ -23,7 +23,7 @@ use serde_json::Value;
 use std::collections::BTreeSet;
 use std::fs;
 use std::io::IsTerminal;
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 use std::time::Duration;
 
 // ── Project context collected during wizard ──────────────────────
@@ -1378,6 +1378,10 @@ fn now_unix_secs() -> u64 {
 
 fn load_model_cache_state(workspace_dir: &Path) -> Result<ModelCacheState> {
     let path = model_cache_path(workspace_dir);
+    // Prevent path traversal attacks by rejecting paths containing '..'.
+    if path.components().any(|c| c == Component::ParentDir) {
+        bail!("Invalid input: {}", path.display());
+    }
     if !path.exists() {
         return Ok(ModelCacheState::default());
     }
@@ -1393,6 +1397,10 @@ fn load_model_cache_state(workspace_dir: &Path) -> Result<ModelCacheState> {
 
 fn save_model_cache_state(workspace_dir: &Path, state: &ModelCacheState) -> Result<()> {
     let path = model_cache_path(workspace_dir);
+    // Prevent path traversal attacks by rejecting paths containing '..'.
+    if path.components().any(|c| c == Component::ParentDir) {
+        bail!("Invalid input: {}", path.display());
+    }
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent).with_context(|| {
             format!(
