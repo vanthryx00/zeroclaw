@@ -226,6 +226,10 @@ fn read_openclaw_markdown_entries(source_workspace: &Path) -> Result<Vec<SourceE
             if path.extension().and_then(|ext| ext.to_str()) != Some("md") {
                 continue;
             }
+            // Prevent path traversal attacks by rejecting paths containing '..'.
+            if path.components().any(|c| c == std::path::Component::ParentDir) {
+                bail!("Invalid input: {}", path.display());
+            }
             let content = fs::read_to_string(&path)?;
             let stem = path
                 .file_stem()
@@ -402,6 +406,10 @@ fn backup_target_memory(workspace_dir: &Path) -> Result<Option<PathBuf>> {
             let path = file.path();
             if path.extension().and_then(|ext| ext.to_str()) != Some("md") {
                 continue;
+            }
+            // Prevent path traversal attacks by rejecting paths containing '..'.
+            if path.components().any(|c| c == std::path::Component::ParentDir) {
+                bail!("Invalid input: {}", path.display());
             }
             fs::create_dir_all(&daily_backup)?;
             let Some(name) = path.file_name() else {
