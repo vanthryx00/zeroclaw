@@ -130,6 +130,11 @@ fn copy_dir(src: &std::path::Path, dst: &std::path::Path) -> Result<()> {
     for entry in std::fs::read_dir(src)? {
         let e = entry?;
         let name = e.file_name();
+        // Prevent path traversal attacks by rejecting paths containing '..'.
+        let name_path = std::path::Path::new(&name);
+        if name_path.components().any(|c| c == std::path::Component::ParentDir) {
+            anyhow::bail!("Invalid input: {}", name_path.display());
+        }
         let src_path = src.join(&name);
         let dst_path = dst.join(&name);
         if e.file_type()?.is_dir() {
