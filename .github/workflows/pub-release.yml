@@ -54,6 +54,11 @@ jobs:
             - name: Resolve release inputs
               id: vars
               shell: bash
+              env:
+                  INPUT_RELEASE_REF: ${{ inputs.release_ref }}
+                  INPUT_PUBLISH_RELEASE: ${{ inputs.publish_release }}
+                  INPUT_DRAFT: ${{ inputs.draft }}
+                  INPUT_RELEASE_TAG: ${{ inputs.release_tag }}
               run: |
                   set -euo pipefail
 
@@ -67,12 +72,12 @@ jobs:
                     release_tag="${GITHUB_REF_NAME}"
                     publish_release="true"
                   elif [[ "$event_name" == "workflow_dispatch" ]]; then
-                    release_ref="${{ inputs.release_ref }}"
-                    publish_release="${{ inputs.publish_release }}"
-                    draft_release="${{ inputs.draft }}"
+                    release_ref="$INPUT_RELEASE_REF"
+                    publish_release="$INPUT_PUBLISH_RELEASE"
+                    draft_release="$INPUT_DRAFT"
 
                     if [[ "$publish_release" == "true" ]]; then
-                      release_tag="${{ inputs.release_tag }}"
+                      release_tag="$INPUT_RELEASE_TAG"
                       if [[ -z "$release_tag" ]]; then
                         echo "::error::release_tag is required when publish_release=true"
                         exit 1
