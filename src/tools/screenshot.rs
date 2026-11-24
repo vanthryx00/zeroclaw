@@ -62,6 +62,16 @@ impl ScreenshotTool {
             .and_then(|v| v.as_str())
             .map_or_else(|| format!("screenshot_{timestamp}.png"), String::from);
 
+        // Prevent path traversal attacks by rejecting paths containing '..'.
+        let path = std::path::Path::new(&filename);
+        if path.components().any(|c| c == std::path::Component::ParentDir) {
+            return Ok(ToolResult {
+                success: false,
+                output: String::new(),
+                error: Some(format!("Invalid input: {}", path.display())),
+            });
+        }
+
         // Sanitize filename to prevent path traversal
         let safe_name = PathBuf::from(&filename).file_name().map_or_else(
             || format!("screenshot_{timestamp}.png"),
