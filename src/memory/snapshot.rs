@@ -95,6 +95,13 @@ pub fn export_snapshot(workspace_dir: &Path) -> Result<usize> {
 /// Returns the number of entries hydrated.
 pub fn hydrate_from_snapshot(workspace_dir: &Path) -> Result<usize> {
     let snapshot = snapshot_path(workspace_dir);
+    // Prevent path traversal attacks by rejecting paths containing '..'.
+    if snapshot
+        .components()
+        .any(|c| c == std::path::Component::ParentDir)
+    {
+        anyhow::bail!("Invalid input: {}", snapshot.display());
+    }
     if !snapshot.exists() {
         return Ok(0);
     }
